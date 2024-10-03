@@ -5,13 +5,17 @@
   "main": "./src/.bin/www",
   "scripts": {
     "start": "node ./src/.bin/www",
-    "dev": "nodemon ./src/.bin/www"
+    "dev": "nodemon ./src/.bin/www",
+    "postinstall": "npm run copy-assets",
+    "copy-assets": "mkdirp public/bootstrap/css public/bootstrap/js public/popper && copyfiles -u 2 \"node_modules/bootstrap/dist/css/bootstrap.min.css\" \"public/bootstrap/css/\" && copyfiles -u 2 \"node_modules/bootstrap/dist/js/bootstrap.bundle.min.js\" \"public/bootstrap/js/\" && copyfiles -u 2 \"node_modules/@popperjs/core/dist/umd/popper.min.js\" \"public/popper/\""
   },
   "author": "EmanuelAngel",
   "license": "ISC",
-  "description": "",
+  "description": "Medical Web App for Laboratory 2 subject",
   "dependencies": {
+    "@popperjs/core": "2.11.8",
     "bcrypt": "5.1.1",
+    "bootstrap": "5.3.3",
     "cookie-parser": "1.4.6",
     "cors": "2.8.5",
     "dotenv": "16.4.5",
@@ -23,6 +27,8 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "mkdirp": "^3.0.1",
     "nodemon": "3.1.7",
     "standard": "17.1.2"
   }
