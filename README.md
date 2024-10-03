@@ -1,10 +1,10 @@
-####Pre-requisites
+#### Pre-requisites
 
 - [Node.js](https://nodejs.org/en/) version used v20.17.0
 - [npm](https://www.npmjs.com/) (can be installed with Node.js)
 - [Git](https://git-scm.com/)
 
-####Installation
+### Local installation
 
 1. **Clone the repository**
 
