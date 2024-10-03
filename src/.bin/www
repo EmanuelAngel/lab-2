@@ -1,0 +1,57 @@
+import 'dotenv/config'
+import { createApp } from '../app.js'
+import { createServer } from 'node:http'
+// import { UserModel } from '../apps/users/models/user.model.js'
+
+const PORT = normalizePort(process.env.PORT ?? '3001')
+
+const app = createApp()
+
+const server = createServer(app)
+
+server.listen(PORT)
+
+server.on('error', onError)
+server.on('listening', onListening)
+
+function normalizePort (port) {
+  const portNumber = parseInt(port, 10)
+
+  if (isNaN(portNumber)) {
+    throw new Error(`Invalid port: ${port}`)
+  }
+
+  if (portNumber >= 0 && portNumber <= 65535) {
+    return portNumber
+  }
+
+  throw new Error(`Port out of range: ${port}`)
+}
+
+function onError (error) {
+  if (error.syscall !== 'listen') {
+    throw error
+  }
+
+  const bind = typeof PORT === 'string' ? `Pipe ${PORT}` : `Port ${PORT}`
+
+  switch (error.code) {
+    case 'EACCES':
+      console.error(`${bind} requires elevated privileges`)
+      process.exit(1)
+      break
+    case 'EADDRINUSE':
+      console.error(`${bind} is already in use`)
+      process.exit(1)
+      break
+    default:
+      throw error
+  }
+}
+
+function onListening () {
+  const addr = server.address()
+  const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`
+  console.clear()
+  console.log(`Listening on ${bind}`)
+}
