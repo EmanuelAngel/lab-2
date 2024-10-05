@@ -5,10 +5,11 @@ import morgan from 'morgan'
 import { corsMiddleware } from './middlewares/cors.js'
 
 // import { userRouter } from './apps/users/routes/user.routes.js'
+import { profesionalesRouter } from './apps/profesionales/routes/profesionales.routes.js'
 
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
-export function createApp ({ userModel } = {}) {
+export function createApp () {
   const app = express()
 
   app.disable('x-powered-by')
@@ -20,6 +21,8 @@ export function createApp ({ userModel } = {}) {
   app.get('/', (_req, res) =>
     res.sendFile(join(__dirname, '..', 'public', 'html', 'index.html'))
   )
+
+  app.use('/profesionales', profesionalesRouter())
 
   // app.use('/users', userRouter({ userModel }))
 

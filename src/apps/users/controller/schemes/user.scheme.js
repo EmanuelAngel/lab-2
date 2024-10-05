@@ -6,13 +6,13 @@ const userScheme = z.object({
   password_hash: z.string().min(8),
   name: z.string().min(3),
   nationality: z.string().min(3),
-  phone: z.string().min(10),
+  phone: z.string().min(10)
 })
 
-export function validateUser(object) {
+export function validateUser (object) {
   return userScheme.safeParse(object)
 }
 
-export function validatePartialUser(object) {
+export function validatePartialUser (object) {
   return userScheme.partial().safeParse(object)
 }

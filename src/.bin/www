@@ -1,7 +1,6 @@
 import 'dotenv/config'
 import { createApp } from '../app.js'
 import { createServer } from 'node:http'
-// import { UserModel } from '../apps/users/models/user.model.js'
 
 const PORT = normalizePort(process.env.PORT ?? '3001')
 

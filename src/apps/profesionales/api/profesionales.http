@@ -1,0 +1,31 @@
+### Obtener todos los profesionales
+GET http://localhost:3001/profesionales
+
+### Obtener un profesional por su id
+GET http://localhost:3001/profesionales/3
+
+### Crear un profesional
+POST http://localhost:3001/profesionales
+Content-Type: application/json
+
+{
+  "nombre": "Juan",
+  "apellido": "Perez",
+  "numero_documento": "1234567895",
+  "telefono": "12345678911",
+  "email": "juana@gmail.com"
+}
+
+### Desactivar un profesional
+DELETE http://localhost:3001/profesionales/4
+
+### Activar un profesional
+PATCH  http://localhost:3001/profesionales/3
+
+### Actualizar un profesional
+PATCH http://localhost:3001/profesionales/4
+Content-Type: application/json
+
+{
+  "nombre": "Juana"
+}
