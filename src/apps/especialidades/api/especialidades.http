@@ -1,0 +1,24 @@
+### Obtener todas las especialidades
+GET http://localhost:3001/especialidades
+
+### Obtener una especialidad por su ID
+GET http://localhost:3001/especialidades/3
+
+### Crear una especialidad
+POST http://localhost:3001/especialidades
+Content-Type: application/json
+
+{
+  "nombre": "Ingeniería Civil"
+}
+
+### Eliminar una especialidad
+DELETE http://localhost:3001/especialidades/1
+
+### Actualizar una especialidad parcialmente
+PATCH http://localhost:3001/especialidades/3
+Content-Type: application/json
+
+{
+  "nombre": "Dermatología"
+}
