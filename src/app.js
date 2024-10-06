@@ -6,6 +6,8 @@ import { corsMiddleware } from './middlewares/cors.js'
 
 // import { userRouter } from './apps/users/routes/user.routes.js'
 import { profesionalesRouter } from './apps/profesionales/routes/profesionales.routes.js'
+import { especialidadesRouter } from './apps/especialidades/routes/especialidades.routes.js'
+import { pacientesRouter } from './apps/pacientes/routes/pacientes.routes.js'
 
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -23,7 +25,8 @@ export function createApp () {
   )
 
   app.use('/profesionales', profesionalesRouter())
-
+  app.use('/especialidades', especialidadesRouter())
+  app.use('/pacientes', pacientesRouter())
   // app.use('/users', userRouter({ userModel }))
 
   return app

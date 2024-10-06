@@ -1,0 +1,35 @@
+### Obtener todos los pacientes
+GET http://localhost:3001/pacientes
+
+### Obtener un pacientes por su id
+GET http://localhost:3001/pacientes/2
+
+### Crear un pacientes
+POST http://localhost:3001/pacientes
+Content-Type: application/json
+
+{
+  "apellido": "Perez",
+  "nombre": "Juanon",
+  "dni": "9000567895",
+  "obra_social": "DOSEP",
+  "telefono": "2664399407",
+  "email": "perez@example.com",
+  "direccion": "Av. Lafinur 123, San Luis, San Luis",
+  "es_profesional": "0"
+}
+
+
+### Desactivar un pacientes
+DELETE http://localhost:3001/pacientes/4
+
+### Activar un pacientes
+PATCH  http://localhost:3001/pacientes/3
+
+### Actualizar un pacientes
+PATCH http://localhost:3001/pacientes/2
+Content-Type: application/json
+
+{
+  "nombre": "Juana"
+}
