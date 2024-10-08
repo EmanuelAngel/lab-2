@@ -12,6 +12,7 @@ import { usuariosRouter } from './apps/usuarios/routes/usuarios.routes.js'
 import { secreRouter } from './apps/secre/routes/secre.routes.js'
 import { adminsRouter } from './apps/admins/routes/admins.routes.js'
 import { rolesRouter } from './apps/roles/routes/roles.routes.js'
+import { especialidadesProfesionalRouter } from './apps/especialidades_profesional/routes/especialidades_profesional.routes.js'
 
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -35,6 +36,7 @@ export function createApp () {
   app.use('/secre', secreRouter())
   app.use('/admins', adminsRouter())
   app.use('/roles', rolesRouter())
+  app.use('/especialidades_profesional', especialidadesProfesionalRouter())
 
   // app.use('/users', userRouter({ userModel }))
 

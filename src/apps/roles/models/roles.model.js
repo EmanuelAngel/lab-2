@@ -57,7 +57,7 @@ export class RolesModel {
   }
 
   // Actualizar un rol
-  static async update ({ id, input }) {
+  static async partiallyUpdate ({ id, input }) {
     const updateFields = []
     const updateValues = []
 

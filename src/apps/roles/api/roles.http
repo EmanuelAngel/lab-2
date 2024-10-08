@@ -9,18 +9,18 @@ POST http://localhost:3001/roles
 Content-Type: application/json
 
 {
-    "nombre": "Admin",
-    "descripcion": "Administrador del sistema"
+    "nombre": "prueba",
+    "descripcion": "probaando crud"
 }
 
 
 ### eliminar un rol
-DELETE http://localhost:3001/roles/1
+DELETE http://localhost:3001/roles/5
 
 ### Actualizar un rol
-PATCH http://localhost:3001/roles/1/update
+PATCH http://localhost:3001/roles/6/update
 Content-Type: application/json
 
 {
-  "descripcion": "probando funcionamiento parcial"
+  "descripcion": "probando 123456"
 }

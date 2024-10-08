@@ -1,0 +1,33 @@
+### Obtener todas las relaciones especialidad-profesional
+GET http://localhost:3001/especialidades_profesional
+
+### Obtener una relación especialidad-profesional por id_profesional e id_especialidad
+GET http://localhost:3001/especialidades_profesional/2/2
+
+### Crear una nueva relación especialidad-profesional
+POST http://localhost:3001/especialidades_profesional
+Content-Type: application/json
+
+{
+  "id_profesional": 1,
+  "id_especialidad": 2
+}
+
+### Desactivar una relación especialidad-profesional
+DELETE http://localhost:3001/especialidades_profesional/1/2
+
+### Activar una relación especialidad-profesional
+PATCH http://localhost:3001/especialidades_profesional/1/2/activate
+
+### Actualizar parcialmente una relación especialidad-profesional
+PATCH http://localhost:3001/especialidades_profesional/1/4/update
+Content-Type: application/json
+
+{
+  "id_especialidad": 3
+}
+
+### Obtener todas las especialidades de un profesional
+GET http://localhost:3001/especialidades_profesional/profesional/1
+### Obtener todos los profesionales que tienen asignada una especialidad
+GET http://localhost:3001/especialidades_profesional/especialidad/3
