@@ -17,10 +17,10 @@ Content-Type: application/json
 DELETE http://localhost:3001/especialidades/4
 
 ### Activar una especialidades
-PATCH  http://localhost:3001/especialidades/4
+PATCH  http://localhost:3001/especialidades/4/activate
 
 ### Actualizar una especialidades
-PATCH http://localhost:3001/especialidades/4
+PATCH http://localhost:3001/especialidades/4/update
 Content-Type: application/json
 
 {

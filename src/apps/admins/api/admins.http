@@ -1,0 +1,28 @@
+### Obtener todos los admins
+GET http://localhost:3001/admins
+
+### Obtener un admin por su id
+GET http://localhost:3001/admins/2
+
+### Crear un admin
+POST http://localhost:3001/admins
+Content-Type: application/json
+
+{
+  "id_usuario": 3
+}
+
+
+### Desactivar un admins
+DELETE http://localhost:3001/admins/1
+
+### Activar un admins
+PATCH  http://localhost:3001/admins/1/activate
+
+### Actualizar un admins
+PATCH http://localhost:3001/admins/1/update
+Content-Type: application/json
+
+{
+  "id_usuario": 3
+}

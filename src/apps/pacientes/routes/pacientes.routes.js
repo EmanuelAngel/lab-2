@@ -11,8 +11,8 @@ export function pacientesRouter () {
   router.get('/:id', pacientesController.getById) // Obtener un paciente por ID
   router.post('/', pacientesController.create) // Crear un nuevo paciente
   router.delete('/:id', pacientesController.deactivate) // Desactivar un paciente
-  router.patch('/:id', pacientesController.activate) // Activar un paciente
-  router.patch('/:id', pacientesController.partiallyUpdate) // Actualizar parcialmente un paciente
+  router.patch('/:id/activate', pacientesController.activate) // Activar un paciente
+  router.patch('/:id/update', pacientesController.partiallyUpdate) // Actualizar parcialmente un paciente
 
   return router
 }

@@ -1,0 +1,30 @@
+### Obtener todos las/os secretarias/os
+GET http://localhost:3001/secre
+
+### Obtener un secretaria/a por su id
+GET http://localhost:3001/secre/2
+
+### Crear un secretaria/a
+POST http://localhost:3001/secre
+Content-Type: application/json
+
+{
+  "id_usuario": 3,
+  "id_sucursal": 1
+}
+
+
+### Desactivar un secretaria/a
+DELETE http://localhost:3001/secre/2
+
+### Activar un secretaria/a
+PATCH  http://localhost:3001/secre/2/activate
+
+### Actualizar un secretaria/a
+PATCH http://localhost:3001/secre/2/update
+Content-Type: application/json
+
+{
+  "id_usuario": 3,
+  "id_sucursal": 1
+}

@@ -9,6 +9,9 @@ import { profesionalesRouter } from './apps/profesionales/routes/profesionales.r
 import { especialidadesRouter } from './apps/especialidades/routes/especialidades.routes.js'
 import { pacientesRouter } from './apps/pacientes/routes/pacientes.routes.js'
 import { usuariosRouter } from './apps/usuarios/routes/usuarios.routes.js'
+import { secreRouter } from './apps/secre/routes/secre.routes.js'
+import { adminsRouter } from './apps/admins/routes/admins.routes.js'
+import { rolesRouter } from './apps/roles/routes/roles.routes.js'
 
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -29,6 +32,9 @@ export function createApp () {
   app.use('/especialidades', especialidadesRouter())
   app.use('/pacientes', pacientesRouter())
   app.use('/usuarios', usuariosRouter())
+  app.use('/secre', secreRouter())
+  app.use('/admins', adminsRouter())
+  app.use('/roles', rolesRouter())
 
   // app.use('/users', userRouter({ userModel }))
 

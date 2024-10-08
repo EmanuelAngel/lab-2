@@ -10,8 +10,8 @@ export function profesionalesRouter () {
   router.get('/:id', profesionalesController.getById)
   router.post('/', profesionalesController.create)
   router.delete('/:id', profesionalesController.deactivate)
-  router.patch('/:id', profesionalesController.activate)
-  router.patch('/:id', profesionalesController.partiallyUpdate)
+  router.patch('/:id/activate', profesionalesController.activate) // Ruta para activar
+  router.patch('/:id/update', profesionalesController.partiallyUpdate) // Ruta para actualización parcial (modificada)
 
   return router
 }

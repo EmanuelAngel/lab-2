@@ -18,10 +18,10 @@ Content-Type: application/json
 DELETE http://localhost:3001/pacientes/4
 
 ### Activar un pacientes
-PATCH  http://localhost:3001/pacientes/3
+PATCH  http://localhost:3001/pacientes/3/activate
 
 ### Actualizar un pacientes
-PATCH http://localhost:3001/pacientes/2
+PATCH http://localhost:3001/pacientes/2/update
 Content-Type: application/json
 
 {

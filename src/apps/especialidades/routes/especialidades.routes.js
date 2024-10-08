@@ -10,8 +10,8 @@ export function especialidadesRouter () {
   router.get('/:id', especialidadesController.getById)
   router.post('/', especialidadesController.create)
   router.delete('/:id', especialidadesController.deactivate)
-  router.patch('/:id', especialidadesController.activate)
-  router.patch('/:id', especialidadesController.partiallyUpdate)
+  router.patch('/:id/activate', especialidadesController.activate)
+  router.patch('/:id/update', especialidadesController.partiallyUpdate)
 
   return router
 }

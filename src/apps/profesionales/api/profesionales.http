@@ -17,10 +17,10 @@ Content-Type: application/json
 DELETE http://localhost:3001/profesionales/1
 
 ### Activar un profesional
-PATCH  http://localhost:3001/profesionales/1
+PATCH  http://localhost:3001/profesionales/1/activate
 
 ### Actualizar un profesional
-PATCH http://localhost:3001/profesionales/7
+PATCH http://localhost:3001/profesionales/7/update
 Content-Type: application/json
 
 {

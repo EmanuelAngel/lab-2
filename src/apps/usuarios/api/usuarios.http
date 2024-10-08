@@ -26,10 +26,10 @@ Content-Type: application/json
 DELETE http://localhost:3001/usuarios/4
 
 ### Activar un usuarios
-PATCH  http://localhost:3001/usuarios/4
+PATCH  http://localhost:3001/usuarios/4/activate
 
 ### Actualizar un usuarios
-PATCH http://localhost:3001/usuarios/2
+PATCH http://localhost:3001/usuarios/2/update
 Content-Type: application/json
 
 {
