@@ -9,18 +9,15 @@ POST http://localhost:3001/profesionales
 Content-Type: application/json
 
 {
-  "nombre": "Juanon",
-  "apellido": "Perez",
-  "numero_documento": "9000567895",
-  "telefono": "12345678911",
-  "email": "perez@gmail.com"
+  "id_usuario": 4
+  
 }
 
 ### Desactivar un profesional
-DELETE http://localhost:3001/profesionales/4
+DELETE http://localhost:3001/profesionales/1
 
 ### Activar un profesional
-PATCH  http://localhost:3001/profesionales/3
+PATCH  http://localhost:3001/profesionales/1
 
 ### Actualizar un profesional
 PATCH http://localhost:3001/profesionales/7

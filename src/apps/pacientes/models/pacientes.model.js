@@ -42,17 +42,17 @@ export class PacientesModel {
   }
 
   static async create ({ input }) {
-    const { apellido, nombre, dni, obra_social, telefono, email, direccion, es_profesional } = input
+    const { tiene_obra_social, id_usuario } = input
     try {
       // Intentamos crear un nuevo paciente en la base de datos
       await con.query(
-          `INSERT INTO pacientes (apellido, nombre, dni, obra_social, telefono, email, direccion, es_profesional, estado)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-          [apellido, nombre, dni, obra_social, telefono, email, direccion, es_profesional] // Asegúrate de que es_profesional esté aquí
+          `INSERT INTO pacientes (tiene_obra_social, estado, id_usuario)
+          VALUES (?, 1, ?)`,
+          [tiene_obra_social, id_usuario]
       )
 
-      // Intentamos obtener el paciente recién creado utilizando el DNI
-      const [pacientes] = await con.query('SELECT * FROM pacientes WHERE dni = ?;', [dni])
+      // Intentamos obtener el paciente recién creado utilizando el id_usuario
+      const [pacientes] = await con.query('SELECT * FROM pacientes WHERE id_usuario = ?;', [id_usuario])
       return pacientes[0]
     } catch (error) {
       // Si ocurre un error, lo registramos en la consola y lanzamos un error personalizado

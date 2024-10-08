@@ -42,17 +42,17 @@ export class ProfesionalesModel {
   }
 
   static async create ({ input }) {
-    const { nombre, apellido, numero_documento, telefono, email } = input
+    const { id_usuario } = input
     try {
       // Intentamos crear un nuevo profesional en la base de datos
       await con.query(
-        `INSERT INTO profesionales (nombre, apellido, numero_documento, telefono, email, estado)
-        VALUES (?, ?, ?, ?, ?, 1)`,
-        [nombre, apellido, numero_documento, telefono, email]
+        `INSERT INTO profesionales (estado, id_usuario)
+        VALUES (1, ?)`,
+        [id_usuario]
       )
 
-      // Intentamos obtener el profesional recién creado utilizando el número de documento
-      const [profesionales] = await con.query('SELECT * FROM profesionales WHERE numero_documento = ?;', [numero_documento])
+      // Intentamos obtener el profesional recién creado utilizando el id_usuario
+      const [profesionales] = await con.query('SELECT * FROM profesionales WHERE id_usuario = ?;', [id_usuario])
       return profesionales[0]
     } catch (error) {
       // Si ocurre un error, lo registramos en la consola y lanzamos un error personalizado

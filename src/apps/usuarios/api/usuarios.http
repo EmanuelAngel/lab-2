@@ -1,0 +1,37 @@
+### Obtener todos los usuarios
+GET http://localhost:3001/usuarios
+
+### Obtener un usuarios por su id
+GET http://localhost:3001/usuarios/2
+
+### Crear un usuarios
+POST http://localhost:3001/usuarios
+Content-Type: application/json
+
+{
+  "id_rol": 4,
+  "nombre_usuario": "Nico123",
+  "contraseña": "1515202021",
+  "nombre": "Nico",
+  "apellido": "Alcaraz",
+  "dni": 39091538,
+  "telefono": 2664399407,
+  "direccion": "Av. Lafinur 123, San Luis, San Luis",
+  "email": "perez@example.com"
+}
+
+
+
+### Desactivar un usuarios
+DELETE http://localhost:3001/usuarios/4
+
+### Activar un usuarios
+PATCH  http://localhost:3001/usuarios/4
+
+### Actualizar un usuarios
+PATCH http://localhost:3001/usuarios/2
+Content-Type: application/json
+
+{
+  "nombre": "San Martin"
+}

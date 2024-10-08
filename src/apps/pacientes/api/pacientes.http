@@ -9,14 +9,8 @@ POST http://localhost:3001/pacientes
 Content-Type: application/json
 
 {
-  "apellido": "Perez",
-  "nombre": "Juanon",
-  "dni": "9000567895",
-  "obra_social": "DOSEP",
-  "telefono": "2664399407",
-  "email": "perez@example.com",
-  "direccion": "Av. Lafinur 123, San Luis, San Luis",
-  "es_profesional": "0"
+ "tiene_obra_social": "1",
+  "id_usuario":2
 }
 
 
@@ -31,5 +25,5 @@ PATCH http://localhost:3001/pacientes/2
 Content-Type: application/json
 
 {
-  "nombre": "Juana"
+  "tiene_obra_social": "0"
 }

@@ -49,25 +49,41 @@ export class EspecialidadesController {
     }
   }
 
-  delete = async (req, res) => {
+  deactivate = async (req, res) => {
     try {
       const { id } = req.params
-      const deletedEspecialidad = await EspecialidadesModel.delete({ id })
+      const result = await EspecialidadesModel.deactivate({ id })
 
-      if (!deletedEspecialidad) {
+      if (!result) {
         return res.status(404).json({ error: 'Especialidad no encontrada' })
       }
 
-      return res.status(200).json({ deleted: deletedEspecialidad })
+      return res.status(200).json({ message: 'Especialidad desactivada' })
     } catch (error) {
-      console.error('Error al eliminar la especialidad:', error)
-      return res.status(500).json({ error: 'Error interno del servidor al eliminar la especialidad' })
+      console.error('Error al desactivar la especialidad:', error)
+      return res.status(500).json({ error: 'Error interno del servidor al desactivar la especialidad' })
+    }
+  }
+
+  activate = async (req, res) => {
+    try {
+      const { id } = req.params
+      const result = await EspecialidadesModel.activate({ id })
+
+      if (!result) {
+        return res.status(404).json({ error: 'Especialidad no encontrada' })
+      }
+
+      return res.status(200).json({ message: 'Especialidad activada' })
+    } catch (error) {
+      console.error('Error al activar la especialidad:', error)
+      return res.status(500).json({ error: 'Error interno del servidor al activar la especialidad' })
     }
   }
 
   partiallyUpdate = async (req, res) => {
     try {
-      const result = validateEspecialidades(req.body)
+      const result = validatePartialEspecialidades(req.body)
 
       if (result.error) {
         return res.status(422).json({ error: JSON.parse(result.error.message) })
@@ -77,12 +93,13 @@ export class EspecialidadesController {
       const updatedEspecialidad = await EspecialidadesModel.partiallyUpdate({ id, input: result.data })
 
       if (!updatedEspecialidad) {
-        return res.status(404).json({ error: 'Especialidad no encontrada' })
+        return res.status(404).json({ error: 'Especialidad no encontrada o sin cambios' })
       }
 
       return res.json({ updated: updatedEspecialidad })
     } catch (error) {
-      console.error('Error al actualizar la especialidad:', error)
+      // Manejo de error similar a los otros métodos
+      console.error('Error al actualizar parcialmente la especialidad:', error)
       return res.status(500).json({ error: 'Error interno del servidor al actualizar la especialidad' })
     }
   }

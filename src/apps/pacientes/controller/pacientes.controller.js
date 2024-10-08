@@ -53,10 +53,10 @@ export class PacientesController {
       const createdPaciente = await PacientesModel.create({ input: result.data })
       return res.status(201).json({ created: createdPaciente })
     } catch (error) {
-      // Si el error tiene que ver con que ya existe (por ejemplo, dni duplicado)
+      // Si el error tiene que ver con que ya existe (id_usuario duplicado)
       if (error.code === 'ER_DUP_ENTRY') {
         console.error('Error al crear el paciente: Entrada duplicada:', error)
-        return res.status(409).json({ error: 'Ya existe un paciente con el mismo número de documento, email o teléfono' })
+        return res.status(409).json({ error: 'Ya existe un paciente con el mismo número de usuario' })
       }
 
       // Para cualquier otro error, mostramos el mensaje y devolvemos error 500
@@ -134,10 +134,10 @@ export class PacientesController {
       // Devolvemos el paciente actualizado
       return res.json({ updated: updatedPaciente })
     } catch (error) {
-      // Si hay un error por un campo duplicado (por ejemplo, dni ya en uso)
+      // Si hay un error por un campo duplicado (id_usuario ya en uso)
       if (error.code === 'ER_DUP_ENTRY') {
         console.error('Error al actualizar el paciente: Entrada duplicada:', error)
-        return res.status(409).json({ error: 'El número de documento ingresado ya está asociado a otro paciente' })
+        return res.status(409).json({ error: 'El id usuario ya se encuentra en uso' })
       }
 
       // Para cualquier otro error, mostramos el mensaje y respondemos con error interno

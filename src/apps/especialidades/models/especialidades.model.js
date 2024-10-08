@@ -10,7 +10,7 @@ const con = await mysql.createConnection(connectionString)
 export class EspecialidadesModel {
   static async getAll () {
     try {
-      const [rows] = await con.query('SELECT * FROM especialidades;')
+      const [rows] = await con.query('SELECT * FROM especialidades WHERE estado = 1;')
       return rows
     } catch (error) {
       console.error('Error al obtener todos las especialidades:', error)
@@ -33,7 +33,7 @@ export class EspecialidadesModel {
     try {
       await con.query(
         `INSERT INTO especialidades (nombre)
-        VALUES (?);`,
+        VALUES (?, 1);`,
         [nombre]
       )
 
@@ -50,13 +50,23 @@ export class EspecialidadesModel {
     }
   }
 
-  static async delete ({ id }) {
+  static async deactivate ({ id }) {
     try {
-      await con.query('DELETE FROM especialidades WHERE id_especialidad = ?;', [id])
+      await con.query('UPDATE especialidades SET estado = 0 WHERE id_especialidad = ?;', [id])
       return true
     } catch (error) {
-      console.error('Error al eliminar la especialidad:', error)
-      throw new Error('Error al eliminar la especialidad')
+      console.error('Error al desactivar la especialidad:', error)
+      throw new Error('Error al desactivar la especialidad')
+    }
+  }
+
+  static async activate ({ id }) {
+    try {
+      await con.query('UPDATE especialidades SET estado = 1 WHERE id_especialidad = ?;', [id])
+      return true
+    } catch (error) {
+      console.error('Error al activar la especialidad:', error)
+      throw new Error('Error al activar la especialidad')
     }
   }
 
