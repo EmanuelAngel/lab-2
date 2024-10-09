@@ -13,6 +13,7 @@ import { secreRouter } from './apps/secre/routes/secre.routes.js'
 import { adminsRouter } from './apps/admins/routes/admins.routes.js'
 import { rolesRouter } from './apps/roles/routes/roles.routes.js'
 import { especialidadesProfesionalRouter } from './apps/especialidades_profesional/routes/especialidades_profesional.routes.js'
+import { obraSocialRouter } from './apps/obra_social/routes/obra_social.routes.js'
 
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -37,6 +38,7 @@ export function createApp () {
   app.use('/admins', adminsRouter())
   app.use('/roles', rolesRouter())
   app.use('/especialidades_profesional', especialidadesProfesionalRouter())
+  app.use('/obra_social', obraSocialRouter())
 
   // app.use('/users', userRouter({ userModel }))
 

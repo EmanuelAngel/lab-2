@@ -1,0 +1,29 @@
+### Obtener todas las especialidades
+GET http://localhost:3001/obra_social
+
+### Obtener una especialidades por su id
+GET http://localhost:3001/obra_social/2
+
+### Crear una especialidades
+POST http://localhost:3001/obra_social
+Content-Type: application/json
+
+{
+  "nombre": "probando"
+  
+}
+
+### Desactivar una especialidades
+DELETE http://localhost:3001/obra_social/6
+
+### Activar una especialidades
+PATCH  http://localhost:3001/obra_social/6/activate
+
+### Actualizar una especialidades
+PATCH http://localhost:3001/obra_social/6/update
+Content-Type: application/json
+
+{
+  "nombre": "PRUEBA"
+ 
+}
