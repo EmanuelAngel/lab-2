@@ -78,11 +78,11 @@ export class ObraSocialPacienteModel {
 
   // Crear una nueva relación obra social-paciente
   static async create ({ input }) {
-    const { idPaciente, idObraSocial } = input
+    const { id_paciente, id_obra_social } = input
     try {
-      await con.query(INSERT_QUERY, [idPaciente, idObraSocial])
+      await con.query(INSERT_QUERY, [id_paciente, id_obra_social])
 
-      const [rows] = await con.query(SELECT_BY_ID_QUERY, [idPaciente, idObraSocial])
+      const [rows] = await con.query(SELECT_BY_ID_QUERY, [id_paciente, id_obra_social])
 
       return formatUpdatedAt(rows[0]) // Aplicar el formato a la fila
     } catch (error) {
@@ -137,7 +137,13 @@ export class ObraSocialPacienteModel {
 
       await con.query(updateQuery, updateValues)
 
-      const [rows] = await con.query(SELECT_BY_ID_QUERY, [idPaciente, idObraSocial])
+      input.id_paciente = input.id_paciente || idPaciente
+      input.id_obra_social = input.id_obra_social || idObraSocial
+
+      console.log('input:', input)
+
+      const [rows] = await con.query(SELECT_BY_ID_QUERY,
+        [input.id_paciente, input.id_obra_social])
 
       if (!rows.length) return null
 

@@ -9,7 +9,7 @@ POST http://localhost:3001/obra_social_paciente
 Content-Type: application/json
 
 {
-  "id_paciente":1,
+  "id_paciente":5,
   "id_obra_social": 4
 }
 
@@ -20,13 +20,13 @@ DELETE http://localhost:3001/obra_social_paciente/1/3
 PATCH http://localhost:3001/obra_social_paciente/1/3/activate
 
 ### Actualizar parcialmente una relación obra social-paciente
-PATCH http://localhost:3001/obra_social_paciente/1/4/update
+PATCH http://localhost:3001/obra_social_paciente/5/2/update
 Content-Type: application/json
 
 // OJO ACA, funciona, envia los datos, los actualiza en BD pero esta capturando el error de no encontrar los primeros datos de busqueda, hay q cambiar la logica del metodo
 
 {
-  "id_obra_social": 2
+  "id_paciente": 4
 }
 
 ### Obtener todas los pacientes que tengan una determinada obra social
