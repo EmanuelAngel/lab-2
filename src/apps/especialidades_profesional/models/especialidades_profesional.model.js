@@ -109,7 +109,13 @@ export class EspecialidadesProfesionalModel {
 
       await con.query(updateQuery, updateValues)
 
-      const [especialidadProfesional] = await con.query('SELECT * FROM especialidades_profesional WHERE id_profesional = ? AND id_especialidad = ?;', [id_profesional, id_especialidad])
+      // id_especialidad || (id_especialidad = input.id_especialidad)
+      // id_profesional || (id_profesional = input.id_profesional)
+
+      input.id_especialidad = input.id_especialidad || id_especialidad
+      input.id_profesional = input.id_profesional || id_profesional
+
+      const [especialidadProfesional] = await con.query('SELECT * FROM especialidades_profesional WHERE id_profesional = ? AND id_especialidad = ?;', [input.id_profesional, input.id_especialidad])
       return especialidadProfesional.length ? especialidadProfesional[0] : null
     } catch (error) {
       console.error('Error al actualizar la relación especialidad-profesional:', error)
@@ -139,3 +145,36 @@ export class EspecialidadesProfesionalModel {
     }
   }
 }
+
+// updateRelation = async (req, res) => {
+//   try {
+//     const { id_profesional, id_especialidad } = req.params
+//     const { new_id_especialidad } = req.body // El nuevo valor del id_especialidad
+
+//     // Validar los datos de entrada
+//     if (!new_id_especialidad) {
+//       return res.status(400).json({ error: 'Debes proporcionar un nuevo id_especialidad' })
+//     }
+
+//     // Verificar si la relación actual existe
+//     const existingRelation = await EspecialidadesProfesionalModel.getById(id_profesional, id_especialidad)
+//     if (!existingRelation) {
+//       return res.status(404).json({ error: 'Relación no encontrada' })
+//     }
+
+//     // Eliminar la relación actual
+//     await EspecialidadesProfesionalModel.deactivate({ idProfesional: id_profesional, idEspecialidad: id_especialidad })
+
+//     // Crear la nueva relación con el nuevo id_especialidad
+//     const newRelation = await EspecialidadesProfesionalModel.create({
+//       idProfesional: id_profesional,
+//       idEspecialidad: new_id_especialidad,
+//       estado: existingRelation.estado // Mantener el estado actual
+//     })
+
+//     return res.json({ updated: newRelation })
+//   } catch (error) {
+//     console.error('Error al actualizar la relación especialidad-profesional:', error)
+//     return res.status(500).json({ error: 'Error interno del servidor al actualizar la relación' })
+//   }
+// }

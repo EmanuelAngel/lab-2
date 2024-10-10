@@ -20,11 +20,11 @@ DELETE http://localhost:3001/especialidades_profesional/1/2
 PATCH http://localhost:3001/especialidades_profesional/1/2/activate
 
 ### Actualizar parcialmente una relación especialidad-profesional
-PATCH http://localhost:3001/especialidades_profesional/1/4/update
+PATCH http://localhost:3001/especialidades_profesional/2/5/update
 Content-Type: application/json
 
 {
-  "id_especialidad": 3
+  "id_profesional": 1
 }
 
 ### Obtener todas las especialidades de un profesional
