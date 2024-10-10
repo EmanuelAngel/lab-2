@@ -114,4 +114,18 @@ export class UsuariosModel {
       throw new Error('Error al actualizar el usuario')
     }
   }
+
+  // Obtener un usuario por nombre de usuario
+  static async getByNombreUsuario ({ nombre_usuario }) {
+    try {
+      const [rows] = await con.query(`
+        SELECT * FROM usuarios
+        WHERE nombre_usuario = ?;`,
+      [nombre_usuario])
+      return rows.length ? rows[0] : null
+    } catch (error) {
+      console.error('Error al obtener el usuario por nombre de usuario:', error)
+      throw new Error('Error al obtener el usuario')
+    }
+  }
 }

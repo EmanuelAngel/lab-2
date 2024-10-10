@@ -35,3 +35,6 @@ Content-Type: application/json
 {
   "nombre": "San Martin"
 }
+
+### Obtener un usuario por su nombre de usuario
+GET http://localhost:3001/usuarios/username/AngelEmanuel444

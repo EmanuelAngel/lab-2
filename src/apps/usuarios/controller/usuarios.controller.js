@@ -123,4 +123,27 @@ export class UsuariosController {
       return res.status(500).json({ error: 'Error interno del servidor al actualizar el usuario' })
     }
   }
+
+  getByNombreUsuario = async (req, res) => {
+    const { nombre_usuario } = req.params
+
+    try {
+      const result = validatePartialUsuarios({ nombre_usuario })
+
+      if (!result.success) {
+        return res.status(422).json({ error: result.error.issues })
+      }
+
+      const usuario = await UsuariosModel.getByNombreUsuario({ nombre_usuario })
+
+      if (!usuario) {
+        return res.status(404).json({ error: 'Usuario por nombre de usuario no encontrado' })
+      }
+
+      return res.json(usuario)
+    } catch (error) {
+      console.error('Error al obtener el usuario por nombre de usuario:', error)
+      return res.status(500).json({ error: 'Error interno del servidor al obtener el usuario' })
+    }
+  }
 }

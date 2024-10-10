@@ -13,6 +13,7 @@ export function usuariosRouter () {
   router.delete('/:id', usuariosController.deactivate)
   router.patch('/:id/activate', usuariosController.activate) // Ruta para activar
   router.patch('/:id/update', usuariosController.partiallyUpdate) // Ruta para actualización parcial (modificada)
+  router.get('/username/:nombre_usuario', usuariosController.getByNombreUsuario)
 
   return router
 }
