@@ -1,11 +1,12 @@
 {
   "name": "lab-2",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "module",
   "main": "./src/.bin/www",
   "scripts": {
     "start": "node ./src/.bin/www",
     "dev": "nodemon ./src/.bin/www",
+    "dev:auth": "nodemon ./src/.bin/server.js",
     "postinstall": "npm run copy-assets",
     "copy-assets": "mkdirp public/bootstrap/css public/bootstrap/js public/popper && copyfiles -u 2 \"node_modules/bootstrap/dist/css/bootstrap.min.css\" \"public/bootstrap/css/\" && copyfiles -u 2 \"node_modules/bootstrap/dist/js/bootstrap.bundle.min.js\" \"public/bootstrap/js/\" && copyfiles -u 2 \"node_modules/@popperjs/core/dist/umd/popper.min.js\" \"public/popper/\""
   },
