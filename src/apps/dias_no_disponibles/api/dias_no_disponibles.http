@@ -1,0 +1,43 @@
+### Obtener todos los días no disponibles
+GET http://localhost:3001/dias_no_disponibles
+
+### Obtener un día no disponible por su id
+GET http://localhost:3001/dias_no_disponibles/1
+
+### Crear un nuevo día no disponible
+POST http://localhost:3001/dias_no_disponibles
+Content-Type: application/json
+
+{
+  "id_agenda_base": 1,
+  "fecha": "2024-10-15",
+  "motivo": "Día feriado",
+  "tipo_bloqueo": "Feriado"
+}
+
+### Actualizar parcialmente un día no disponible
+PATCH http://localhost:3001/dias_no_disponibles/16/update
+Content-Type: application/json
+
+{
+  "id_agenda_base": 1
+}
+
+### Eliminar un día no disponible
+DELETE http://localhost:3001/dias_no_disponibles/1
+
+### Buscar por día, mes y año
+GET http://localhost:3001/dias_no_disponibles/fecha/15/10/2024
+
+### Buscar por mes y año
+GET http://localhost:3001/dias_no_disponibles/mes/10/2024
+
+### Buscar por palabra en el motivo
+GET http://localhost:3001/dias_no_disponibles/motivo/feriado
+
+### Buscar por rango de fechas
+GET http://localhost:3001/dias_no_disponibles/rango/2024-7-01/2024-10-31
+
+### Contar días no disponibles en un mes
+GET http://localhost:3001/dias_no_disponibles/mes/07/2024/count
+
