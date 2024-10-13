@@ -87,10 +87,6 @@ export class EspecialidadesProfesionalController {
 
   // Actualizar parcialmente una relación especialidad-profesional
   partiallyUpdate = async (req, res) => {
-    // ESTE ES PARA QUE LO MIREMOS EMA, recibe el 404, realiza la modificación pero al cambiar de id_especialidad ejemplo ya pierde la referencia, habria q buscar como cambiarlo
-    // VER ACA
-    // VER ACA
-    // VER ACA (para no olvidar :V)
     try {
       const result = validatePartialEspecialidadesProfesional(req.body)
 

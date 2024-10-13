@@ -1,0 +1,33 @@
+### Obtener todas las sucursales
+GET http://localhost:3001/sucursal
+
+### Obtener una sucursal por su id
+GET http://localhost:3001/sucursal/2
+
+### Crear una sucursal
+POST http://localhost:3001/sucursal
+Content-Type: application/json
+
+{
+  "nombre": "Sucursal Central prueba2",
+  "direccion": "Av. España 456, San Luis, San Luis",
+  "telefono": "+549266456789",
+  "email": "sucursalcentral@prueba.com"
+}
+
+### Desactivar una sucursal
+DELETE http://localhost:3001/sucursal/2
+
+### Activar una sucursal
+PATCH http://localhost:3001/sucursal/2/activate
+
+### Actualizar una sucursal
+PATCH http://localhost:3001/sucursal/2/update
+Content-Type: application/json
+
+{
+  "direccion": "Av. Perón 123, San Luis, San Luis"
+}
+
+### Obtener una sucursal por su nombre
+GET http://localhost:3001/sucursal/nombre/Sucursal Central prueba2
