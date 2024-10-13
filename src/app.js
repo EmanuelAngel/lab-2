@@ -17,6 +17,7 @@ import { obraSocialRouter } from './apps/obra_social/routes/obra_social.routes.j
 import { obraSocialPacienteRouter } from './apps/obra_social_paciente/routes/obra_social_paciente.routes.js'
 import { sucursalRouter } from './apps/sucursal/routes/sucursal.routes.js'
 import { agendaBaseRouter } from './apps/agenda_base/routes/agenda_base.routes.js'
+import { estadoAgendaRouter } from './apps/estado_agenda/routes/estado_agenda.routes.js'
 
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -45,6 +46,7 @@ export function createApp () {
   app.use('/obra_social_paciente', obraSocialPacienteRouter())
   app.use('/sucursal', sucursalRouter())
   app.use('/agenda_base', agendaBaseRouter())
+  app.use('/estado_agenda', estadoAgendaRouter())
 
   // app.use('/users', userRouter({ userModel }))
 

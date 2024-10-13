@@ -1,0 +1,27 @@
+### Obtener todos los estados de agenda
+GET http://localhost:3001/estado_agenda
+
+### Obtener un estado de agenda por su id
+GET http://localhost:3001/estado_agenda/1
+
+### Crear un nuevo estado de agenda
+POST http://localhost:3001/estado_agenda
+Content-Type: application/json
+
+{
+  "nombre_estado": "prueba"
+}
+
+### Actualizar parcialmente un estado de agenda por id
+PATCH http://localhost:3001/estado_agenda/1/update
+Content-Type: application/json
+
+{
+  "nombre_estado": "Activa"
+}
+
+### Eliminar (desactivar) un estado de agenda
+DELETE http://localhost:3001/estado_agenda/1
+
+### Obtener un estado de agenda por su nombre
+GET http://localhost:3001/estado_agenda/nombre/Activa
