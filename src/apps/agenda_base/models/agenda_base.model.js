@@ -37,12 +37,12 @@ export class AgendaBaseModel {
 
   // Crear una nueva agenda base
   static async create ({ input }) {
-    const { id_profesional, id_sucursal, id_especialidad, estado = 1 } = input
+    const { id_profesional, id_sucursal, id_especialidad, id_clasificacion, estado = 1, id_estado_agenda = 1 } = input
     try {
       await con.query(
-        `INSERT INTO agenda_base (id_profesional, id_sucursal, id_especialidad, estado)
-        VALUES (?, ?, ?, ?)`,
-        [id_profesional, id_sucursal, id_especialidad, estado]
+        `INSERT INTO agenda_base (id_profesional, id_sucursal, id_especialidad, id_clasificacion, estado, id_estado_agenda)
+        VALUES (?, ?, ?, ?, ?, ?)`,
+        [id_profesional, id_sucursal, id_especialidad, id_clasificacion, estado, id_estado_agenda]
       )
       const [agendas] = await con.query('SELECT * FROM agenda_base WHERE id_profesional = ? AND id_sucursal = ?;', [id_profesional, id_sucursal])
       return agendas[0]
@@ -52,7 +52,7 @@ export class AgendaBaseModel {
     }
   }
 
-  // Actualizar parcialmente una relación agenda base
+  // Actualizar parcialmente una agenda base
   static async partiallyUpdate ({ id_profesional, id_sucursal, id_especialidad, input }) {
     const updateFields = []
     const updateValues = []
@@ -91,8 +91,8 @@ export class AgendaBaseModel {
       const [agendaBase] = await con.query('SELECT * FROM agenda_base WHERE id_profesional = ? AND id_sucursal = ? AND id_especialidad = ?;', [input.id_profesional, input.id_sucursal, input.id_especialidad])
       return agendaBase.length ? agendaBase[0] : null
     } catch (error) {
-      console.error('Error al actualizar la relación agenda base:', error)
-      throw new Error('Error al actualizar la relación agenda base')
+      console.error('Error al actualizar la agenda base:', error)
+      throw new Error('Error al actualizar la agenda base')
     }
   }
 
@@ -201,6 +201,28 @@ export class AgendaBaseModel {
     } catch (error) {
       console.error('Error al obtener las agendas del profesional para la especialidad:', error)
       throw new Error('Error al obtener las agendas del profesional para la especialidad')
+    }
+  }
+
+  // Obtener todas las agendas según el id_clasificacion
+  static async getByClasificacion ({ id_clasificacion }) {
+    try {
+      const [rows] = await con.query('SELECT * FROM agenda_base WHERE id_clasificacion = ? AND estado = 1;', [id_clasificacion])
+      return rows
+    } catch (error) {
+      console.error('Error al obtener las agendas por clasificación:', error)
+      throw new Error('Error al obtener las agendas por clasificación')
+    }
+  }
+
+  // Obtener agendas combinando id_clasificacion y id_estado_agenda
+  static async getByClasificacionAndEstadoAgenda ({ id_clasificacion, id_estado_agenda }) {
+    try {
+      const [rows] = await con.query('SELECT * FROM agenda_base WHERE id_clasificacion = ? AND id_estado_agenda = ? AND estado = 1;', [id_clasificacion, id_estado_agenda])
+      return rows
+    } catch (error) {
+      console.error('Error al obtener las agendas por clasificación y estado:', error)
+      throw new Error('Error al obtener las agendas por clasificación y estado')
     }
   }
 }

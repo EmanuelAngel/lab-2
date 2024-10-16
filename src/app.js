@@ -19,6 +19,10 @@ import { sucursalRouter } from './apps/sucursal/routes/sucursal.routes.js'
 import { agendaBaseRouter } from './apps/agenda_base/routes/agenda_base.routes.js'
 import { estadoAgendaRouter } from './apps/estado_agenda/routes/estado_agenda.routes.js'
 import { diasNoDisponiblesRouter } from './apps/dias_no_disponibles/routes/dias_no_disponibles.routes.js'
+import { clasificacionConsultaRouter } from './apps/clasificacion_consulta/routes/clasificacion_consulta.routes.js'
+import { turnoEspecialRouter } from './apps/turno_especial/routes/turno_especial.routes.js'
+import { estadosTurnoRouter } from './apps/estados_turno/routes/estados_turno.routes.js'
+import { turnosRouter } from './apps/turnos/routes/turnos.routes.js'
 
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -49,8 +53,10 @@ export function createApp () {
   app.use('/agenda_base', agendaBaseRouter())
   app.use('/estado_agenda', estadoAgendaRouter())
   app.use('/dias_no_disponibles', diasNoDisponiblesRouter())
-
-  app.use('/dias_no_disponibles', diasNoDisponiblesRouter())
+  app.use('/clasificacion_consulta', clasificacionConsultaRouter())
+  app.use('/turno_especial', turnoEspecialRouter())
+  app.use('/estados_turno', estadosTurnoRouter())
+  app.use('/turnos', turnosRouter())
 
   // app.use('/users', userRouter({ userModel }))
 

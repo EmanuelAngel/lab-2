@@ -1,0 +1,28 @@
+### Obtener todas las clasificaciones
+GET http://localhost:3001/clasificacion_consulta
+
+### Obtener una clasificación por su id
+GET http://localhost:3001/clasificacion_consulta/1
+
+### Crear una nueva clasificación
+POST http://localhost:3001/clasificacion_consulta
+Content-Type: application/json
+
+{
+  "nombre_clasificacion": "Normal",
+  "descripcion": "Consulta médica general"
+}
+
+### Actualizar parcialmente una clasificación
+PATCH http://localhost:3001/clasificacion_consulta/1
+Content-Type: application/json
+
+{
+  "descripcion": "probando actualización de la descripción"
+}
+
+### Eliminar una clasificación
+DELETE http://localhost:3001/clasificacion_consulta/1
+
+### Buscar clasificaciones por nombre
+GET http://localhost:3001/clasificacion_consulta/nombre/mal

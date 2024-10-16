@@ -58,3 +58,9 @@ GET http://localhost:3001/agenda_base/profesional/3/especialidad/2
 
 ### Obtener agendas por estado
 GET http://localhost:3001/agenda_base/estado/1
+
+### Obtener agendas por clasificación
+GET http://localhost:3001/agenda_base/clasificacion/1
+
+### Obtener agendas por clasificación y estado
+GET http://localhost:3001/agenda_base/clasificacion/1/estado/1

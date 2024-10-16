@@ -206,4 +206,28 @@ export class AgendaBaseController {
       return res.status(500).json({ error: 'Error interno del servidor' })
     }
   }
+
+  // Obtener agendas por clasificación
+  getByClasificacion = async (req, res) => {
+    try {
+      const { id_clasificacion } = req.params
+      const agendas = await AgendaBaseModel.getByClasificacion({ id_clasificacion })
+      return res.json(agendas)
+    } catch (error) {
+      console.error('Error al obtener agendas por clasificación:', error)
+      return res.status(500).json({ error: 'Error interno del servidor' })
+    }
+  }
+
+  // Obtener agendas por clasificación y estado
+  getByClasificacionAndEstadoAgenda = async (req, res) => {
+    try {
+      const { id_clasificacion, id_estado_agenda } = req.params
+      const agendas = await AgendaBaseModel.getByClasificacionAndEstadoAgenda({ id_clasificacion, id_estado_agenda })
+      return res.json(agendas)
+    } catch (error) {
+      console.error('Error al obtener agendas por clasificación y estado:', error)
+      return res.status(500).json({ error: 'Error interno del servidor' })
+    }
+  }
 }

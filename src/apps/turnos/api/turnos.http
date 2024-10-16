@@ -1,0 +1,69 @@
+### Obtener todos los turnos
+GET http://localhost:3001/turnos
+
+### Obtener un turno por su ID (Asegúrate de que exista el ID)
+GET http://localhost:3001/turnos/1
+
+### Crear un nuevo turno
+POST http://localhost:3001/turnos
+Content-Type: application/json
+
+{
+  "id_agenda_base": 1,
+  "id_paciente": 1,
+  "id_profesional": 1,
+  "id_especialidad": 1,
+  "id_estado_turno": 1,
+  "fecha": "2024-10-17",
+  "horario_inicio": "09:00:00",
+  "horario_fin": "10:00:00",
+  "motivo_consulta": "Consulta inicial",
+  "es_sobreturno": false
+}
+
+### Actualizar un turno (Asegúrate de que exista el ID)
+PATCH http://localhost:3001/turnos/1
+Content-Type: application/json
+
+{
+  "motivo_consulta": "Consulta de seguimiento"
+}
+
+### Eliminar un turno (Asegúrate de que exista el ID)
+DELETE http://localhost:3001/turnos/1
+
+### Obtener turnos por fecha
+GET http://localhost:3001/turnos/fecha/2024-10-17
+
+### Obtener turnos por paciente
+GET http://localhost:3001/turnos/paciente/1
+
+### Obtener turnos por especialidad
+GET http://localhost:3001/turnos/especialidad/1
+
+### Contar turnos por fecha
+GET http://localhost:3001/turnos/count/2024-10-17
+
+### Obtener turnos por rango de horas
+GET http://localhost:3001/turnos/horario/09:00:00/11:00:00
+
+### Obtener turnos de un profesional en una semana
+GET http://localhost:3001/turnos/profesional/1/semana/2024-10-16/2024-10-23
+
+### Obtener turnos de una especialidad en una semana
+GET http://localhost:3001/turnos/especialidad/1/semana/2024-10-16/2024-10-23
+
+### Obtener turnos de un profesional entre dos fechas
+GET http://localhost:3001/turnos/profesional/1/rango/2024-10-16/2024-10-23
+
+### Obtener turnos de una especialidad entre dos fechas
+GET http://localhost:3001/turnos/especialidad/1/rango/2024-10-16/2024-10-23
+
+### Obtener turnos de un profesional en un mes específico
+GET http://localhost:3001/turnos/profesional/1/mes/10/2024
+
+### Obtener turnos de una especialidad en un mes específico
+GET http://localhost:3001/turnos/especialidad/1/mes/10/2024
+
+### Obtener turnos por motivo de consultaW
+GET http://localhost:3001/turnos/motivo/seguimiento

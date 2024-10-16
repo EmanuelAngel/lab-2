@@ -1,0 +1,31 @@
+### Obtener todos los estados de turno activos
+GET http://localhost:3001/estados_turno
+
+### Obtener un estado de turno por su ID
+GET http://localhost:3001/estados_turno/1
+
+### Crear un nuevo estado de turno
+POST http://localhost:3001/estados_turno
+Content-Type: application/json
+
+{
+  "nombre_estado": "Normal",
+  "estado_activo": 1
+}
+
+### Desactivar un estado de turno
+PATCH http://localhost:3001/estados_turno/1/deactivate
+
+### Activar un estado de turno
+PATCH http://localhost:3001/estados_turno/1/activate
+
+### Modificar el nombre de un estado de turno
+PATCH http://localhost:3001/estados_turno/1/update_nombre
+Content-Type: application/json
+
+{
+  "nombre_estado": "Urgente"
+}
+
+### Buscar estados de turno por nombre
+GET http://localhost:3001/estados_turno/search/Confirmado

@@ -33,7 +33,7 @@ GET http://localhost:3001/dias_no_disponibles/fecha/15/10/2024
 GET http://localhost:3001/dias_no_disponibles/mes/10/2024
 
 ### Buscar por palabra en el motivo
-GET http://localhost:3001/dias_no_disponibles/motivo/feriado
+GET http://localhost:3001/dias_no_disponibles/motivo/santo
 
 ### Buscar por rango de fechas
 GET http://localhost:3001/dias_no_disponibles/rango/2024-7-01/2024-10-31

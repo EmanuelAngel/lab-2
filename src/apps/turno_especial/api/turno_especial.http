@@ -1,0 +1,44 @@
+### Obtener todos los turnos especiales
+GET http://localhost:3001/turno_especial
+
+### Obtener un turno especial por su id
+GET http://localhost:3001/turno_especial/1
+
+### Crear un nuevo turno especial
+POST http://localhost:3001/turno_especial
+Content-Type: application/json
+
+{
+  "id_agenda_base": 1,
+  "fecha": "2024-10-20",
+  "horario_inicio": "10:00:00",
+  "horario_fin": "11:00:00",
+  "id_estado_turno": 1,
+  "motivo": "Consulta de seguimiento"
+}
+
+### Actualizar parcialmente un turno especial
+PATCH http://localhost:3001/turno_especial/1
+Content-Type: application/json
+
+{
+  "motivo": "Consulta inicial"
+}
+
+### Eliminar un turno especial
+DELETE http://localhost:3001/turno_especial/1
+
+### Obtener turnos especiales por fecha
+GET http://localhost:3001/turno_especial/fecha/2024-10-20
+
+### Obtener turnos especiales por agenda base
+GET http://localhost:3001/turno_especial/agenda/2
+
+### Obtener turnos especiales en un rango de fechas
+GET http://localhost:3001/turno_especial/rango/2024-10-20/2024-10-30
+
+### Obtener turnos especiales por estado
+GET http://localhost:3001/turno_especial/estado/2
+
+### Contar turnos especiales por fecha
+GET http://localhost:3001/turno_especial/contar/2024-10-20

@@ -19,5 +19,8 @@ export function agendaBaseRouter () {
   router.get('/profesional/:id_profesional/sucursal/:id_sucursal', agendaBaseController.getByProfesionalAndSucursal)
   router.get('/profesional/:id_profesional/especialidad/:id_especialidad', agendaBaseController.getByProfesionalAndEspecialidad)
   router.get('/estado/:id_estado_agenda', agendaBaseController.getByEstadoAgenda)
+  router.get('/clasificacion/:id_clasificacion', agendaBaseController.getByClasificacion)
+  router.get('/clasificacion/:id_clasificacion/estado/:id_estado_agenda', agendaBaseController.getByClasificacionAndEstadoAgenda)
+
   return router
 }
