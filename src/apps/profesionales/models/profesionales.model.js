@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import mysql from 'mysql2/promise'
+import bcrypt from 'bcrypt'
 
 const DEFAULT_CONFIG = {
   host: process.env.DB_HOST,
@@ -131,6 +132,263 @@ export class ProfesionalesModel {
       console.error('Error al actualizar el profesional:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al actualizar el profesional')
+    }
+  }
+
+  static async getAllWithUser () {
+    try {
+      // Intentamos obtener todos los profesionales agrupando sus especialidades como un arreglo
+      const [rows] = await con.query(/* sql */`
+        SELECT 
+          p.id_profesional,
+          p.estado AS estado_profesional,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado AS estado_usuario,
+          IF(p.estado = 1, 
+            JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'especialidad', e.nombre,
+                'matricula', ep.matricula
+              )
+            ),
+            NULL
+          ) AS especialidades
+        FROM profesionales p
+        LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+        LEFT JOIN especialidades_profesional ep ON p.id_profesional = ep.id_profesional
+        LEFT JOIN especialidades e ON ep.id_especialidad = e.id_especialidad
+        WHERE ep.estado = 1 AND e.estado = 1
+        GROUP BY 
+          p.id_profesional,
+          p.estado,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado
+      `)
+      return rows
+    } catch (error) {
+      console.error('Error al obtener todos los profesionales:', error)
+      throw new Error('Error al obtener los profesionales')
+    }
+  }
+
+  static async getByIdWithUser ({ id }) {
+    try {
+      // Intentamos obtener el profesional por ID, agrupando sus especialidades como un arreglo
+      const [rows] = await con.query(`
+        SELECT 
+          p.id_profesional,
+          p.estado AS estado_profesional,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado AS estado_usuario,
+          IF(p.estado = 1, 
+            JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'id_especialidad', e.id_especialidad,
+                'especialidad', e.nombre,
+                'matricula', ep.matricula
+              )
+            ),
+            NULL
+          ) AS especialidades
+        FROM profesionales p
+        LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+        LEFT JOIN especialidades_profesional ep ON p.id_profesional = ep.id_profesional
+        LEFT JOIN especialidades e ON ep.id_especialidad = e.id_especialidad
+        WHERE p.id_profesional = ?
+        GROUP BY 
+          p.id_profesional,
+          p.estado,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado
+      `, [id])
+
+      // Si no se encuentra el profesional, devolvemos null
+      return rows.length ? rows[0] : null
+    } catch (error) {
+      console.error('Error al obtener el profesional por ID:', error)
+      throw new Error('Error al obtener el profesional')
+    }
+  }
+
+  static async createWithUser ({ input }) {
+    try {
+      con.beginTransaction()
+
+      const {
+        nombre_usuario,
+        contraseña,
+        nombre,
+        apellido,
+        dni,
+        telefono,
+        direccion,
+        email,
+        especialidades
+      } = input
+
+      const hashedPassword = await bcrypt.hash(contraseña, 10)
+
+      // Creamos el usuario
+      const [user] = await con.execute(/* sql */`
+        INSERT INTO usuarios (
+            id_rol,
+            nombre_usuario,
+            contraseña,
+            nombre,
+            apellido,
+            dni,
+            telefono,
+            direccion,
+            email,
+            estado
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    `, [3, nombre_usuario, hashedPassword, nombre, apellido, dni, telefono, direccion, email])
+
+      // Creamos el profesional
+      const [profesional] = await con.query(`
+        INSERT INTO profesionales (
+          id_usuario,
+          estado
+          )
+          VALUES (?, 1)
+      `, [user.insertId])
+
+      // Creamos la relación especialidades profesionales
+      for (const especialidad of especialidades) {
+        await con.execute(/* sql */`
+          INSERT INTO especialidades_profesional (
+            id_profesional,
+            id_especialidad,
+            matricula,
+            estado
+            )
+            VALUES (?, ?, ?, 1)
+        `, [profesional.insertId, especialidad.especialidad_id, especialidad.matricula])
+      }
+
+      con.commit()
+
+      return await ProfesionalesModel.getById({ id: profesional.insertId })
+    } catch (error) {
+      con.rollback()
+      throw error
+    }
+  }
+
+  static async updateWithUser ({ id, input }) {
+    try {
+      con.beginTransaction()
+
+      const {
+        nombre_usuario,
+        contraseña,
+        nombre,
+        apellido,
+        dni,
+        telefono,
+        direccion,
+        email,
+        especialidades
+      } = input
+
+      // Obtenemos el id_usuario del profesional
+      const [[profesional]] = await con.execute(/* sql */`
+        SELECT id_usuario 
+        FROM profesionales 
+        WHERE id_profesional = ?
+      `, [id])
+
+      if (!profesional) {
+        return null
+      }
+
+      // Si viene contraseña la hasheamos, si no usamos la existente
+      let passwordQuery = ''
+      let passwordParams = []
+
+      if (contraseña) {
+        const hashedPassword = await bcrypt.hash(contraseña, 10)
+        passwordQuery = 'contraseña = ?,'
+        passwordParams = [hashedPassword]
+      }
+
+      // Actualizamos el usuario
+      await con.execute(/* sql */`
+        UPDATE usuarios 
+        SET nombre_usuario = ?,
+            ${passwordQuery}
+            nombre = ?,
+            apellido = ?,
+            dni = ?,
+            telefono = ?,
+            direccion = ?,
+            email = ?
+        WHERE id_usuario = ?
+      `, [
+        nombre_usuario,
+        ...passwordParams,
+        nombre,
+        apellido,
+        dni,
+        telefono,
+        direccion,
+        email,
+        profesional.id_usuario
+      ])
+
+      // Eliminamos las especialidades existentes
+      await con.execute(/* sql */`
+        DELETE FROM especialidades_profesional
+        WHERE id_profesional = ?
+      `, [id])
+
+      // Insertamos las nuevas especialidades
+      for (const especialidad of especialidades) {
+        await con.execute(/* sql */`
+          INSERT INTO especialidades_profesional (
+            id_profesional,
+            id_especialidad,
+            matricula,
+            estado
+          )
+          VALUES (?, ?, ?, 1)
+        `, [id, especialidad.especialidad_id, especialidad.matricula])
+      }
+
+      con.commit()
+
+      return await ProfesionalesModel.getByIdWithUser({ id })
+    } catch (error) {
+      con.rollback()
+      throw error
     }
   }
 }

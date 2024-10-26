@@ -26,3 +26,43 @@ Content-Type: application/json
 {
   "nombre": "Juana"
 }
+
+### Crear un profesional con usuario y especialidades
+POST http://localhost:3001/profesionales/users
+Content-Type: application/json
+
+{
+  "nombre_usuario": "Juana",
+  "nombre": "Juana",
+  "contraseña": "juancita",
+  "apellido": "Perez",
+  "dni": "12345678",
+  "telefono": "12345678",
+  "direccion": "C/ Juan Perez, 1",
+  "email": "juana@gmail.com",
+  "especialidades": [
+    {
+      "especialidad_id": 1,
+      "matricula": "12345678"
+    }
+  ]
+}
+
+### Actualizar un profesional con usuario y especialidades
+PUT http://localhost:3001/profesionales/14
+Content-Type: application/json
+
+{
+  "nombre_usuario": "dr_ppeito",
+  "contraseña": "123456",
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "dni": "9999999",
+  "telefono": "1234560",
+  "direccion": "Calle 123",
+  "email": "pepepepito@example.com",
+  "especialidades": [
+    { "especialidad_id": 1, "matricula": "MAT123" },
+    { "especialidad_id": 2, "matricula": "MAT456" }
+  ]
+}

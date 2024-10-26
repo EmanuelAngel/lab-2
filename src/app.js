@@ -4,6 +4,22 @@ import express from 'express'
 import morgan from 'morgan'
 import { corsMiddleware } from './middlewares/cors.js'
 
+/*
+Auth
+import cookieParser from 'cookie-parser'
+import verifyToken from './middlewares/auth/verifyToken.js'
+import { authRouter } from './apps/auth/routes/auth.routes.js'
+
+Roles Middlewares
+import isLoggedIn from './middlewares/auth/isLoggedIn.js'
+import isAdmin from './middlewares/auth/isAdmin.js'
+import isSecre from './middlewares/auth/isSecre.js'
+import isProfesional from './middlewares/auth/isProfesional.js'
+
+*/
+
+import { panelRouter } from './apps/panel/routes/panel.routes.js'
+
 // import { userRouter } from './apps/users/routes/user.routes.js'
 import { profesionalesRouter } from './apps/profesionales/routes/profesionales.routes.js'
 import { especialidadesRouter } from './apps/especialidades/routes/especialidades.routes.js'
@@ -34,10 +50,16 @@ export function createApp () {
   app.use(corsMiddleware())
   app.use(express.json())
   app.use(express.static(join(__dirname, '..', 'public')))
+  // (Auth) app.use(cookieParser())
+  app.set('view engine', 'pug')
 
   app.get('/', (_req, res) =>
-    res.sendFile(join(__dirname, '..', 'public', 'html', 'index.html'))
+    res.render('pages/index', { title: 'Inicio' })
   )
+
+  // (Auth) app.use('/auth', authRouter())
+
+  app.use('/panel', panelRouter())
 
   app.use('/profesionales', profesionalesRouter())
   app.use('/especialidades', especialidadesRouter())
@@ -59,6 +81,10 @@ export function createApp () {
   app.use('/turnos', turnosRouter())
 
   // app.use('/users', userRouter({ userModel }))
+
+  app.use((_req, res) => {
+    res.status(404).json({ error: 'No se ha encontrado el endpoint' })
+  })
 
   return app
 }
