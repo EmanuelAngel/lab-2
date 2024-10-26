@@ -1,0 +1,236 @@
+extends ../../../layouts/base-layout
+
+block styles 
+  style.
+    th {
+      text-align: center;
+    }
+
+block navbar
+  include ../../../lib/NavBar
+
+block content
+  .row
+    .col-md-12.d-grid.gap-4
+      h1 Profesionales
+      a.btn.btn-primary.d-flex.gap-2.justify-content-center(
+        style="width: max-content",
+        href="/panel/profesionales/register"
+        )
+        i.bi.bi-plus
+        |Registrar Profesional
+        
+      .table-responsive
+        table.table.table-striped.table-bordered.align-middle
+          thead
+            tr.align-middle
+              th Nombre de Usuario
+              th Nombre
+              th Apellido
+              th DNI
+              th Especialidad - Matrícula
+              th Teléfono 
+              th Dirección
+              th E-mail
+              th Estado
+              th Acciones
+          tbody
+            each profesional in profesionales
+              tr 
+                td= profesional.nombre_usuario
+                td= profesional.nombre
+                td= profesional.apellido
+                td= profesional.dni
+                td
+                  if profesional.especialidades != null 
+                    if profesional.especialidades.length > 0
+                      .d-flex.flex-column.gap-2
+                        each especialidad in profesional.especialidades 
+                          span.badge.bg-secondary
+                            |  #{especialidad.especialidad || '?'}
+                            | - 
+                            |  #{especialidad.matricula || '?'}
+                    else
+                      span Sin Especialidad
+                  else
+                    span Sin Especialidades
+
+                td= profesional.telefono
+                td= profesional.direccion
+                td= profesional.email 
+                td 
+                  if profesional.estado_profesional
+                    span.badge.bg-success Activo
+                  else
+                    span.badge.bg-danger Inactivo
+                td
+                  a.btn.btn-outline-primary.border-0.d-flex.gap-2.mb-2(
+                    href=`/panel/profesionales/edit/${profesional.id_profesional}`
+                    )
+                    i.bi.bi-pencil
+                    | Editar
+                  if profesional.estado_profesional
+                    button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-profesional(
+                      data-id=profesional.id_profesional
+                    )
+                      i.bi.bi-ban
+                      | Desactivar
+                  else
+                    a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-profesional(
+                      data-id=profesional.id_profesional
+                      )
+                      i.bi.bi-check-lg  
+                      | Activar
+
+  div.modal.fade#deactivateModal(
+    tabindex="-1",
+    aria-labelledby="deactivateModalLabel",
+    aria-hidden="true"
+  )
+    div.modal-dialog.modal-dialog-centered
+      div.modal-content
+        div.modal-header
+          h5.modal-title#deactivateModalLabel Confirmar Desactivación
+        div.modal-body
+          p ¿Está seguro que desea desactivar este profesional?
+        div.modal-footer
+          button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+          button.btn.btn-danger#confirmDeactivate(type="button") Desactivar
+
+  div.modal.fade#activateModal(
+    tabindex="-1",
+    aria-labelledby="activateModalLabel",
+    aria-hidden="true"
+  )
+    div.modal-dialog.modal-dialog-centered
+      div.modal-content
+        div.modal-header
+          h5.modal-title#activateModalLabel Confirmar Activación
+        div.modal-body
+          p ¿Está seguro que desea activar este profesional?
+        div.modal-footer
+          button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+          button.btn.btn-success#confirmActivate(type="button") Activar
+
+block scripts
+  script.
+    let idProfesional;
+
+    // Función para agregar event listeners a los botones de desactivar
+    const addDeactivateListeners = () => {
+      const deactivateButtons = document.querySelectorAll('.deactivate-profesional');
+      deactivateButtons.forEach((button) => {
+        button.addEventListener('click', (e) => {
+          idProfesional = button.getAttribute('data-id');
+          const modal = new bootstrap.Modal(document.getElementById('deactivateModal'));
+          modal.show();
+        });
+      });
+    };
+
+    // Función para agregar event listeners a los botones de activar
+    const addActivateListeners = () => {
+      const activateButtons = document.querySelectorAll('.activate-profesional');
+      activateButtons.forEach((button) => {
+        button.addEventListener('click', (e) => {
+          idProfesional = button.getAttribute('data-id');
+          const modal = new bootstrap.Modal(document.getElementById('activateModal'));
+          modal.show();
+        });
+      });
+    };
+
+    // Inicializar los listeners
+    addDeactivateListeners();
+    addActivateListeners();
+
+    // Función para activar profesional
+    const activateProfesional = () => {
+      fetch(`/profesionales/${idProfesional}/activate`, {
+        method: 'PATCH',
+      })
+        .then((res) => {
+          if (res.ok) {
+            // Encontrar la fila del profesional
+            const row = document.querySelector(`a[data-id="${idProfesional}"]`).closest('tr');
+            
+            // Actualizar el estado
+            const estadoCell = row.querySelector('td:nth-last-child(2)');
+            estadoCell.innerHTML = '<span class="badge bg-success">Activo</span>';
+            
+            // Actualizar los botones
+            const actionCell = row.querySelector('td:last-child');
+            actionCell.innerHTML = `
+              <a class="btn btn-outline-primary border-0 d-flex gap-2 mb-2" href="/panel/profesionales/edit/${idProfesional}">
+                <i class="bi bi-pencil"></i>
+                Editar
+              </a>
+              <button class="btn btn-outline-danger border-0 d-flex gap-2 deactivate-profesional" data-id="${idProfesional}">
+                <i class="bi bi-ban"></i>
+                Desactivar
+              </button>
+            `;
+
+            // Agregar el listener al nuevo botón de desactivar
+            addDeactivateListeners();
+            
+            showToast('Profesional <strong>ACTIVADO</strong> correctamente', 'success');
+          } else {
+            showToast('<strong>Error</strong> al activar el profesional', 'warning');
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          showToast('<strong>Error fatal</strong> al activar el profesional', 'danger');
+        });
+
+      const modal = bootstrap.Modal.getInstance(document.getElementById('activateModal'));
+      modal.hide();
+    };
+
+    // Event listener para el botón de confirmar activación
+    document.getElementById('confirmActivate').addEventListener('click', activateProfesional);
+
+    // Event listener para el botón de confirmar desactivación
+    document.getElementById('confirmDeactivate').addEventListener('click', () => {
+      fetch(`/profesionales/${idProfesional}`, {
+        method: 'DELETE',
+      })
+        .then((res) => {
+          if (res.ok) {
+            // Encontrar la fila del profesional
+            const row = document.querySelector(`button[data-id="${idProfesional}"]`).closest('tr');
+            
+            // Actualizar el estado
+            const estadoCell = row.querySelector('td:nth-last-child(2)');
+            estadoCell.innerHTML = '<span class="badge bg-danger">Inactivo</span>';
+            
+            // Actualizar los botones
+            const actionCell = row.querySelector('td:last-child');
+            actionCell.innerHTML = `
+              <a class="btn btn-outline-primary border-0 d-flex gap-2 mb-2" href="/panel/profesionales/edit/${idProfesional}">
+                <i class="bi bi-pencil"></i>
+                Editar
+              </a>
+              <a class="btn btn-outline-success border-0 d-flex gap-2 activate-profesional" data-id="${idProfesional}">
+                <i class="bi bi-check-lg"></i>
+                Activar
+              </a>
+            `;
+
+            // Agregar el listener al nuevo botón de activar
+            addActivateListeners();
+            
+            showToast('Profesional <strong>DESACTIVADO</strong> correctamente', 'success');
+          } else {
+            showToast('<strong>Error</strong> al desactivar el profesional', 'warning');
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          showToast('<strong>Error fatal</strong> al desactivar el profesional', 'danger');
+        });
+
+      const modal = bootstrap.Modal.getInstance(document.getElementById('deactivateModal'));
+      modal.hide();
+    });   

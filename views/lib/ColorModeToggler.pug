@@ -1,0 +1,28 @@
+ul.navbar-nav.mb-2.mb-lg-0.align-items-center
+  li.nav-item.dropdown
+    button#bd-theme.btn.btn-link.btn-sm.nav-link.py-1.px-1.px-lg-2.dropdown-toggle.d-flex.align-items-center(type='button' aria-expanded='false' data-bs-toggle='dropdown' data-bs-display='static' aria-label='Toggle theme (auto)')
+      svg.bi.my-1.theme-icon-active(width='24' height='24' role='img')
+        use(href='#circle-half')
+      span#bd-theme-text.d-lg-none.ms-1 Cambiar Tema
+    ul.dropdown-menu.dropdown-menu-end(aria-labelledby='bd-theme-text')
+      li
+        button.dropdown-item.d-flex.align-items-center(type='button' data-bs-theme-value='light' aria-pressed='false')
+          svg.bi.me-2.opacity-50.theme-icon(width='24' height='24')
+            use(href='#sun-fill')
+          |                     Claro
+          svg.bi.ms-auto.d-none
+            use(href='#check2')
+      li
+        button.dropdown-item.d-flex.align-items-center(type='button' data-bs-theme-value='dark' aria-pressed='false')
+          svg.bi.me-2.opacity-50.theme-icon(width='24' height='24')
+            use(href='#moon-stars-fill')
+          |                     Oscuro
+          svg.bi.ms-auto.d-none
+            use(href='#check2')
+      li
+        button.dropdown-item.d-flex.align-items-center.active(type='button' data-bs-theme-value='auto' aria-pressed='true')
+          svg.bi.me-2.opacity-50.theme-icon(width='24' height='24')
+            use(href='#circle-half')
+          |                     Autom&aacute;tico
+          svg.bi.ms-auto.d-none
+            use(href='#check2')

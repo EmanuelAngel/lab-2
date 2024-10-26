@@ -1,0 +1,29 @@
+nav.navbar.navbar-expand-lg.bg-body-tertiary.sticky-top
+  .container
+    a.navbar-brand(href='/') Inicio
+    button.navbar-toggler(type='button' data-bs-toggle='collapse' data-bs-target='#navbarSupportedContent' aria-controls='navbarSupportedContent' aria-expanded='false' aria-label='Toggle navigation')
+      span.navbar-toggler-icon
+    #navbarSupportedContent.collapse.navbar-collapse
+      ul.navbar-nav.me-auto.mb-2.mb-lg-0
+        li.nav-item
+          a.nav-link(href='/panel/pacientes') Pacientes
+        li.nav-item
+          a.nav-link(href='/panel/profesionales') Profesionales
+        li.nav-item
+          a.nav-link(href='/panel/especialidades') Especialidades
+        li.nav-item.dropdown
+          a.nav-link.dropdown-toggle(href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false')
+            | Dropdown
+          ul.dropdown-menu
+            li
+              a.dropdown-item(href='#') Action
+            li
+              a.dropdown-item(href='#') Another action
+            li
+              hr.dropdown-divider
+            li
+              a.dropdown-item(href='#') Something else here
+        li.nav-item
+          a.nav-link.disabled(aria-disabled='true') Disabled
+        
+      a.btn.btn-outline-secondary.border-0(href="/auth/logout") Cerrar Sesión

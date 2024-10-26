@@ -1,0 +1,83 @@
+//- mixins/forms/base-user-form.pug
+mixin baseUserForm(config)
+  - const initialData = config.initialData || {}
+  form(id=config.formId style="max-width: 600px; margin: 0 auto;")
+    h1.mb-3= config.title
+    .mb-3
+      a.btn.btn-secondary.d-flex.gap-2.mb-3(href=config.returnUrl, style="width: max-content;")
+        i.bi.bi-arrow-left
+        | Regresar
+    
+    // Datos personales
+    h4.mb-3 Datos Personales
+    .mb-3
+      label.form-label(for="nombre_usuario") Nombre de Usuario *
+      input#nombre_usuario.form-control(
+        type="text"
+        name="nombre_usuario"
+        required
+        value=initialData.nombre_usuario || ''
+      )
+    .mb-3
+      label.form-label(for="nombre") Nombre *
+      input#nombre.form-control(
+        type="text"
+        name="nombre"
+        required
+        value=initialData.nombre || ''
+      )
+    .mb-3
+      label.form-label(for="apellido") Apellido *
+      input#apellido.form-control(
+        type="text"
+        name="apellido"
+        required
+        value=initialData.apellido || ''
+      )
+    .mb-3
+      label.form-label(for="dni") DNI *
+      input#dni.form-control(
+        type="text"
+        name="dni"
+        required
+        value=initialData.dni || ''
+      )
+    .mb-3
+      label.form-label(for="email") Email *
+      input#email.form-control(
+        type="email"
+        name="email"
+        required
+        value=initialData.email || ''
+      )
+    .mb-3
+      label.form-label(for="contrasenia") Contraseña#{initialData.id_profesional ? '' : ' *'}
+      input#contrasenia.form-control(
+        type="password"
+        name="contrasenia"
+        required=!initialData.id_profesional
+        placeholder=initialData.id_profesional ? "Dejar en blanco para mantener la actual" : ""
+      )
+    .mb-3
+      label.form-label(for="telefono") Teléfono *
+      input#telefono.form-control(
+        type="text"
+        name="telefono"
+        required
+        value=initialData.telefono || ''
+      )
+    .mb-3
+      label.form-label(for="direccion") Dirección *
+      input#direccion.form-control(
+        type="text"
+        name="direccion"
+        required
+        value=initialData.direccion || ''
+      )
+
+    //- Slot para contenido adicional específico de cada tipo de usuario
+    if block
+      block
+
+    .pt-3.pb-3
+      button.btn.btn-primary(type="submit")= config.submitText || 'Registrar'

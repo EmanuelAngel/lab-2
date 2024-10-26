@@ -1,0 +1,192 @@
+//- views/panel/profesionales/registrar.pug
+extends ../../../layouts/base-layout
+include ../../../lib/BaseUserForm
+
+block navbar
+  include ../../../lib/NavBar
+
+block styles 
+  style.
+    .especialidad-item {
+      border: 1px solid #404040;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.3rem;
+    }
+
+block content
+  +baseUserForm({
+    formId: 'profesionalForm',
+    title: 'Registrar Profesional',
+    returnUrl: '/panel/profesionales',
+    submitText: 'Registrar Profesional'
+  })
+    // Especialidades
+    h4.mb-3.mt-4 Especialidades
+    #especialidades-container
+      // Template para una especialidad
+      template#especialidad-template
+        .especialidad-item
+          .row
+            .col-md-5.mb-3
+              label.form-label Especialidad *
+              select.form-control.especialidad-select(required)
+                option(value="") Seleccione una especialidad
+                each especialidad in especialidades
+                  option(value=especialidad.id_especialidad)= especialidad.nombre
+            .col-md-5.mb-3
+              label.form-label Matrícula *
+              input.form-control.matricula-input(type="text", required)
+            .col-md-2.mb-3.d-flex.align-items-end
+              button.btn.btn-outline-danger.border-0.remove-especialidad(type="button")
+                i.bi.bi-trash
+
+      // Primera especialidad (renderizada por defecto)
+      .especialidad-item
+        .row
+          .col-md-5.mb-3
+            label.form-label Especialidad *
+            select.form-control.especialidad-select(required)
+              option(value="") Seleccione una especialidad
+              each especialidad in especialidades
+                option(value=especialidad.id_especialidad)= especialidad.nombre
+          .col-md-5.mb-3
+            label.form-label Matrícula *
+            input.form-control.matricula-input(type="text", required)
+          .col-md-2.mb-3.d-flex.align-items-end
+            button.btn.btn-outline-danger.border-0.remove-especialidad(type="button")
+              i.bi.bi-trash
+    
+    .mb-3
+      button#addEspecialidad.btn.btn-secondary(type="button")
+        i.bi.bi-plus-circle.me-2
+        | Agregar Especialidad
+
+block scripts
+  script(type="module").
+    import { validateField, submitForm, baseValidationRules } from '/js/baseValidation.js';
+
+    // Validaciones específicas para profesional
+    const especialidadRules = {
+      matricula: {
+        required: true,
+        minLength: 3,
+        message: 'La matrícula debe tener al menos 3 caracteres'
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('#profesionalForm');
+      const addEspecialidadBtn = document.querySelector('#addEspecialidad');
+      const especialidadesContainer = document.querySelector('#especialidades-container');
+      const especialidadTemplate = document.querySelector('#especialidad-template');
+
+      // Configurar validación en línea para campos base
+      form.querySelectorAll('input').forEach(field => {
+        field.addEventListener('input', () => validateField(field));
+        field.addEventListener('blur', () => validateField(field));
+      });
+
+      // Setup inicial y manejo de especialidades
+      function setupEspecialidadListeners(especialidadItem) {
+        const removeBtn = especialidadItem.querySelector('.remove-especialidad');
+        const matriculaInput = especialidadItem.querySelector('.matricula-input');
+        const especialidadSelect = especialidadItem.querySelector('.especialidad-select');
+
+        // Validación en línea para matrícula
+        if (matriculaInput) {
+          matriculaInput.addEventListener('input', () => validateField(matriculaInput, especialidadRules));
+          matriculaInput.addEventListener('blur', () => validateField(matriculaInput, especialidadRules));
+        }
+
+        // Validación en línea para select de especialidad
+        if (especialidadSelect) {
+          especialidadSelect.addEventListener('change', () => {
+            if (!especialidadSelect.value) {
+              especialidadSelect.classList.add('is-invalid');
+            } else {
+              especialidadSelect.classList.remove('is-invalid');
+            }
+          });
+        }
+
+        if (removeBtn) {
+          removeBtn.addEventListener('click', () => {
+            if (document.querySelectorAll('.especialidad-item').length > 1) {
+              especialidadItem.remove();
+            } else {
+              showToast('Debe mantener al menos una especialidad', 'warning');
+            }
+          });
+        }
+      }
+
+      // Configurar primera especialidad
+      setupEspecialidadListeners(document.querySelector('.especialidad-item'));
+
+      // Agregar nueva especialidad
+      addEspecialidadBtn.addEventListener('click', () => {
+        const newEspecialidad = especialidadTemplate.content.cloneNode(true);
+        setupEspecialidadListeners(newEspecialidad.querySelector('.especialidad-item'));
+        especialidadesContainer.appendChild(newEspecialidad);
+      });
+
+      // Resto del código igual...
+      function validateEspecialidades() {
+        let isValid = true;
+        document.querySelectorAll('.especialidad-item').forEach(esp => {
+          const select = esp.querySelector('.especialidad-select');
+          const matricula = esp.querySelector('.matricula-input');
+
+          if (!select.value) {
+            select.classList.add('is-invalid');
+            isValid = false;
+          }
+
+          if (!validateField(matricula, especialidadRules)) {
+            isValid = false;
+          }
+        });
+        return isValid;
+      }
+
+      function getFormData() {
+        const formData = new FormData(form);
+        const data = {
+          nombre_usuario: formData.get('nombre_usuario'),
+          nombre: formData.get('nombre'),
+          apellido: formData.get('apellido'),
+          dni: formData.get('dni'),
+          email: formData.get('email'),
+          contraseña: formData.get('contrasenia'),
+          telefono: formData.get('telefono'),
+          direccion: formData.get('direccion'),
+          especialidades: []
+        };
+
+        document.querySelectorAll('.especialidad-item').forEach(esp => {
+          const especialidad_id = parseInt(esp.querySelector('.especialidad-select').value);
+          const matricula = esp.querySelector('.matricula-input').value;
+          data.especialidades.push({ especialidad_id, matricula });
+        });
+
+        return data;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const success = await submitForm(
+          form, 
+          '/profesionales/users', 
+          getFormData,
+          validateEspecialidades
+        );
+        
+        if (success) {
+          showToast('Profesional registrado exitosamente', 'success');
+          setTimeout(() => {
+            window.location.href = '/panel/profesionales';
+          }, 1500);
+        }
+      });
+    });
