@@ -6,21 +6,18 @@ const agendaBaseController = new AgendaBaseController()
 export function agendaBaseRouter () {
   const router = Router()
 
-  router.get('/', agendaBaseController.getAll)
-  router.get('/:id', agendaBaseController.getById)
-  router.post('/', agendaBaseController.create)
-  router.delete('/:id', agendaBaseController.deactivate)
-  router.patch('/:id/activate', agendaBaseController.activate)
-  router.patch('/profesional/:id_profesional/sucursal/:id_sucursal/especialidad/:id_especialidad/update', agendaBaseController.partiallyUpdate)
-  router.patch('/:id/estado', agendaBaseController.changeEstadoAgenda)
-  router.get('/profesional/:id_profesional', agendaBaseController.getByProfesional)
-  router.get('/sucursal/:id_sucursal', agendaBaseController.getBySucursal)
-  router.get('/especialidad/:id_especialidad', agendaBaseController.getByEspecialidad)
-  router.get('/profesional/:id_profesional/sucursal/:id_sucursal', agendaBaseController.getByProfesionalAndSucursal)
-  router.get('/profesional/:id_profesional/especialidad/:id_especialidad', agendaBaseController.getByProfesionalAndEspecialidad)
-  router.get('/estado/:id_estado_agenda', agendaBaseController.getByEstadoAgenda)
-  router.get('/clasificacion/:id_clasificacion', agendaBaseController.getByClasificacion)
-  router.get('/clasificacion/:id_clasificacion/estado/:id_estado_agenda', agendaBaseController.getByClasificacionAndEstadoAgenda)
+  // Rutas CRUD y de búsqueda avanzada
+  router.get('/', agendaBaseController.getAll) // Obtener todas las agendas activas
+  router.get('/:id', agendaBaseController.getById) // Obtener una agenda por ID
+  router.post('/', agendaBaseController.create) // Crear una nueva agenda base
+  router.patch('/:id', agendaBaseController.partiallyUpdate) // Actualizar parcialmente una agenda
+  router.delete('/:id', agendaBaseController.deactivate) // Desactivar una agenda
+  router.patch('/:id/activate', agendaBaseController.activate) // Activar una agenda
+  router.get('/matricula/:matricula', agendaBaseController.getByMatricula) // Obtener agendas por matrícula
+  router.get('/estado/:id_estado_agenda', agendaBaseController.getByEstadoAgenda) // Obtener agendas por estado de agenda
+  router.get('/sucursal/:id_sucursal', agendaBaseController.getBySucursal) // Obtener agendas por sucursal
+  router.get('/sucursales', agendaBaseController.getAllSucursales) // Obtener todas las sucursales únicas
+  router.get('/sucursal/:id_sucursal/clasificacion/:id_clasificacion', agendaBaseController.getBySucursalAndClasificacion) // Obtener agendas por combinación de sucursal y clasificación
 
   return router
 }

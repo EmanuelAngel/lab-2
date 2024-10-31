@@ -1,0 +1,27 @@
+### Obtener todos los días
+GET http://localhost:3001/dias
+
+### Obtener un día por ID
+GET http://localhost:3001/dias/1
+
+### Crear un nuevo día
+POST http://localhost:3001/dias
+Content-Type: application/json
+
+{
+  "dia": "Lunes"
+}
+
+### Actualizar un día por ID
+PATCH http://localhost:3001/dias/1
+Content-Type: application/json
+
+{
+  "dia": "Martes"
+}
+
+### Eliminar un día por ID
+DELETE http://localhost:3001/dias/1
+
+### Buscar un día por nombre
+GET http://localhost:3001/dias/nombre/Lunes

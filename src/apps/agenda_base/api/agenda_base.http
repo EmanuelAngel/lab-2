@@ -1,7 +1,7 @@
 ### Obtener todas las agendas base activas
 GET http://localhost:3001/agenda_base
 
-### Obtener una agenda base por su id
+### Obtener una agenda base por su ID
 GET http://localhost:3001/agenda_base/1
 
 ### Crear una agenda base
@@ -9,10 +9,22 @@ POST http://localhost:3001/agenda_base
 Content-Type: application/json
 
 {
-  "id_profesional": 3,
   "id_sucursal": 1,
-  "id_especialidad": 2,
-  "estado": 1
+  "estado": 1,
+  "id_estado_agenda": 1,
+  "id_clasificacion": 2,
+  "duracion_turno": 30,
+  "sobreturnos_maximos": 2,
+  "matricula": "123456"
+}
+
+### Actualizar parcialmente una agenda base
+PATCH http://localhost:3001/agenda_base/1
+Content-Type: application/json
+
+{
+  "duracion_turno": 45,
+  "sobreturnos_maximos": 3
 }
 
 ### Desactivar una agenda base
@@ -21,46 +33,17 @@ DELETE http://localhost:3001/agenda_base/1
 ### Activar una agenda base
 PATCH http://localhost:3001/agenda_base/1/activate
 
-### Actualizar parcialmente una agenda base
-PATCH http://localhost:3001/agenda_base/profesional/1/sucursal/1/especialidad/1/update
-Content-Type: application/json
+### Obtener agendas por matrícula
+GET http://localhost:3001/agenda_base/matricula/123456
 
-{
-  "id_sucursal": 2
-  }
+### Obtener agendas por estado de agenda
+GET http://localhost:3001/agenda_base/estado/2
 
-
-### Actualizar parcialmente una agenda base
-PATCH http://localhost:3001/agenda_base/1/estado
-Content-Type: application/json
-
-{
-  "id_estado_agenda": 2
-  }
-
-
-
-
-### Obtener agendas por profesional
-GET http://localhost:3001/agenda_base/profesional/1
-
-### Obtener agendas por sucursal
+### Obtener agendas por id_sucursal
 GET http://localhost:3001/agenda_base/sucursal/1
 
-### Obtener agendas por especialidad
-GET http://localhost:3001/agenda_base/especialidad/3
+### Obtener todas las id_sucursal distintas
+GET http://localhost:3001/agenda_base/sucursales
 
-### Obtener agendas por profesional y sucursal
-GET http://localhost:3001/agenda_base/profesional/2/sucursal/1
-
-### Obtener agendas por profesional y especialidad
-GET http://localhost:3001/agenda_base/profesional/3/especialidad/2
-
-### Obtener agendas por estado
-GET http://localhost:3001/agenda_base/estado/1
-
-### Obtener agendas por clasificación
-GET http://localhost:3001/agenda_base/clasificacion/1
-
-### Obtener agendas por clasificación y estado
-GET http://localhost:3001/agenda_base/clasificacion/1/estado/1
+### Obtener agendas por combinación de sucursal y clasificación
+GET http://localhost:3001/agenda_base/sucursal/1/clasificacion/2

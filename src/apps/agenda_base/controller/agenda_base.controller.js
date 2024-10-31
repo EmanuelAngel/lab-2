@@ -1,5 +1,4 @@
 import { validateAgendaBase, validatePartialAgendaBase, validateEstadoAgenda } from './schemas/agenda_base.schema.js'
-
 import { AgendaBaseModel } from '../models/agenda_base.model.js'
 
 export class AgendaBaseController {
@@ -47,35 +46,25 @@ export class AgendaBaseController {
     }
   }
 
-  // Actualizar parcialmente una relación agenda base
+  // Actualizar parcialmente una agenda base
   partiallyUpdate = async (req, res) => {
     try {
-      // Validar los datos entrantes con el esquema parcial
       const result = validatePartialAgendaBase(req.body)
-
-      if (result.error) {
-        return res.status(422).json({ error: JSON.parse(result.error.message) })
+      if (!result.success) {
+        return res.status(422).json({ error: result.error.issues })
       }
 
-      // Extraer los parámetros de la URL
-      const { id_profesional, id_sucursal, id_especialidad } = req.params
+      const { id } = req.params
+      const updatedAgenda = await AgendaBaseModel.partiallyUpdate({ id_agenda_base: id, input: result.data })
 
-      // Intentar actualizar parcialmente la relación en la base de datos
-      const updatedAgendaBase = await AgendaBaseModel.partiallyUpdate({
-        id_profesional,
-        id_sucursal,
-        id_especialidad,
-        input: result.data
-      })
-
-      if (!updatedAgendaBase) {
-        return res.status(404).json({ error: 'Relación agenda base no encontrada o sin cambios' })
+      if (!updatedAgenda) {
+        return res.status(404).json({ error: 'Agenda base no encontrada o sin cambios' })
       }
 
-      return res.json({ updated: updatedAgendaBase })
+      return res.json({ updated: updatedAgenda })
     } catch (error) {
-      console.error('Error al actualizar parcialmente la relación agenda base:', error)
-      return res.status(500).json({ error: 'Error interno del servidor al actualizar la relación agenda base' })
+      console.error('Error al actualizar parcialmente la agenda base:', error)
+      return res.status(500).json({ error: 'Error interno del servidor al actualizar la agenda base' })
     }
   }
 
@@ -113,56 +102,31 @@ export class AgendaBaseController {
     }
   }
 
-  // Obtener todas las agendas según el estado
-  getByEstadoAgenda = async (req, res) => {
+  // Obtener agendas por matrícula
+  getByMatricula = async (req, res) => {
     try {
-      const { id_estado_agenda } = req.params
-      const agendas = await AgendaBaseModel.getByEstadoAgenda({ id_estado_agenda })
-
+      const { matricula } = req.params
+      const agendas = await AgendaBaseModel.getByMatricula({ matricula })
       return res.json(agendas)
     } catch (error) {
-      console.error('Error al obtener agendas por estado:', error)
-      return res.status(500).json({ error: 'Error interno del servidor al obtener las agendas por estado' })
-    }
-  }
-
-  changeEstadoAgenda = async (req, res) => {
-    try {
-      const { id } = req.params // ID de la agenda base
-      const { id_estado_agenda } = req.body // Nuevo estado
-      console.log(id_estado_agenda)
-      // Validar que id_estado_agenda esté definido y sea un número
-      const validationResult = validateEstadoAgenda.safeParse({ id_estado_agenda })
-
-      if (!validationResult.success) {
-        return res.status(422).json({ error: validationResult.error.issues })
-      }
-
-      // Llamar al método en el modelo para cambiar el estado
-      const updatedAgenda = await AgendaBaseModel.estadoAgenda({ id, id_estado_agenda })
-
-      if (!updatedAgenda) {
-        return res.status(404).json({ error: 'Agenda base no encontrada' })
-      }
-
-      return res.json({ updated: updatedAgenda })
-    } catch (error) {
-      console.error('Error al cambiar el estado de la agenda base:', error)
-      return res.status(500).json({ error: 'Error interno del servidor al cambiar el estado de la agenda base' })
-    }
-  }
-
-  getByProfesional = async (req, res) => {
-    try {
-      const { id_profesional } = req.params
-      const agendas = await AgendaBaseModel.getByProfesional({ id_profesional })
-      return res.json(agendas)
-    } catch (error) {
-      console.error('Error al obtener agendas por profesional:', error)
+      console.error('Error al obtener agendas por matrícula:', error)
       return res.status(500).json({ error: 'Error interno del servidor' })
     }
   }
 
+  // Obtener agendas por estado de la agenda
+  getByEstadoAgenda = async (req, res) => {
+    try {
+      const { id_estado_agenda } = req.params
+      const agendas = await AgendaBaseModel.getByEstadoAgenda({ id_estado_agenda })
+      return res.json(agendas)
+    } catch (error) {
+      console.error('Error al obtener agendas por estado de agenda:', error)
+      return res.status(500).json({ error: 'Error interno del servidor' })
+    }
+  }
+
+  // Obtener todas las agendas de una sucursal específica
   getBySucursal = async (req, res) => {
     try {
       const { id_sucursal } = req.params
@@ -170,63 +134,29 @@ export class AgendaBaseController {
       return res.json(agendas)
     } catch (error) {
       console.error('Error al obtener agendas por sucursal:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
+      return res.status(500).json({ error: 'Error interno del servidor al obtener agendas por sucursal' })
     }
   }
 
-  getByEspecialidad = async (req, res) => {
+  // Obtener todas las id_sucursal distintas
+  getAllSucursales = async (req, res) => {
     try {
-      const { id_especialidad } = req.params
-      const agendas = await AgendaBaseModel.getByEspecialidad({ id_especialidad })
-      return res.json(agendas)
+      const sucursales = await AgendaBaseModel.getAllSucursales()
+      return res.json(sucursales)
     } catch (error) {
-      console.error('Error al obtener agendas por especialidad:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
+      console.error('Error al obtener todas las sucursales:', error)
+      return res.status(500).json({ error: 'Error interno del servidor al obtener todas las sucursales' })
     }
   }
 
-  getByProfesionalAndSucursal = async (req, res) => {
+  // Obtener agendas por combinación de sucursal y clasificación
+  getBySucursalAndClasificacion = async (req, res) => {
     try {
-      const { id_profesional, id_sucursal } = req.params
-      const agendas = await AgendaBaseModel.getByProfesionalAndSucursal({ id_profesional, id_sucursal })
+      const { id_sucursal, id_clasificacion } = req.params
+      const agendas = await AgendaBaseModel.getBySucursalAndClasificacion({ id_sucursal, id_clasificacion })
       return res.json(agendas)
     } catch (error) {
-      console.error('Error al obtener agendas por profesional y sucursal:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  getByProfesionalAndEspecialidad = async (req, res) => {
-    try {
-      const { id_profesional, id_especialidad } = req.params
-      const agendas = await AgendaBaseModel.getByProfesionalAndEspecialidad({ id_profesional, id_especialidad })
-      return res.json(agendas)
-    } catch (error) {
-      console.error('Error al obtener agendas por profesional y especialidad:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  // Obtener agendas por clasificación
-  getByClasificacion = async (req, res) => {
-    try {
-      const { id_clasificacion } = req.params
-      const agendas = await AgendaBaseModel.getByClasificacion({ id_clasificacion })
-      return res.json(agendas)
-    } catch (error) {
-      console.error('Error al obtener agendas por clasificación:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  // Obtener agendas por clasificación y estado
-  getByClasificacionAndEstadoAgenda = async (req, res) => {
-    try {
-      const { id_clasificacion, id_estado_agenda } = req.params
-      const agendas = await AgendaBaseModel.getByClasificacionAndEstadoAgenda({ id_clasificacion, id_estado_agenda })
-      return res.json(agendas)
-    } catch (error) {
-      console.error('Error al obtener agendas por clasificación y estado:', error)
+      console.error('Error al obtener agendas por sucursal y clasificación:', error)
       return res.status(500).json({ error: 'Error interno del servidor' })
     }
   }

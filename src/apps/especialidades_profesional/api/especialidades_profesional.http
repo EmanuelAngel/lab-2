@@ -10,7 +10,8 @@ Content-Type: application/json
 
 {
   "id_profesional": 1,
-  "id_especialidad": 2
+  "id_especialidad": 2,
+  "matricula": "AB12345"
 }
 
 ### Desactivar una relación especialidad-profesional
@@ -29,5 +30,9 @@ Content-Type: application/json
 
 ### Obtener todas las especialidades de un profesional
 GET http://localhost:3001/especialidades_profesional/profesional/1
+
 ### Obtener todos los profesionales que tienen asignada una especialidad
 GET http://localhost:3001/especialidades_profesional/especialidad/3
+
+### Obtener relación especialidad-profesional por matrícula
+GET http://localhost:3001/especialidades_profesional/matricula/AB12345

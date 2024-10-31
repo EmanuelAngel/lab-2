@@ -6,13 +6,14 @@ const pacientesController = new PacientesController()
 export function pacientesRouter () {
   const router = Router()
 
-  // Definimos las rutas
-  router.get('/', pacientesController.getAll) // Obtener todos los pacientes
-  router.get('/:id', pacientesController.getById) // Obtener un paciente por ID
-  router.post('/', pacientesController.create) // Crear un nuevo paciente
-  router.delete('/:id', pacientesController.deactivate) // Desactivar un paciente
-  router.patch('/:id/activate', pacientesController.activate) // Activar un paciente
-  router.patch('/:id/update', pacientesController.partiallyUpdate) // Actualizar parcialmente un paciente
+  router.get('/', pacientesController.getAll)
+  router.get('/:id', pacientesController.getById)
+  router.post('/', pacientesController.create)
+  router.delete('/:id', pacientesController.deactivate)
+  router.patch('/:id/activate', pacientesController.activate)
+  router.patch('/:id/update', pacientesController.partiallyUpdate)
+  router.get('/obra_social/:tiene_obra_social', pacientesController.getByObraSocial) // Nueva ruta
+  router.get('/usuario/:id_usuario', pacientesController.getByUsuario) // Nueva ruta
 
   return router
 }

@@ -4,8 +4,6 @@ import { z } from 'zod'
 const turnosSchema = z.object({
   id_agenda_base: z.number().int().min(1),
   id_paciente: z.number().int().min(1),
-  id_profesional: z.number().int().min(1),
-  id_especialidad: z.number().int().min(1),
   id_estado_turno: z.number().int().min(1),
   fecha: z.string().refine(fecha => {
     const today = new Date()
@@ -19,7 +17,7 @@ const turnosSchema = z.object({
     message: 'El horario fin debe estar en el formato HH:MM:SS'
   }),
   motivo_consulta: z.string().max(255).optional(),
-  es_sobreturno: z.number().int().min(0).max(1)
+  es_sobreturno: z.number().int().min(0).max(1).optional()
 })
 
 // Función para validar todos los campos

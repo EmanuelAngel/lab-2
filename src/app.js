@@ -39,6 +39,8 @@ import { clasificacionConsultaRouter } from './apps/clasificacion_consulta/route
 import { turnoEspecialRouter } from './apps/turno_especial/routes/turno_especial.routes.js'
 import { estadosTurnoRouter } from './apps/estados_turno/routes/estados_turno.routes.js'
 import { turnosRouter } from './apps/turnos/routes/turnos.routes.js'
+import { diasRouter } from './apps/dias/routes/dias.routes.js'
+import { diasAgendasRouter } from './apps/dias_agendas/routes/dias_agendas.routes.js'
 
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -79,6 +81,8 @@ export function createApp () {
   app.use('/turno_especial', turnoEspecialRouter())
   app.use('/estados_turno', estadosTurnoRouter())
   app.use('/turnos', turnosRouter())
+  app.use('/dias', diasRouter())
+  app.use('/dias_agendas', diasAgendasRouter())
 
   // app.use('/users', userRouter({ userModel }))
 

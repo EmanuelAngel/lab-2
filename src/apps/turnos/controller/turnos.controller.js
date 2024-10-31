@@ -106,110 +106,14 @@ export class TurnoController {
     }
   }
 
-  // Obtener turnos por especialidad
-  getByEspecialidad = async (req, res) => {
+  // Obtener turnos por estado de turno
+  getByEstadoTurno = async (req, res) => {
     try {
-      const { id_especialidad } = req.params
-      const turnos = await TurnoModel.getByEspecialidad({ id_especialidad })
+      const { id_estado_turno } = req.params
+      const turnos = await TurnoModel.getByEstadoTurno({ id_estado_turno })
       return res.json(turnos)
     } catch (error) {
-      console.error('Error al obtener turnos por especialidad:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  // Contar turnos por fecha
-  countTurnosByFecha = async (req, res) => {
-    try {
-      const { fecha } = req.params
-      const total = await TurnoModel.countTurnosByFecha({ fecha })
-      return res.json({ total })
-    } catch (error) {
-      console.error('Error al contar turnos por fecha:', error)
-      return res.status(500).json({ error: 'Error interno del servidor al contar turnos' })
-    }
-  }
-
-  // Obtener turnos por rango de horas
-  getByHoraRange = async (req, res) => {
-    const { startTime, endTime } = req.params
-    try {
-      const turnos = await TurnoModel.getByHoraRange({ startTime, endTime })
-      return res.json(turnos)
-    } catch (error) {
-      console.error('Error al obtener turnos por rango de horas:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  // Obtener turnos de un profesional en una semana
-  getTurnosInWeek = async (req, res) => {
-    const { id_profesional, weekStart, weekEnd } = req.params
-    try {
-      const turnos = await TurnoModel.getTurnosInWeek({ id_profesional, weekStart, weekEnd })
-      return res.json(turnos)
-    } catch (error) {
-      console.error('Error al obtener turnos de un profesional en una semana específica:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  // Obtener turnos de una especialidad en una semana
-  getTurnosInWeekByEspecialidad = async (req, res) => {
-    const { id_especialidad, weekStart, weekEnd } = req.params
-    try {
-      const turnos = await TurnoModel.getTurnosInWeekByEspecialidad({ id_especialidad, weekStart, weekEnd })
-      return res.json(turnos)
-    } catch (error) {
-      console.error('Error al obtener turnos de una especialidad en una semana específica:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  // Obtener turnos de un profesional entre fechas
-  getByProfesionalBetweenDates = async (req, res) => {
-    const { id_profesional, startDate, endDate } = req.params
-    try {
-      const turnos = await TurnoModel.getByProfesionalBetweenDates({ id_profesional, startDate, endDate })
-      return res.json(turnos)
-    } catch (error) {
-      console.error('Error al obtener turnos de un profesional entre fechas:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  // Obtener turnos de una especialidad entre fechas
-  getByEspecialidadBetweenDates = async (req, res) => {
-    const { id_especialidad, startDate, endDate } = req.params
-    try {
-      const turnos = await TurnoModel.getByEspecialidadBetweenDates({ id_especialidad, startDate, endDate })
-      return res.json(turnos)
-    } catch (error) {
-      console.error('Error al obtener turnos de una especialidad entre fechas:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  // Obtener turnos en un mes específico para un profesional
-  getTurnosInMonth = async (req, res) => {
-    const { id_profesional, month, year } = req.params
-    try {
-      const turnos = await TurnoModel.getTurnosInMonth({ id_profesional, month, year })
-      return res.json(turnos)
-    } catch (error) {
-      console.error('Error al obtener turnos de un profesional en un mes específico:', error)
-      return res.status(500).json({ error: 'Error interno del servidor' })
-    }
-  }
-
-  // Obtener turnos en un mes específico para una especialidad
-  getTurnosInMonthByEspecialidad = async (req, res) => {
-    const { id_especialidad, month, year } = req.params
-    try {
-      const turnos = await TurnoModel.getTurnosInMonthByEspecialidad({ id_especialidad, month, year })
-      return res.json(turnos)
-    } catch (error) {
-      console.error('Error al obtener turnos de una especialidad en un mes específico:', error)
+      console.error('Error al obtener turnos por estado de turno:', error)
       return res.status(500).json({ error: 'Error interno del servidor' })
     }
   }

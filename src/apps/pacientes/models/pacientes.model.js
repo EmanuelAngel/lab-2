@@ -10,86 +10,64 @@ const DEFAULT_CONFIG = {
 }
 
 const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-
 const con = await mysql.createConnection(connectionString)
 
 export class PacientesModel {
   static async getAll () {
     try {
-      // Intentamos obtener todos los pacientes que tienen estado 1 (activos)
       const [rows] = await con.query('SELECT * FROM pacientes WHERE estado = 1;')
       return rows
     } catch (error) {
-      // Si ocurre un error, lo registramos en la consola y lanzamos un error personalizado
       console.error('Error al obtener todos los pacientes:', error)
-      // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al obtener los pacientes')
     }
   }
 
   static async getById ({ id }) {
     try {
-      // Intentamos obtener el paciente por ID
       const [rows] = await con.query('SELECT * FROM pacientes WHERE id_paciente = ?;', [id])
-      // Si no se encuentra el paciente, retornamos null
       return rows.length ? rows[0] : null
     } catch (error) {
-      // Si ocurre un error, lo registramos en la consola y lanzamos un error personalizado
       console.error('Error al obtener el paciente por ID:', error)
-      // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al obtener el paciente')
     }
   }
 
   static async create ({ input }) {
-    const { tiene_obra_social, id_usuario } = input
+    const { tiene_obra_social, id_usuario, fotocopia_dni = null } = input
     try {
-      // Intentamos crear un nuevo paciente en la base de datos
       await con.query(
-          `INSERT INTO pacientes (tiene_obra_social, estado, id_usuario)
-          VALUES (?, 1, ?)`,
-          [tiene_obra_social, id_usuario]
+        `INSERT INTO pacientes (tiene_obra_social, estado, id_usuario, fotocopia_dni)
+        VALUES (?, 1, ?, ?)`,
+        [tiene_obra_social, id_usuario, fotocopia_dni]
       )
 
-      // Intentamos obtener el paciente recién creado utilizando el id_usuario
       const [pacientes] = await con.query('SELECT * FROM pacientes WHERE id_usuario = ?;', [id_usuario])
       return pacientes[0]
     } catch (error) {
-      // Si ocurre un error, lo registramos en la consola y lanzamos un error personalizado
       console.error('Error al crear el paciente:', error)
-      // Lanzamos el error para que el controlador lo pueda manejar
       throw error
     }
   }
 
   static async deactivate ({ id }) {
     try {
-      // Intentamos desactivar el paciente cambiando el estado a 0
       await con.query('UPDATE pacientes SET estado = 0 WHERE id_paciente = ?;', [id])
-
-      // Intentamos obtener el paciente para verificar el cambio
       const [paciente] = await con.query('SELECT * FROM pacientes WHERE id_paciente = ?;', [id])
       return paciente.length ? paciente[0] : null
     } catch (error) {
-      // Si ocurre un error, lo registramos en la consola y lanzamos un error personalizado
       console.error('Error al desactivar el paciente:', error)
-      // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al desactivar el paciente')
     }
   }
 
   static async activate ({ id }) {
     try {
-      // Intentamos activar el paciente cambiando el estado a 1
       await con.query('UPDATE pacientes SET estado = 1 WHERE id_paciente = ?;', [id])
-
-      // Intentamos obtener el paciente para verificar el cambio
       const [paciente] = await con.query('SELECT * FROM pacientes WHERE id_paciente = ?;', [id])
       return paciente.length ? paciente[0] : null
     } catch (error) {
-      // Si ocurre un error, lo registramos en la consola y lanzamos un error personalizado
       console.error('Error al activar el paciente:', error)
-      // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al activar el paciente')
     }
   }
@@ -98,7 +76,6 @@ export class PacientesModel {
     const updateFields = []
     const updateValues = []
 
-    // Iteramos sobre las propiedades del input para determinar qué campos se van a actualizar
     for (const [key, value] of Object.entries(input)) {
       if (value !== undefined) {
         updateFields.push(`${key} = ?`)
@@ -106,7 +83,6 @@ export class PacientesModel {
       }
     }
 
-    // Si no hay campos para actualizar, retornamos null
     if (updateFields.length === 0) {
       return null
     }
@@ -114,7 +90,6 @@ export class PacientesModel {
     updateValues.push(id)
 
     try {
-      // Construimos y ejecutamos la consulta para actualizar el paciente
       const updateQuery = `
           UPDATE pacientes 
           SET ${updateFields.join(', ')} 
@@ -123,14 +98,31 @@ export class PacientesModel {
 
       await con.query(updateQuery, updateValues)
 
-      // Obtenemos el paciente actualizado
       const [pacientes] = await con.query('SELECT * FROM pacientes WHERE id_paciente = ?;', [id])
       return pacientes.length ? pacientes[0] : null
     } catch (error) {
-      // Si ocurre un error, lo registramos en la consola y lanzamos un error personalizado
       console.error('Error al actualizar el paciente:', error)
-      // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al actualizar el paciente')
+    }
+  }
+
+  static async getByObraSocial ({ tiene_obra_social }) {
+    try {
+      const [rows] = await con.query('SELECT * FROM pacientes WHERE tiene_obra_social = ? AND estado = 1;', [tiene_obra_social])
+      return rows
+    } catch (error) {
+      console.error('Error al obtener pacientes por obra social:', error)
+      throw new Error('Error al obtener pacientes por obra social')
+    }
+  }
+
+  static async getByUsuario ({ id_usuario }) {
+    try {
+      const [rows] = await con.query('SELECT * FROM pacientes WHERE id_usuario = ? AND estado = 1;', [id_usuario])
+      return rows
+    } catch (error) {
+      console.error('Error al obtener pacientes por id_usuario:', error)
+      throw new Error('Error al obtener pacientes por id_usuario')
     }
   }
 }
