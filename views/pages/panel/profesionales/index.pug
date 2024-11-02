@@ -24,11 +24,11 @@ block content
         table.table.table-striped.table-bordered.align-middle
           thead
             tr.align-middle
-              th Nombre de Usuario
+              th Nombre Usuario
               th Nombre
               th Apellido
               th DNI
-              th Especialidad - Matrícula
+              th Especialidad
               th Teléfono 
               th Dirección
               th E-mail
@@ -113,7 +113,9 @@ block content
           button.btn.btn-success#confirmActivate(type="button") Activar
 
 block scripts
-  script.
+  script(type="module").
+    import { showToast } from '/js/showToast.js'
+
     let idProfesional;
 
     // Función para agregar event listeners a los botones de desactivar

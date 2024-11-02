@@ -141,8 +141,9 @@ export async function submitForm (form, url, getFormData, validateAdditionalFiel
   } catch (error) {
     showToast(error.message, 'danger')
     console.error('Error:', error)
+    return false
+  } finally {
     submitButton.disabled = false
     submitButton.textContent = 'Registrar'
-    return false
   }
 }

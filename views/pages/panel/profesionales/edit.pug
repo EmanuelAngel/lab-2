@@ -74,7 +74,8 @@ block content
 
 block scripts
   script(type="module").
-    import { initializeBaseForm } from '/js/formHandlers.js'
+    import { validateField, baseValidationRules } from '/js/baseValidation.js'
+    import { showToast } from '/js/showToast.js'
 
     // Validaciones específicas para profesional
     const especialidadRules = {
@@ -85,14 +86,49 @@ block scripts
       }
     }
 
-    function setupEspecialidades() {
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('#profesionalForm')
       const addEspecialidadBtn = document.querySelector('#addEspecialidad')
       const especialidadesContainer = document.querySelector('#especialidades-container')
       const especialidadTemplate = document.querySelector('#especialidad-template')
+      const profesionalId = form.querySelector('input[name="id_profesional"]').value
+
+      // Configurar validación en línea para campos base
+      form.querySelectorAll('input').forEach(field => {
+        // No validamos contraseña en edición si está vacía
+        if (field.id === 'contrasenia') return
+
+        field.addEventListener('input', () => validateField(field, baseValidationRules))
+        field.addEventListener('blur', () => validateField(field, baseValidationRules))
+      })
 
       // Setup inicial y manejo de especialidades
       function setupEspecialidadListeners(especialidadItem) {
         const removeBtn = especialidadItem.querySelector('.remove-especialidad')
+        const matriculaInput = especialidadItem.querySelector('.matricula-input')
+        const especialidadSelect = especialidadItem.querySelector('.especialidad-select')
+
+        // Validación en línea para matrícula
+        if (matriculaInput) {
+          matriculaInput.addEventListener('input', () => 
+            validateField(matriculaInput, especialidadRules)
+          )
+          matriculaInput.addEventListener('blur', () => 
+            validateField(matriculaInput, especialidadRules)
+          )
+        }
+
+        // Validación en línea para select de especialidad
+        if (especialidadSelect) {
+          especialidadSelect.addEventListener('change', () => {
+            if (!especialidadSelect.value) {
+              especialidadSelect.classList.add('is-invalid')
+            } else {
+              especialidadSelect.classList.remove('is-invalid')
+            }
+          })
+        }
+
         if (removeBtn) {
           removeBtn.addEventListener('click', () => {
             if (document.querySelectorAll('.especialidad-item').length > 1) {
@@ -113,49 +149,110 @@ block scripts
         setupEspecialidadListeners(newEspecialidad.querySelector('.especialidad-item'))
         especialidadesContainer.appendChild(newEspecialidad)
       })
-    }
 
-    // Validación de especialidades
-    function validateEspecialidades() {
-      let isValid = true
-      document.querySelectorAll('.especialidad-item').forEach(esp => {
-        const select = esp.querySelector('.especialidad-select')
-        const matricula = esp.querySelector('.matricula-input')
+      // Validar especialidades
+      function validateEspecialidades() {
+        let isValid = true
+        document.querySelectorAll('.especialidad-item').forEach(esp => {
+          const select = esp.querySelector('.especialidad-select')
+          const matricula = esp.querySelector('.matricula-input')
 
-        if (!select.value) {
-          select.classList.add('is-invalid')
-          isValid = false
+          if (!select.value) {
+            select.classList.add('is-invalid')
+            isValid = false
+          }
+
+          if (!validateField(matricula, especialidadRules)) {
+            isValid = false
+          }
+        })
+        return isValid
+      }
+
+      // Validar todos los campos base excepto contraseña
+      function validateBaseFields() {
+        let isValid = true
+        form.querySelectorAll('input').forEach(field => {
+          if (field.id === 'contrasenia') return
+          if (!validateField(field, baseValidationRules)) {
+            isValid = false
+          }
+        })
+        return isValid
+      }
+
+      // Obtener datos del formulario
+      function getFormData() {
+        const formData = new FormData(form)
+        const data = {
+          nombre_usuario: formData.get('nombre_usuario'),
+          nombre: formData.get('nombre'),
+          apellido: formData.get('apellido'),
+          dni: formData.get('dni'),
+          email: formData.get('email'),
+          telefono: formData.get('telefono'),
+          direccion: formData.get('direccion'),
+          especialidades: []
         }
 
-        if (!validateField(matricula, especialidadRules)) {
-          isValid = false
+        // Solo incluir contraseña si se proporcionó una nueva
+        const contraseña = formData.get('contrasenia')
+        if (contraseña) {
+          data.contraseña = contraseña
+        }
+
+        // Obtener especialidades
+        document.querySelectorAll('.especialidad-item').forEach(esp => {
+          const especialidad_id = parseInt(esp.querySelector('.especialidad-select').value)
+          const matricula = esp.querySelector('.matricula-input').value
+          data.especialidades.push({ especialidad_id, matricula })
+        })
+
+        return data
+      }
+
+      // Manejar envío del formulario
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault()
+
+        // Validar campos
+        if (!validateBaseFields() || !validateEspecialidades()) {
+          return
+        }
+
+        const submitButton = form.querySelector('button[type="submit"]')
+        submitButton.disabled = true
+        submitButton.innerHTML = `
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          Actualizando...
+        `
+
+        try {
+          const data = getFormData()
+          const response = await fetch(`/profesionales/${profesionalId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Error al actualizar el profesional')
+          }
+
+          showToast('Profesional actualizado exitosamente', 'success')
+          
+          setTimeout(() => {
+            window.location.href = '/panel/profesionales'
+          }, 1500)
+
+        } catch (error) {
+          showToast(error.message, 'danger')
+          console.error('Error:', error)
+          submitButton.disabled = false
+          submitButton.textContent = 'Actualizar Profesional'
         }
       })
-      return isValid
-    }
-
-    // Obtener datos de especialidades
-    function getEspecialidadesData(formData) {
-      const especialidades = []
-      document.querySelectorAll('.especialidad-item').forEach(esp => {
-        const especialidad_id = parseInt(esp.querySelector('.especialidad-select').value)
-        const matricula = esp.querySelector('.matricula-input').value
-        especialidades.push({ especialidad_id, matricula })
-      })
-      return { especialidades }
-    }
-
-    // Inicializar el formulario
-    initializeBaseForm('#profesionalForm', '/api/profesionales/', {
-      additionalValidations: especialidadRules,
-      getAdditionalData: getEspecialidadesData,
-      beforeSubmit: validateEspecialidades,
-      onSuccess: () => {
-        showToast('Profesional actualizado exitosamente', 'success')
-      },
-      redirectUrl: '/panel/profesionales'
     })
-
-    // Configurar manejo de especialidades cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', setupEspecialidades)
-  

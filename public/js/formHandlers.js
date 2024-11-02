@@ -32,6 +32,7 @@ export function setupFormValidation (form, additionalValidations = {}) {
 
 // Función para inicializar un formulario base
 export function initializeBaseForm (formId, submitUrl, {
+  method = 'POST',
   getAdditionalData = () => ({}),
   additionalValidations = {},
   beforeSubmit = () => true,
@@ -58,38 +59,27 @@ export function initializeBaseForm (formId, submitUrl, {
       submitButton.disabled = true
       submitButton.innerHTML = `
         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-        Registrando...
+        ${method === 'PUT' ? 'Actualizando...' : 'Registrando...'}
       `
 
       try {
         // Obtener datos base del formulario
         const formData = new FormData(form)
-        const baseData = {
-          nombre_usuario: formData.get('nombre_usuario'),
-          nombre: formData.get('nombre'),
-          apellido: formData.get('apellido'),
-          dni: formData.get('dni'),
-          email: formData.get('email'),
-          contraseña: formData.get('contraseña'),
-          telefono: formData.get('telefono'),
-          direccion: formData.get('direccion'),
-          ...getAdditionalData(formData)
-        }
+        const data = getAdditionalData(formData)
 
         const response = await fetch(submitUrl, {
-          method: 'POST',
+          method,
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(baseData)
+          body: JSON.stringify(data)
         })
 
         if (!response.ok) {
           const errorData = await response.json()
-          throw new Error(errorData.message || 'Error al registrar')
+          throw new Error(errorData.message || `Error al ${method === 'PUT' ? 'actualizar' : 'registrar'}`)
         }
 
-        showToast('Registro exitoso', 'success')
         onSuccess()
 
         if (redirectUrl) {
@@ -100,8 +90,9 @@ export function initializeBaseForm (formId, submitUrl, {
       } catch (error) {
         showToast(error.message, 'danger')
         console.error('Error:', error)
+      } finally {
         submitButton.disabled = false
-        submitButton.textContent = form.dataset.submitText || 'Registrar'
+        submitButton.textContent = form.dataset.submitText || (method === 'PUT' ? 'Actualizar' : 'Registrar')
       }
     })
   })
