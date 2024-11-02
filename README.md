@@ -24,13 +24,7 @@
    npm install
    ```
 
-4. **Run post install script**
-
-   ```bash
-   npm run postinstall
-   ```
-
-5. **Run the app in development mode**
+4. **Run the app in development mode**
 
    ```bash
    npm run dev
