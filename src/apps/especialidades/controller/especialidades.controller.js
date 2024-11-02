@@ -39,7 +39,6 @@ export class EspecialidadesController {
       const createdEspecialidad = await EspecialidadesModel.create({ input: result.data })
       return res.status(201).json({ created: createdEspecialidad })
     } catch (error) {
-      // Si el error es de clave duplicada
       if (error.message === 'La especialidad ya está registrada') {
         return res.status(409).json({ error: 'La especialidad ya está registrada' })
       }
@@ -98,9 +97,19 @@ export class EspecialidadesController {
 
       return res.json({ updated: updatedEspecialidad })
     } catch (error) {
-      // Manejo de error similar a los otros métodos
       console.error('Error al actualizar parcialmente la especialidad:', error)
       return res.status(500).json({ error: 'Error interno del servidor al actualizar la especialidad' })
+    }
+  }
+
+  getByPartialName = async (req, res) => {
+    try {
+      const { nombre } = req.params
+      const especialidades = await EspecialidadesModel.getByPartialName({ nombre })
+      return res.json(especialidades)
+    } catch (error) {
+      console.error('Error al obtener especialidades por nombre parcial:', error)
+      return res.status(500).json({ error: 'Error interno del servidor' })
     }
   }
 }

@@ -12,6 +12,7 @@ export function especialidadesRouter () {
   router.delete('/:id', especialidadesController.deactivate)
   router.patch('/:id/activate', especialidadesController.activate)
   router.patch('/:id/update', especialidadesController.partiallyUpdate)
+  router.get('/search/:nombre', especialidadesController.getByPartialName)
 
   return router
 }

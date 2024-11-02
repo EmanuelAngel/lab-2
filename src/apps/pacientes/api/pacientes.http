@@ -1,29 +1,34 @@
 ### Obtener todos los pacientes
 GET http://localhost:3001/pacientes
 
-### Obtener un pacientes por su id
+### Obtener un paciente por su ID
 GET http://localhost:3001/pacientes/2
 
-### Crear un pacientes
+### Crear un paciente
 POST http://localhost:3001/pacientes
 Content-Type: application/json
 
 {
  "tiene_obra_social": "1",
-  "id_usuario":2
+  "id_usuario": 2
 }
 
-
-### Desactivar un pacientes
+### Desactivar un paciente
 DELETE http://localhost:3001/pacientes/4
 
-### Activar un pacientes
-PATCH  http://localhost:3001/pacientes/3/activate
+### Activar un paciente
+PATCH http://localhost:3001/pacientes/3/activate
 
-### Actualizar un pacientes
+### Actualizar parcialmente un paciente
 PATCH http://localhost:3001/pacientes/2/update
 Content-Type: application/json
 
 {
   "tiene_obra_social": "0"
 }
+
+### Obtener pacientes por obra social
+GET http://localhost:3001/pacientes/obra_social/1
+
+### Obtener pacientes por usuario
+GET http://localhost:3001/pacientes/usuario/2

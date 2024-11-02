@@ -1,25 +1,24 @@
 ### Obtener todas las especialidades
 GET http://localhost:3001/especialidades
 
-### Obtener una especialidades por su id
+### Obtener una especialidad por su ID
 GET http://localhost:3001/especialidades/2
 
-### Crear una especialidades
+### Crear una especialidad
 POST http://localhost:3001/especialidades
 Content-Type: application/json
 
 {
   "nombre": "Urología"
-  
 }
 
-### Desactivar una especialidades
+### Desactivar una especialidad
 DELETE http://localhost:3001/especialidades/4
 
-### Activar una especialidades
+### Activar una especialidad
 PATCH  http://localhost:3001/especialidades/4/activate
 
-### Actualizar una especialidades
+### Actualizar una especialidad
 PATCH http://localhost:3001/especialidades/4/update
 Content-Type: application/json
 
@@ -27,3 +26,6 @@ Content-Type: application/json
   "nombre": "Dermatología",
   "estado": "1"
 }
+
+### Buscar especialidades por nombre parcial
+GET http://localhost:3001/especialidades/search/med

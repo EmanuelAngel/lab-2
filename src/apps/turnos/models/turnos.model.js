@@ -33,7 +33,6 @@ const formatTime = (timeString) => {
 }
 
 export class TurnoModel {
-  // Obtener todos los turnos
   static async getAll () {
     try {
       const [rows] = await con.query('SELECT * FROM turnos;')
@@ -49,7 +48,6 @@ export class TurnoModel {
     }
   }
 
-  // Obtener un turno por ID
   static async getById ({ id }) {
     try {
       const [rows] = await con.query('SELECT * FROM turnos WHERE id_turno = ?;', [id])
@@ -67,14 +65,13 @@ export class TurnoModel {
     }
   }
 
-  // Crear un nuevo turno
   static async create ({ input }) {
-    const { id_agenda_base, id_paciente, id_profesional, id_especialidad, id_estado_turno, fecha, horario_inicio, horario_fin, motivo_consulta, es_sobreturno = 0 } = input
+    const { id_agenda_base, id_paciente, id_estado_turno, fecha, horario_inicio, horario_fin, motivo_consulta } = input
     try {
       await con.query(
-        `INSERT INTO turnos (id_agenda_base, id_paciente, id_profesional, id_especialidad, id_estado_turno, fecha, horario_inicio, horario_fin, motivo_consulta, es_sobreturno)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id_agenda_base, id_paciente, id_profesional, id_especialidad, id_estado_turno, fecha, horario_inicio, horario_fin, motivo_consulta, es_sobreturno]
+        `INSERT INTO turnos (id_agenda_base, id_paciente, id_estado_turno, fecha, horario_inicio, horario_fin, motivo_consulta)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [id_agenda_base, id_paciente, id_estado_turno, fecha, horario_inicio, horario_fin, motivo_consulta]
       )
       const [turno] = await con.query('SELECT * FROM turnos WHERE id_paciente = ? AND fecha = ?;', [id_paciente, fecha])
       return turno[0]
@@ -84,7 +81,6 @@ export class TurnoModel {
     }
   }
 
-  // Actualizar parcialmente un turno
   static async partiallyUpdate ({ id, input }) {
     const updateFields = []
     const updateValues = []
@@ -111,13 +107,6 @@ export class TurnoModel {
 
       await con.query(updateQuery, updateValues)
 
-      // Actualizar los valores de los identificadores si no han sido proporcionados en el input
-      input.id_agenda_base = input.id_agenda_base || (await TurnoModel.getById({ id })).id_agenda_base
-      input.id_paciente = input.id_paciente || (await TurnoModel.getById({ id })).id_paciente
-      input.id_profesional = input.id_profesional || (await TurnoModel.getById({ id })).id_profesional
-      input.id_especialidad = input.id_especialidad || (await TurnoModel.getById({ id })).id_especialidad
-      input.id_estado_turno = input.id_estado_turno || (await TurnoModel.getById({ id })).id_estado_turno
-
       const [turno] = await con.query('SELECT * FROM turnos WHERE id_turno = ?;', [id])
       return turno.length
         ? {
@@ -133,7 +122,6 @@ export class TurnoModel {
     }
   }
 
-  // Eliminar un turno
   static async delete ({ id }) {
     try {
       await con.query('DELETE FROM turnos WHERE id_turno = ?;', [id])
@@ -144,7 +132,6 @@ export class TurnoModel {
     }
   }
 
-  // Obtener turnos por fecha
   static async getByFecha ({ fecha }) {
     try {
       const [rows] = await con.query('SELECT * FROM turnos WHERE fecha = ?;', [fecha])
@@ -160,7 +147,6 @@ export class TurnoModel {
     }
   }
 
-  // Obtener turnos por paciente
   static async getByPaciente ({ id_paciente }) {
     try {
       const [rows] = await con.query('SELECT * FROM turnos WHERE id_paciente = ?;', [id_paciente])
@@ -176,10 +162,9 @@ export class TurnoModel {
     }
   }
 
-  // Obtener turnos por especialidad
-  static async getByEspecialidad ({ id_especialidad }) {
+  static async getByEstadoTurno ({ id_estado_turno }) {
     try {
-      const [rows] = await con.query('SELECT * FROM turnos WHERE id_especialidad = ?;', [id_especialidad])
+      const [rows] = await con.query('SELECT * FROM turnos WHERE id_estado_turno = ?;', [id_estado_turno])
       return rows.map(row => ({
         ...row,
         fecha: formatDate(row.fecha),
@@ -187,135 +172,11 @@ export class TurnoModel {
         horario_fin: formatTime(row.horario_fin)
       }))
     } catch (error) {
-      console.error('Error al obtener turnos por especialidad:', error)
-      throw new Error('Error al obtener turnos por especialidad')
+      console.error('Error al obtener turnos por estado de turno:', error)
+      throw new Error('Error al obtener turnos por estado de turno')
     }
   }
 
-  // Contar turnos por fecha
-  static async countTurnosByFecha ({ fecha }) {
-    try {
-      const [rows] = await con.query('SELECT COUNT(*) as total FROM turnos WHERE fecha = ?;', [fecha])
-      return rows[0].total
-    } catch (error) {
-      console.error('Error al contar turnos por fecha:', error)
-      throw new Error('Error al contar turnos por fecha')
-    }
-  }
-
-  // Obtener turnos por rango de horas
-  static async getByHoraRange ({ startTime, endTime }) {
-    try {
-      const [rows] = await con.query('SELECT * FROM turnos WHERE horario_inicio BETWEEN ? AND ?;', [startTime, endTime])
-      return rows.map(row => ({
-        ...row,
-        fecha: formatDate(row.fecha),
-        horario_inicio: formatTime(row.horario_inicio),
-        horario_fin: formatTime(row.horario_fin)
-      }))
-    } catch (error) {
-      console.error('Error al obtener turnos por rango de horas:', error)
-      throw new Error('Error al obtener turnos por rango de horas')
-    }
-  }
-
-  // Obtener turnos en una semana específica para un profesional
-  static async getTurnosInWeek ({ id_profesional, weekStart, weekEnd }) {
-    try {
-      const [rows] = await con.query('SELECT * FROM turnos WHERE id_profesional = ? AND fecha BETWEEN ? AND ?;', [id_profesional, weekStart, weekEnd])
-      return rows.map(row => ({
-        ...row,
-        fecha: formatDate(row.fecha),
-        horario_inicio: formatTime(row.horario_inicio),
-        horario_fin: formatTime(row.horario_fin)
-      }))
-    } catch (error) {
-      console.error('Error al obtener turnos de un profesional en una semana específica:', error)
-      throw new Error('Error al obtener turnos de un profesional en una semana específica')
-    }
-  }
-
-  // Obtener turnos en una semana específica
-  static async getTurnosInWeekGeneral ({ weekStart, weekEnd }) {
-    try {
-      const [rows] = await con.query('SELECT * FROM turnos WHERE fecha BETWEEN ? AND ?;', [weekStart, weekEnd])
-      return rows.map(row => ({
-        ...row,
-        fecha: formatDate(row.fecha),
-        horario_inicio: formatTime(row.horario_inicio),
-        horario_fin: formatTime(row.horario_fin)
-      }))
-    } catch (error) {
-      console.error('Error al obtener turnos en una semana específica:', error)
-      throw new Error('Error al obtener turnos en una semana específica')
-    }
-  }
-
-  // Obtener turnos por profesional en un rango de fechas
-  static async getByProfesionalBetweenDates ({ id_profesional, startDate, endDate }) {
-    try {
-      const [rows] = await con.query('SELECT * FROM turnos WHERE id_profesional = ? AND fecha BETWEEN ? AND ?;', [id_profesional, startDate, endDate])
-      return rows.map(row => ({
-        ...row,
-        fecha: formatDate(row.fecha),
-        horario_inicio: formatTime(row.horario_inicio),
-        horario_fin: formatTime(row.horario_fin)
-      }))
-    } catch (error) {
-      console.error('Error al obtener turnos de un profesional entre fechas:', error)
-      throw new Error('Error al obtener turnos de un profesional entre fechas')
-    }
-  }
-
-  // Obtener turnos por especialidad en un rango de fechas
-  static async getByEspecialidadBetweenDates ({ id_especialidad, startDate, endDate }) {
-    try {
-      const [rows] = await con.query('SELECT * FROM turnos WHERE id_especialidad = ? AND fecha BETWEEN ? AND ?;', [id_especialidad, startDate, endDate])
-      return rows.map(row => ({
-        ...row,
-        fecha: formatDate(row.fecha),
-        horario_inicio: formatTime(row.horario_inicio),
-        horario_fin: formatTime(row.horario_fin)
-      }))
-    } catch (error) {
-      console.error('Error al obtener turnos de una especialidad entre fechas:', error)
-      throw new Error('Error al obtener turnos de una especialidad entre fechas')
-    }
-  }
-
-  // Obtener turnos en un mes específico para un profesional
-  static async getTurnosInMonth ({ id_profesional, month, year }) {
-    try {
-      const [rows] = await con.query('SELECT * FROM turnos WHERE id_profesional = ? AND MONTH(fecha) = ? AND YEAR(fecha) = ?;', [id_profesional, month, year])
-      return rows.map(row => ({
-        ...row,
-        fecha: formatDate(row.fecha),
-        horario_inicio: formatTime(row.horario_inicio),
-        horario_fin: formatTime(row.horario_fin)
-      }))
-    } catch (error) {
-      console.error('Error al obtener turnos de un profesional en un mes específico:', error)
-      throw new Error('Error al obtener turnos de un profesional en un mes específico')
-    }
-  }
-
-  // Obtener turnos en un mes específico para una especialidad
-  static async getTurnosInMonthByEspecialidad ({ id_especialidad, month, year }) {
-    try {
-      const [rows] = await con.query('SELECT * FROM turnos WHERE id_especialidad = ? AND MONTH(fecha) = ? AND YEAR(fecha) = ?;', [id_especialidad, month, year])
-      return rows.map(row => ({
-        ...row,
-        fecha: formatDate(row.fecha),
-        horario_inicio: formatTime(row.horario_inicio),
-        horario_fin: formatTime(row.horario_fin)
-      }))
-    } catch (error) {
-      console.error('Error al obtener turnos de una especialidad en un mes específico:', error)
-      throw new Error('Error al obtener turnos de una especialidad en un mes específico')
-    }
-  }
-
-  // Obtener turnos que contienen un motivo de consulta específico
   static async getByMotivoConsulta ({ consulta }) {
     try {
       const [rows] = await con.query('SELECT * FROM turnos WHERE motivo_consulta LIKE ?;', [`%${consulta}%`])

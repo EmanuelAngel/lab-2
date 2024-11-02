@@ -1,0 +1,33 @@
+### Obtener todas las relaciones dia-agenda
+GET http://localhost:3001/dias_agendas
+
+### Obtener una relación dia-agenda por ID
+GET http://localhost:3001/dias_agendas/1/1
+
+### Crear una nueva relación dia-agenda
+POST http://localhost:3001/dias_agendas
+Content-Type: application/json
+
+{
+  "id_dia": 1,
+  "id_agenda_base": 2,
+  "horario_inicio": "08:00:00",
+  "horario_fin": "10:00:00"
+}
+
+### Actualizar parcialmente una relación dia-agenda
+PATCH http://localhost:3001/dias_agendas/1/2
+Content-Type: application/json
+
+{
+  "horario_inicio": "09:00:00"
+}
+
+### Eliminar una relación dia-agenda
+DELETE http://localhost:3001/dias_agendas/1/2
+
+### Obtener relaciones por ID de día
+GET http://localhost:3001/dias_agendas/dia/1
+
+### Obtener relaciones por rango de horario
+GET http://localhost:3001/dias_agendas/horario/08:00:00/11:00:00

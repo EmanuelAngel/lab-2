@@ -13,7 +13,7 @@ export class EspecialidadesModel {
       const [rows] = await con.query('SELECT * FROM especialidades WHERE estado = 1;')
       return rows
     } catch (error) {
-      console.error('Error al obtener todos las especialidades:', error)
+      console.error('Error al obtener todas las especialidades:', error)
       throw new Error('Error al obtener las especialidades')
     }
   }
@@ -32,7 +32,7 @@ export class EspecialidadesModel {
     const { nombre } = input
     try {
       await con.query(
-        `INSERT INTO especialidades (nombre)
+        `INSERT INTO especialidades (nombre, estado)
         VALUES (?, 1);`,
         [nombre]
       )
@@ -91,8 +91,18 @@ export class EspecialidadesModel {
       const [especialidades] = await con.query('SELECT * FROM especialidades WHERE id_especialidad = ?;', [id])
       return especialidades.length ? especialidades[0] : null
     } catch (error) {
-      console.error('Error al actualizar el especialidad:', error)
-      throw new Error('Error al actualizar el especialidad')
+      console.error('Error al actualizar la especialidad:', error)
+      throw new Error('Error al actualizar la especialidad')
+    }
+  }
+
+  static async getByPartialName ({ nombre }) {
+    try {
+      const [rows] = await con.query('SELECT * FROM especialidades WHERE nombre LIKE ? AND estado = 1;', [`%${nombre}%`])
+      return rows
+    } catch (error) {
+      console.error('Error al obtener especialidades por nombre parcial:', error)
+      throw new Error('Error al obtener especialidades por nombre parcial')
     }
   }
 }

@@ -2,7 +2,6 @@ import { validateEspecialidadesProfesional, validatePartialEspecialidadesProfesi
 import { EspecialidadesProfesionalModel } from '../models/especialidades_profesional.model.js'
 
 export class EspecialidadesProfesionalController {
-  // Obtener todas las relaciones de especialidades con profesionales
   getAll = async (req, res) => {
     try {
       const especialidadesProfesionales = await EspecialidadesProfesionalModel.getAll()
@@ -13,7 +12,6 @@ export class EspecialidadesProfesionalController {
     }
   }
 
-  // Obtener una relación especialidad-profesional por IDs de profesional y especialidad
   getById = async (req, res) => {
     try {
       const { id_profesional, id_especialidad } = req.params
@@ -30,13 +28,12 @@ export class EspecialidadesProfesionalController {
     }
   }
 
-  // Crear una nueva relación especialidad-profesional
   create = async (req, res) => {
     try {
       const result = validateEspecialidadesProfesional(req.body)
 
-      if (result.error) {
-        return res.status(422).json({ error: JSON.parse(result.error.message) })
+      if (!result.success) {
+        return res.status(422).json({ error: result.error.issues })
       }
 
       const createdEspecialidadProfesional = await EspecialidadesProfesionalModel.create({ input: result.data })
@@ -51,7 +48,6 @@ export class EspecialidadesProfesionalController {
     }
   }
 
-  // Desactivar una relación especialidad-profesional
   deactivate = async (req, res) => {
     try {
       const { id_profesional, id_especialidad } = req.params
@@ -68,7 +64,6 @@ export class EspecialidadesProfesionalController {
     }
   }
 
-  // Activar una relación especialidad-profesional
   activate = async (req, res) => {
     try {
       const { id_profesional, id_especialidad } = req.params
@@ -85,13 +80,12 @@ export class EspecialidadesProfesionalController {
     }
   }
 
-  // Actualizar parcialmente una relación especialidad-profesional
   partiallyUpdate = async (req, res) => {
     try {
       const result = validatePartialEspecialidadesProfesional(req.body)
 
-      if (result.error) {
-        return res.status(422).json({ error: JSON.parse(result.error.message) })
+      if (!result.success) {
+        return res.status(422).json({ error: result.error.issues })
       }
 
       const { id_profesional, id_especialidad } = req.params
@@ -111,14 +105,14 @@ export class EspecialidadesProfesionalController {
   // Obtener todas las especialidades de un profesional
   getByProfesional = async (req, res) => {
     try {
-      const { id_profesional } = req.params // Asegúrate de que estás tomando el parámetro correcto
+      const { id_profesional } = req.params
       const especialidades = await EspecialidadesProfesionalModel.getByProfesional({ id_profesional })
 
-      if (!especialidades.length) { // Cambia esto para que compruebe la longitud
+      if (!especialidades.length) {
         return res.status(404).json({ error: 'No se encontraron especialidades para este profesional' })
       }
 
-      return res.json(especialidades) // Devuelve las especialidades encontradas
+      return res.json(especialidades)
     } catch (error) {
       console.error('Error al obtener las especialidades del profesional:', error)
       return res.status(500).json({ error: 'Error interno del servidor al obtener las especialidades del profesional' })
@@ -139,6 +133,22 @@ export class EspecialidadesProfesionalController {
     } catch (error) {
       console.error('Error al obtener los profesionales con la especialidad:', error)
       return res.status(500).json({ error: 'Error interno del servidor al obtener los profesionales con la especialidad' })
+    }
+  }
+
+  getByMatricula = async (req, res) => {
+    try {
+      const { matricula } = req.params
+      const especialidadProfesional = await EspecialidadesProfesionalModel.getByMatricula({ matricula })
+
+      if (!especialidadProfesional) {
+        return res.status(404).json({ error: 'Relación especialidad-profesional no encontrada para esta matrícula' })
+      }
+
+      return res.json(especialidadProfesional)
+    } catch (error) {
+      console.error('Error al obtener la relación especialidad-profesional por matrícula:', error)
+      return res.status(500).json({ error: 'Error interno del servidor al obtener la relación especialidad-profesional por matrícula' })
     }
   }
 }
