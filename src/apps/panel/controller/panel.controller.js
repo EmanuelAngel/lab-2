@@ -107,4 +107,41 @@ export class PanelController {
       }
     )
   }
+
+  especialidades = async (req, res) => {
+    const especialidades = await EspecialidadesModel.getAll()
+    res.render('pages/panel/especialidades/index',
+      {
+        title: 'Especialidades',
+        especialidades
+      }
+    )
+  }
+
+  createEspecialidades = async (req, res) => {
+    const especialidades = await EspecialidadesModel.getAll()
+
+    res.render('pages/panel/especialidades/registrarEsp',
+      {
+        title: 'Crear Especialidad',
+        especialidades
+      }
+    )
+  }
+
+  editEspecialidades = async (req, res) => {
+    const id = req.params.id
+    const especialidades = await ProfesionalesModel.getByIdWithUser({ id })
+
+    if (!especialidades) {
+      return res.status(404).json({ message: 'Especialidad no encontrado' })
+    }
+
+    res.render('pages/panel/especialidades/edit',
+      {
+        title: 'Editar Especialidad',
+        especialidades
+      }
+    )
+  }
 }

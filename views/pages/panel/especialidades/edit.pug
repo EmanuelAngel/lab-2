@@ -1,0 +1,73 @@
+extends ../../../layouts/base-layout
+
+include ../../../lib/especialidadesForm
+
+block navbar
+  include ../../../lib/NavBar
+
+block content
+  +especialidadesForm({
+    formId: 'especialidadForm',
+    title: 'Editar Especialidad',
+    returnUrl: '/panel/especialidades',
+    submitText: 'Actualizar Especialidad',
+    initialData: especialidad
+  })
+    input(type="hidden" name="id_especialidad" value=especialidad.id_especialidad)
+    
+    .mb-3
+      label.form-label(for="nombre_especialidad") Nombre de la Especialidad *
+      input#nombre_especialidad.form-control(
+        type="text"
+        name="nombre"
+        required
+        value=especialidad.nombre
+      )
+      .error-message.text-danger(style="display: none;")
+
+block scripts
+  script(type="module").
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('#especialidadForm')
+      const nombreEspecialidad = form.querySelector('#nombre_especialidad')
+
+      // Validación en tiempo real
+      nombreEspecialidad.addEventListener('input', () => {
+        if (nombreEspecialidad.value.length < 3) {
+          nombreEspecialidad.classList.add('is-invalid')
+        } else {
+          nombreEspecialidad.classList.remove('is-invalid')
+        }
+      })
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault()
+
+        if (nombreEspecialidad.value.trim().length < 3) {
+          alert('El nombre debe tener al menos 3 caracteres')
+          return
+        }
+
+        const especialidadId = form.querySelector('input[name="id_especialidad"]').value
+        const nombre = nombreEspecialidad.value.trim()
+        
+        try {
+          const response = await fetch(`/especialidades/${especialidadId}/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre })
+          })
+
+          if (response.ok) {
+            alert('Especialidad actualizada exitosamente.')
+            window.location.href = '/panel/especialidades'
+          } else {
+            const errorData = await response.json()
+            alert(errorData.error || 'Error al actualizar la especialidad')
+          }
+        } catch (error) {
+          console.error('Error:', error)
+          alert('Error al actualizar la especialidad')
+        }
+      })
+    })

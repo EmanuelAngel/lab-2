@@ -13,18 +13,18 @@ Content-Type: application/json
 }
 
 ### Desactivar una especialidad
-DELETE http://localhost:3001/especialidades/4
+DELETE http://localhost:3001/especialidades/4/desactivate
 
 ### Activar una especialidad
 PATCH  http://localhost:3001/especialidades/4/activate
 
 ### Actualizar una especialidad
-PATCH http://localhost:3001/especialidades/4/update
+PATCH http://localhost:3001/especialidades/9/update
 Content-Type: application/json
 
 {
-  "nombre": "Dermatología",
-  "estado": "1"
+  "nombre": "Pruebaa"
+
 }
 
 ### Buscar especialidades por nombre parcial

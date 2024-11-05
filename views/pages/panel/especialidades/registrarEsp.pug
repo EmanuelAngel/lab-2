@@ -1,0 +1,61 @@
+//- views/panel/especialidades/registrarEsp.pug
+extends ../../../layouts/base-layout
+include ../../../lib/especialidadesForm
+
+block navbar
+  include ../../../lib/NavBar
+
+block styles 
+  style.
+    .especialidad-item {
+      border: 1px solid #404040;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.3rem;
+    }
+
+block content
+  +especialidadesForm({
+    formId: 'especialidadesForm',
+    title: 'Registrar Especialidad',
+    returnUrl: '/panel/especialidades',
+    submitText: 'Registrar Especialidad'
+  })
+
+block scripts
+  script(type="module").
+    import { validateField, submitForm, baseValidationRules } from '/js/baseValidation.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('#especialidadesForm');
+      const nombreField = form.querySelector('#nombre');
+
+      // Validación en tiempo real usando validateField de baseValidation.js
+      nombreField.addEventListener('input', () => validateField(nombreField));
+      nombreField.addEventListener('blur', () => validateField(nombreField));
+
+      // Función para obtener datos del formulario
+      function getFormData() {
+        return {
+          nombre: nombreField.value.trim()
+        };
+      }
+
+      // Configuración de envío del formulario usando submitForm de baseValidation.js
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const success = await submitForm(
+          form,
+          '/especialidades',
+          getFormData,
+          () => validateField(nombreField, baseValidationRules)
+        );
+
+        if (success) {
+          setTimeout(() => {
+            window.location.href = '/panel/especialidades';
+          }, 1500);
+        }
+      });
+    });

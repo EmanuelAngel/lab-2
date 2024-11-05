@@ -40,6 +40,13 @@ export const baseValidationRules = {
     required: true,
     minLength: 3,
     message: 'La contraseña debe tener al menos 3 caracteres'
+  },
+
+  nombre_especialidad: {
+    required: true,
+    minLength: 3,
+    pattern: /^[A-Za-zÀ-ÿ\s]+$/,
+    message: 'El nombre de la especialidad es obligatorio y debe tener al menos 3 caracteres.'
   }
 }
 

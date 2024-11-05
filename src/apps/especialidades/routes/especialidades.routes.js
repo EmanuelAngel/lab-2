@@ -9,7 +9,7 @@ export function especialidadesRouter () {
   router.get('/', especialidadesController.getAll)
   router.get('/:id', especialidadesController.getById)
   router.post('/', especialidadesController.create)
-  router.delete('/:id', especialidadesController.deactivate)
+  router.patch('/:id/desactivate', especialidadesController.deactivate)
   router.patch('/:id/activate', especialidadesController.activate)
   router.patch('/:id/update', especialidadesController.partiallyUpdate)
   router.get('/search/:nombre', especialidadesController.getByPartialName)

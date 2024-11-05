@@ -1,0 +1,197 @@
+extends ../../../layouts/base-layout
+
+block navbar
+  include ../../../lib/NavBar
+
+block content
+  .row
+    .col-md-12.d-grid.gap-4
+      h1 Especialidades
+      a.btn.btn-primary.d-flex.gap-2.justify-content-center(
+        style="width: max-content",
+        href="/panel/especialidades/registrarEsp"
+      )
+        i.bi.bi-plus
+        | Registrar Especialidades
+
+      .table-responsive
+        table.table.table-striped.table-bordered.align-middle
+          thead
+            tr.align-middle
+              th N° 
+              th Nombre
+              th Estado
+              th Acciones
+
+          tbody
+            each especialidad in especialidades
+              tr 
+                td= especialidad.id_especialidad
+                td= especialidad.nombre
+                td 
+                  if especialidad.estado
+                    span.badge.bg-success Activo
+                  else
+                    span.badge.bg-danger Inactivo
+                td
+                  a.btn.btn-outline-primary.border-0.d-flex.gap-2.mb-2(
+                    href=`/panel/especialidades/edit/${especialidad.id_especialidad}`
+                  )
+                    i.bi.bi-pencil
+                    | Editar
+                  if especialidad.estado
+                    button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-especialidad(
+                      data-id=especialidad.id_especialidad
+                    )
+                      i.bi.bi-ban
+                      | Desactivar
+                  else
+                    a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-especialidad(
+                      data-id=especialidad.id_especialidad
+                    )
+                      i.bi.bi-check-lg  
+                      | Activar
+
+  // Modales de confirmación
+  div.modal.fade#deactivateModal(
+    tabindex="-1",
+    aria-labelledby="deactivateModalLabel",
+    aria-hidden="true"
+  )
+    div.modal-dialog.modal-dialog-centered
+      div.modal-content
+        div.modal-header
+          h5.modal-title#deactivateModalLabel Confirmar Desactivación
+        div.modal-body
+          p ¿Está seguro que desea desactivar esta especialidad?
+        div.modal-footer
+          button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+          button.btn.btn-danger#confirmDeactivate(type="button") Desactivar
+
+  div.modal.fade#activateModal(
+    tabindex="-1",
+    aria-labelledby="activateModalLabel",
+    aria-hidden="true"
+  )
+    div.modal-dialog.modal-dialog-centered
+      div.modal-content
+        div.modal-header
+          h5.modal-title#activateModalLabel Confirmar Activación
+        div.modal-body
+          p ¿Está seguro que desea activar esta especialidad?
+        div.modal-footer
+          button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+          button.btn.btn-success#confirmActivate(type="button") Activar
+
+block scripts
+  script(type="module").
+    import { showToast } from '/js/showToast.js';
+
+    let idEspecialidad;
+
+    // Función para agregar event listeners a los botones de desactivar
+    const addDeactivateListeners = () => {
+      const deactivateButtons = document.querySelectorAll('.deactivate-especialidad');
+      deactivateButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          idEspecialidad = button.getAttribute('data-id');
+          const modal = new bootstrap.Modal(document.getElementById('deactivateModal'));
+          modal.show();
+        });
+      });
+    };
+
+    // Función para agregar event listeners a los botones de activar
+    const addActivateListeners = () => {
+      const activateButtons = document.querySelectorAll('.activate-especialidad');
+      activateButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          idEspecialidad = button.getAttribute('data-id');
+          const modal = new bootstrap.Modal(document.getElementById('activateModal'));
+          modal.show();
+        });
+      });
+    };
+
+    // Inicializar los listeners
+    addDeactivateListeners();
+    addActivateListeners();
+
+    // Función para activar especialidad
+    const activateEspecialidad = () => {
+      fetch(`/especialidades/${idEspecialidad}/activate`, {
+        method: 'PATCH',
+      })
+        .then((res) => {
+          if (res.ok) {
+            const row = document.querySelector(`a[data-id="${idEspecialidad}"]`).closest('tr');
+            const estadoCell = row.querySelector('td:nth-child(3)');
+            estadoCell.innerHTML = '<span class="badge bg-success">Activo</span>';
+
+            const actionCell = row.querySelector('td:last-child');
+            actionCell.innerHTML = `
+              <a class="btn btn-outline-primary border-0 d-flex gap-2 mb-2" href="/panel/especialidades/edit/${idEspecialidad}">
+                <i class="bi bi-pencil"></i>
+                Editar
+              </a>
+              <button class="btn btn-outline-danger border-0 d-flex gap-2 deactivate-especialidad" data-id="${idEspecialidad}">
+                <i class="bi bi-ban"></i>
+                Desactivar
+              </button>
+            `;
+
+            addDeactivateListeners();
+            showToast('Especialidad <strong>ACTIVADA</strong> correctamente', 'success');
+          } else {
+            showToast('<strong>Error</strong> al activar la especialidad', 'warning');
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          showToast('<strong>Error fatal</strong> al activar la especialidad', 'danger');
+        });
+
+      const modal = bootstrap.Modal.getInstance(document.getElementById('activateModal'));
+      modal.hide();
+    };
+
+    // Event listener para el botón de confirmar activación
+    document.getElementById('confirmActivate').addEventListener('click', activateEspecialidad);
+
+    // Event listener para el botón de confirmar desactivación
+    document.getElementById('confirmDeactivate').addEventListener('click', () => {
+      fetch(`/especialidades/${idEspecialidad}/desactivate`, {
+        method: 'PATCH',
+      })
+        .then((res) => {
+          if (res.ok) {
+            const row = document.querySelector(`button[data-id="${idEspecialidad}"]`).closest('tr');
+            const estadoCell = row.querySelector('td:nth-child(3)');
+            estadoCell.innerHTML = '<span class="badge bg-danger">Inactivo</span>';
+
+            const actionCell = row.querySelector('td:last-child');
+            actionCell.innerHTML = `
+              <a class="btn btn-outline-primary border-0 d-flex gap-2 mb-2" href="/panel/especialidades/edit/${idEspecialidad}">
+                <i class="bi bi-pencil"></i>
+                Editar
+              </a>
+              <a class="btn btn-outline-success border-0 d-flex gap-2 activate-especialidad" data-id="${idEspecialidad}">
+                <i class="bi bi-check-lg"></i>
+                Activar
+              </a>
+            `;
+
+            addActivateListeners();
+            showToast('Especialidad <strong>DESACTIVADA</strong> correctamente', 'success');
+          } else {
+            showToast('<strong>Error</strong> al desactivar la especialidad', 'warning');
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          showToast('<strong>Error fatal</strong> al desactivar la especialidad', 'danger');
+        });
+
+      const modal = bootstrap.Modal.getInstance(document.getElementById('deactivateModal'));
+      modal.hide();
+    });

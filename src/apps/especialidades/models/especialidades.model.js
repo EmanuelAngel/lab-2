@@ -10,7 +10,7 @@ const con = await mysql.createConnection(connectionString)
 export class EspecialidadesModel {
   static async getAll () {
     try {
-      const [rows] = await con.query('SELECT * FROM especialidades WHERE estado = 1;')
+      const [rows] = await con.query('SELECT * FROM especialidades;')
       return rows
     } catch (error) {
       console.error('Error al obtener todas las especialidades:', error)

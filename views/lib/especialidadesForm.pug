@@ -1,0 +1,24 @@
+//- mixins/forms/especialidadesForm.pug
+mixin especialidadesForm(config)
+  form(id=config.formId style="max-width: 400px; margin: 0 auto;" )
+    h1.mb-3= config.title || 'Especialidad'
+
+    .mb-3
+      a.btn.btn-secondary.d-flex.gap-2.mb-3(href=config.returnUrl, style="width: max-content;")
+        i.bi.bi-arrow-left
+        | Regresar
+
+    .mb-3
+      label.form-label(for="nombre") Nombre de la Especialidad *
+      input#nombre.form-control(
+        type="text"
+        name="nombre_especialidad"
+        required
+        value=config.initialData ? config.initialData.nombre || '' : ''
+      )
+      // Contenedor para el mensaje de error
+      .error-message.text-danger(style="display: none;")
+
+    .pt-3.pb-3
+      button.btn.btn-primary(type="submit")= config.submitText || 'Guardar'
+      
