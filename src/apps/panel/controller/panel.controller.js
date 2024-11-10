@@ -4,6 +4,7 @@
 // import { PacientesModel } from '../../pacientes/models/pacientes.model.js'
 import { ProfesionalesModel } from '../../profesionales/models/profesionales.model.js'
 import { EspecialidadesModel } from '../../especialidades/models/especialidades.model.js'
+import { PacientesModel } from '../../pacientes/models/pacientes.model.js'
 
 export class PanelController {
   index = async (req, res) => {
@@ -141,6 +142,17 @@ export class PanelController {
       {
         title: 'Editar Especialidad',
         especialidades
+      }
+    )
+  }
+
+  pacientes = async (req, res) => {
+    const pacientes = await PacientesModel.getAllWithUser()
+
+    res.render('pages/panel/pacientes/index',
+      {
+        title: 'Pacientes',
+        pacientes
       }
     )
   }

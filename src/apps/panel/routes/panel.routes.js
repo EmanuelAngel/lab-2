@@ -22,5 +22,11 @@ export function panelRouter () {
   router.get('/especialidades', panelController.especialidades)
   router.get('/especialidades/registrarEsp', panelController.createEspecialidades)
   router.get('/especialidades/edit/:id', panelController.editEspecialidades)
+
+  // Pacientes
+
+  router.get('/pacientes', panelController.pacientes)
+  // router.get('/profesionales/edit/:id', panelController.editPaciente)
+
   return router
 }

@@ -32,3 +32,22 @@ GET http://localhost:3001/pacientes/obra_social/1
 
 ### Obtener pacientes por usuario
 GET http://localhost:3001/pacientes/usuario/2
+
+### Crear un profesional con usuario y especialidades
+POST http://localhost:3001/pacientes/users
+Content-Type: application/json
+
+{
+  "nombre_usuario": "Pedrito",
+  "nombre": "Pedrito",
+  "contraseña": "Pedrito",
+  "apellido": "Pedrito",
+  "dni": "12345699",
+  "telefono": "12345678",
+  "direccion": "C/ Juan Seba, 1",
+  "email": "PedritoPedrito@gmail.com",
+  "obras_sociales": [
+    { "obra_social_id": 1 },
+    { "obra_social_id": 2 }
+  ]
+}

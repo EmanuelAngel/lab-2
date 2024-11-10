@@ -1,5 +1,11 @@
 import { z } from 'zod'
 
+import {
+  baseUsuarioSchema,
+  baseUsuarioValidations
+}
+  from '../../../usuarios/controller/schemas/usuarios.schema.js'
+
 // Esquema para validar los datos de un paciente
 const pacientesSchema = z.object({
   tiene_obra_social: z.enum(['0', '1']),
@@ -16,3 +22,15 @@ export function validatePacientes (object) {
 export function validatePartialPacientes (object) {
   return pacientesSchema.partial().safeParse(object)
 }
+
+const pacientesWithUserSchema = baseUsuarioSchema.extend({
+  obras_sociales: z.array(z.object({
+    obra_social_id: z.number().int().positive()
+  })).optional().default([])
+})
+
+export const validatePacientesWithUser =
+baseUsuarioValidations.validateWithUsuario(pacientesWithUserSchema)
+
+export const validatePartialPacientesWithUser =
+baseUsuarioValidations.validatePartialWithUsuario(pacientesWithUserSchema)

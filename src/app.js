@@ -8,7 +8,6 @@ import { corsMiddleware } from './middlewares/cors.js'
 Auth
 import cookieParser from 'cookie-parser'
 import verifyToken from './middlewares/auth/verifyToken.js'
-import { authRouter } from './apps/auth/routes/auth.routes.js'
 
 Roles Middlewares
 import isLoggedIn from './middlewares/auth/isLoggedIn.js'
@@ -17,6 +16,8 @@ import isSecre from './middlewares/auth/isSecre.js'
 import isProfesional from './middlewares/auth/isProfesional.js'
 
 */
+
+import { authRouter } from './apps/auth/routes/auth.routes.js'
 
 import { panelRouter } from './apps/panel/routes/panel.routes.js'
 
@@ -59,7 +60,7 @@ export function createApp () {
     res.render('pages/index', { title: 'Inicio' })
   )
 
-  // (Auth) app.use('/auth', authRouter())
+  app.use('/auth', authRouter())
 
   app.use('/panel', panelRouter())
 

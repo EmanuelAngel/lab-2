@@ -20,3 +20,25 @@ export function validateUsuarios (object) {
 export function validatePartialUsuarios (object) {
   return usuariosSchema.partial().safeParse(object)
 }
+
+export const baseUsuarioSchema = z.object({
+  nombre_usuario: z.string().min(3),
+  nombre: z.string().min(3),
+  contraseña: z.string().min(3),
+  apellido: z.string().min(3),
+  dni: z.string().min(3),
+  telefono: z.string().min(3),
+  direccion: z.string().min(3),
+  email: z.string().min(3)
+})
+
+export const baseUsuarioValidations = {
+  validateWithUsuario
+  (schema) {
+    return (object) => schema.safeParse(object)
+  },
+  validatePartialWithUsuario
+  (schema) {
+    return (object) => schema.partial().safeParse(object)
+  }
+}

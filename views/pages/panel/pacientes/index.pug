@@ -12,72 +12,68 @@ block navbar
 block content
   .row
     .col-md-12.d-grid.gap-4
-      h1 Profesionales
+      h1 Pacientes
       a.btn.btn-primary.d-flex.gap-2.justify-content-center(
         style="width: max-content",
-        href="/panel/profesionales/register"
+        href="/auth/register"
         )
         i.bi.bi-plus
-        |Registrar Profesional
-        
+        |Registrar Paciente
       .table-responsive
-        table#tablaProfesionales.table.table-striped.table-bordered.align-middle
+        table#tablaPacientes.table.table-striped.table-bordered.align-middle
           thead
             tr.align-middle
-              th Nombre Usuario
+              th Nombre de Usuario
               th Nombre
               th Apellido
               th DNI
-              th Especialidad
+              th Obra/s Social/es
               th Teléfono 
               th Dirección
               th E-mail
               th Estado
               th Acciones
           tbody
-            each profesional in profesionales
+            each paciente in pacientes
               tr 
-                td= profesional.nombre_usuario
-                td= profesional.nombre
-                td= profesional.apellido
-                td= profesional.dni
+                td= paciente.nombre_usuario
+                td= paciente.nombre
+                td= paciente.apellido
+                td= paciente.dni
                 td
-                  if profesional.especialidades != null 
-                    if profesional.especialidades.length > 0
-                      .d-flex.flex-column.gap-2
-                        each especialidad in profesional.especialidades 
-                          span.badge.bg-secondary
-                            |  #{especialidad.especialidad || '?'}
-                            | - 
-                            |  #{especialidad.matricula || '?'}
-                    else
-                      span Sin Especialidad
+                  if paciente.obras_sociales && paciente.obras_sociales.length > 0
+                    .d-flex.flex-column.gap-2
+                      each obra_social in paciente.obras_sociales
+                        if obra_social == null
+                          span Sin Obra Social
+                        else
+                          span.badge.bg-secondary= obra_social.obra_social
                   else
-                    span Sin Especialidades
+                    span Sin Obra Social
 
-                td= profesional.telefono
-                td= profesional.direccion
-                td= profesional.email 
+                td= paciente.telefono
+                td= paciente.direccion
+                td= paciente.email 
                 td 
-                  if profesional.estado_profesional
+                  if paciente.estado_paciente
                     span.badge.bg-success Activo
                   else
                     span.badge.bg-danger Inactivo
                 td
                   a.btn.btn-outline-primary.border-0.d-flex.gap-2.mb-2(
-                    href=`/panel/profesionales/edit/${profesional.id_profesional}`
+                    href=`/panel/pacientes/edit/${paciente.id_paciente}`
                     )
                     i.bi.bi-pencil
                     | Editar
-                  if profesional.estado_profesional
-                    button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-profesional(
-                      data-id=profesional.id_profesional
+                  if paciente.estado_paciente
+                    button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-paciente(
+                      data-id=paciente.id_paciente
                     )
                       i.bi.bi-ban
                       | Desactivar
                   else
-                    a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-profesional(
-                      data-id=profesional.id_profesional
+                    a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-paciente(
+                      data-id=paciente.id_paciente
                       )
                       i.bi.bi-check-lg  
                       | Activar
@@ -92,7 +88,7 @@ block content
         div.modal-header
           h5.modal-title#deactivateModalLabel Confirmar Desactivación
         div.modal-body
-          p ¿Está seguro que desea desactivar este profesional?
+          p ¿Está seguro que desea desactivar este paciente?
         div.modal-footer
           button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
           button.btn.btn-danger#confirmDeactivate(type="button") Desactivar
@@ -107,25 +103,25 @@ block content
         div.modal-header
           h5.modal-title#activateModalLabel Confirmar Activación
         div.modal-body
-          p ¿Está seguro que desea activar este profesional?
+          p ¿Está seguro que desea activar este paciente?
         div.modal-footer
           button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
           button.btn.btn-success#confirmActivate(type="button") Activar
 
 block scripts
-  script(type="module").
-    import { showToast } from '/js/showToast.js'
+  script(type='module').
+    import { showToast } from '/js/showToast.js';
 
-    initTable({ tableId: '#tablaProfesionales' })
+    initTable({ tableId: '#tablaPacientes' })
 
-    let idProfesional;
+    let idPaciente;
 
     // Función para agregar event listeners a los botones de desactivar
     const addDeactivateListeners = () => {
-      const deactivateButtons = document.querySelectorAll('.deactivate-profesional');
+      const deactivateButtons = document.querySelectorAll('.deactivate-paciente');
       deactivateButtons.forEach((button) => {
         button.addEventListener('click', (e) => {
-          idProfesional = button.getAttribute('data-id');
+          idPaciente = button.getAttribute('data-id');
           const modal = new bootstrap.Modal(document.getElementById('deactivateModal'));
           modal.show();
         });
@@ -134,10 +130,10 @@ block scripts
 
     // Función para agregar event listeners a los botones de activar
     const addActivateListeners = () => {
-      const activateButtons = document.querySelectorAll('.activate-profesional');
+      const activateButtons = document.querySelectorAll('.activate-paciente');
       activateButtons.forEach((button) => {
         button.addEventListener('click', (e) => {
-          idProfesional = button.getAttribute('data-id');
+          idPaciente = button.getAttribute('data-id');
           const modal = new bootstrap.Modal(document.getElementById('activateModal'));
           modal.show();
         });
@@ -148,15 +144,15 @@ block scripts
     addDeactivateListeners();
     addActivateListeners();
 
-    // Función para activar profesional
-    const activateProfesional = () => {
-      fetch(`/profesionales/${idProfesional}/activate`, {
+    // Función para activar paciente
+    const activatePaciente = () => {
+      fetch(`/pacientes/${idPaciente}/activate`, {
         method: 'PATCH',
       })
         .then((res) => {
           if (res.ok) {
-            // Encontrar la fila del profesional
-            const row = document.querySelector(`a[data-id="${idProfesional}"]`).closest('tr');
+            // Encontrar la fila del paciente
+            const row = document.querySelector(`a[data-id="${idPaciente}"]`).closest('tr');
             
             // Actualizar el estado
             const estadoCell = row.querySelector('td:nth-last-child(2)');
@@ -165,11 +161,11 @@ block scripts
             // Actualizar los botones
             const actionCell = row.querySelector('td:last-child');
             actionCell.innerHTML = `
-              <a class="btn btn-outline-primary border-0 d-flex gap-2 mb-2" href="/panel/profesionales/edit/${idProfesional}">
+              <a class="btn btn-outline-primary border-0 d-flex gap-2 mb-2" href="/panel/pacientes/edit/${idPaciente}">
                 <i class="bi bi-pencil"></i>
                 Editar
               </a>
-              <button class="btn btn-outline-danger border-0 d-flex gap-2 deactivate-profesional" data-id="${idProfesional}">
+              <button class="btn btn-outline-danger border-0 d-flex gap-2 deactivate-paciente" data-id="${idPaciente}">
                 <i class="bi bi-ban"></i>
                 Desactivar
               </button>
@@ -178,14 +174,14 @@ block scripts
             // Agregar el listener al nuevo botón de desactivar
             addDeactivateListeners();
             
-            showToast('Profesional <strong>ACTIVADO</strong> correctamente', 'success');
+            showToast('Paciente <strong>ACTIVADO</strong> correctamente', 'success');
           } else {
-            showToast('<strong>Error</strong> al activar el profesional', 'warning');
+            showToast('<strong>Error</strong> al activar el paciente', 'warning');
           }
         })
         .catch((err) => {
           console.error(err);
-          showToast('<strong>Error fatal</strong> al activar el profesional', 'danger');
+          showToast('<strong>Error fatal</strong> al activar el paciente', 'danger');
         });
 
       const modal = bootstrap.Modal.getInstance(document.getElementById('activateModal'));
@@ -193,17 +189,17 @@ block scripts
     };
 
     // Event listener para el botón de confirmar activación
-    document.getElementById('confirmActivate').addEventListener('click', activateProfesional);
+    document.getElementById('confirmActivate').addEventListener('click', activatePaciente);
 
     // Event listener para el botón de confirmar desactivación
     document.getElementById('confirmDeactivate').addEventListener('click', () => {
-      fetch(`/profesionales/${idProfesional}`, {
+      fetch(`/pacientes/${idPaciente}`, {
         method: 'DELETE',
       })
         .then((res) => {
           if (res.ok) {
-            // Encontrar la fila del profesional
-            const row = document.querySelector(`button[data-id="${idProfesional}"]`).closest('tr');
+            // Encontrar la fila del paciente
+            const row = document.querySelector(`button[data-id="${idPaciente}"]`).closest('tr');
             
             // Actualizar el estado
             const estadoCell = row.querySelector('td:nth-last-child(2)');
@@ -212,11 +208,11 @@ block scripts
             // Actualizar los botones
             const actionCell = row.querySelector('td:last-child');
             actionCell.innerHTML = `
-              <a class="btn btn-outline-primary border-0 d-flex gap-2 mb-2" href="/panel/profesionales/edit/${idProfesional}">
+              <a class="btn btn-outline-primary border-0 d-flex gap-2 mb-2" href="/panel/pacientes/edit/${idPaciente}">
                 <i class="bi bi-pencil"></i>
                 Editar
               </a>
-              <a class="btn btn-outline-success border-0 d-flex gap-2 activate-profesional" data-id="${idProfesional}">
+              <a class="btn btn-outline-success border-0 d-flex gap-2 activate-paciente" data-id="${idPaciente}">
                 <i class="bi bi-check-lg"></i>
                 Activar
               </a>
@@ -225,16 +221,16 @@ block scripts
             // Agregar el listener al nuevo botón de activar
             addActivateListeners();
             
-            showToast('Profesional <strong>DESACTIVADO</strong> correctamente', 'success');
+            showToast('Paciente <strong>DESACTIVADO</strong> correctamente', 'success');
           } else {
-            showToast('<strong>Error</strong> al desactivar el profesional', 'warning');
+            showToast('<strong>Error</strong> al desactivar el paciente', 'warning');
           }
         })
         .catch((err) => {
           console.error(err);
-          showToast('<strong>Error fatal</strong> al desactivar el profesional', 'danger');
+          showToast('<strong>Error fatal</strong> al desactivar el paciente', 'danger');
         });
 
       const modal = bootstrap.Modal.getInstance(document.getElementById('deactivateModal'));
       modal.hide();
-    });   
+    });

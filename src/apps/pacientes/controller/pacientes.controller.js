@@ -1,10 +1,16 @@
-import { validatePacientes, validatePartialPacientes } from './schemas/pacientes.schemas.js'
+import {
+  validatePacientes,
+  validatePartialPacientes,
+  validatePacientesWithUser
+}
+  from './schemas/pacientes.schemas.js'
+
 import { PacientesModel } from '../models/pacientes.model.js'
 
 export class PacientesController {
   getAll = async (req, res) => {
     try {
-      const pacientes = await PacientesModel.getAll()
+      const pacientes = await PacientesModel.getAllWithUser()
       return res.json(pacientes)
     } catch (error) {
       console.error('Error al obtener todos los pacientes:', error)
@@ -137,6 +143,37 @@ export class PacientesController {
     } catch (error) {
       console.error('Error al obtener pacientes por usuario:', error)
       return res.status(500).json({ error: 'Error interno del servidor al obtener pacientes por usuario' })
+    }
+  }
+
+  createWithUser = async (req, res) => {
+    try {
+      // Validamos el cuerpo de la solicitud
+      const result = validatePacientesWithUser(req.body)
+      if (result.error) {
+        return res.status(422).json({ error: JSON.parse(result.error.message) })
+      }
+
+      // Intentamos crear un nuevo paciente
+      const createdPaciente = await PacientesModel.createWithUser({
+        input: result.data
+      })
+
+      return res.status(201).json({ created: createdPaciente })
+    } catch (error) {
+      // Si se produce un error específico de entrada duplicada
+      if (error.code === 'ER_DUP_ENTRY') {
+        console.error('Error al crear el paciente: Entrada duplicada:', error)
+        return res.status(409).json({
+          error: 'El nombre de usuario ingresado ya está registrado en el sistema'
+        })
+      }
+
+      // Si ocurre otro tipo de error, lo registramos y respondemos
+      console.error('Error al crear el paciente:', error)
+      return res.status(500).json({
+        error: 'Error interno del servidor al crear el paciente'
+      })
     }
   }
 }

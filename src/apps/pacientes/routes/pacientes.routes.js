@@ -15,5 +15,8 @@ export function pacientesRouter () {
   router.get('/obra_social/:tiene_obra_social', pacientesController.getByObraSocial) // Nueva ruta
   router.get('/usuario/:id_usuario', pacientesController.getByUsuario) // Nueva ruta
 
+  router.post('/users', pacientesController.createWithUser)
+  // router.put('/:id', pacientesController.updateWithUser)
+
   return router
 }

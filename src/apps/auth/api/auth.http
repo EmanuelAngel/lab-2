@@ -1,0 +1,17 @@
+### Rol 1 = Admin, Rol 2 = Secretari@, Rol 3 = Profesional, Rol 4 = Paciente
+
+### Registrar un profesional
+POST http://localhost:3001/auth/register
+Content-Type: application/json
+
+{
+  "id_rol": 1,
+  "nombre_usuario": "AngelEmanuel",
+  "contraseña": "128128128",
+  "nombre": "Emanuel",
+  "apellido": "Angel",
+  "dni": 44600506,
+  "telefono": 2147483647,
+  "direccion": "VdQ. 123",
+  "email": "angelemanuel@gmail.com"
+}

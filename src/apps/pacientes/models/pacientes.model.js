@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import mysql from 'mysql2/promise'
+import { hash } from 'bcrypt'
 
 const DEFAULT_CONFIG = {
   host: process.env.DB_HOST,
@@ -123,6 +124,122 @@ export class PacientesModel {
     } catch (error) {
       console.error('Error al obtener pacientes por id_usuario:', error)
       throw new Error('Error al obtener pacientes por id_usuario')
+    }
+  }
+
+  static async createWithUser ({ input }) {
+    try {
+      await con.beginTransaction()
+
+      const {
+        nombre_usuario,
+        contraseña,
+        nombre,
+        apellido,
+        dni,
+        telefono,
+        direccion,
+        email,
+        obras_sociales
+      } = input
+
+      const hashedPassword = await hash(contraseña, 10)
+
+      // Creamos el usuario
+      const [user] = await con.execute(/* sql */`
+        INSERT INTO usuarios (
+          id_rol,
+          nombre_usuario,
+          contraseña,
+          nombre,
+          apellido,
+          dni,
+          telefono,
+          direccion,
+          email,
+          estado
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+      `, [4, nombre_usuario, hashedPassword, nombre,
+        apellido, dni, telefono, direccion, email])
+
+      const tieneObraSocial = obras_sociales?.length > 0 ? 1 : 0
+
+      // Creamos el profesional
+      const [paciente] = await con.query(`
+        INSERT INTO pacientes (
+          id_usuario,
+          estado,
+          tiene_obra_social
+          )
+          VALUES (?, 1, ?)
+      `, [user.insertId, tieneObraSocial])
+
+      if (tieneObraSocial) {
+        for (const obraSocial of obras_sociales) {
+          await con.execute(/* sql */`
+            INSERT INTO obra_social_paciente (
+              id_paciente,
+              id_obra_social,
+              estado
+            )
+            VALUES (?, ?, 1)
+          `, [paciente.insertId, obraSocial.obra_social_id])
+        }
+      }
+
+      await con.commit()
+
+      return await PacientesModel.getById({ id: paciente.insertId })
+    } catch (error) {
+      await con.rollback()
+      console.log(error)
+      throw error
+    }
+  }
+
+  static async getAllWithUser () {
+    try {
+      const [rows] = await con.query(/* sql */`
+        SELECT 
+          p.id_paciente,
+          p.estado AS estado_paciente,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado AS estado_usuario,
+          JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'obra_social', os.nombre
+            )
+          ) AS obras_sociales
+        FROM pacientes p
+        LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+        LEFT JOIN obra_social_paciente op ON p.id_paciente = op.id_paciente
+        LEFT JOIN obra_social os ON op.id_obra_social = os.id_obra_social
+        WHERE op.estado = 1 AND os.estado = 1
+        GROUP BY 
+          p.id_paciente,
+          p.estado,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado
+      `)
+
+      return rows
+    } catch (error) {
+      console.log()
+      throw error
     }
   }
 }
