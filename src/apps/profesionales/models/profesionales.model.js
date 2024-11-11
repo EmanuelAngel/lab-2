@@ -364,30 +364,62 @@ export class ProfesionalesModel {
         profesional.id_usuario
       ])
 
-      // Eliminamos las especialidades existentes
-      await con.execute(/* sql */`
-        DELETE FROM especialidades_profesional
+      // Obtenemos las especialidades actuales
+      const [especialidadesActuales] = await con.execute(/* sql */`
+        SELECT id_especialidad, matricula 
+        FROM especialidades_profesional
         WHERE id_profesional = ?
       `, [id])
 
-      // Insertamos las nuevas especialidades
+      // Creamos un mapa de las especialidades actuales para fácil acceso
+      const especialidadesActualesMap = new Map(
+        especialidadesActuales.map(e => [e.id_especialidad, e])
+      )
+
+      // Para cada especialidad en el input
       for (const especialidad of especialidades) {
-        await con.execute(/* sql */`
-          INSERT INTO especialidades_profesional (
-            id_profesional,
-            id_especialidad,
-            matricula,
-            estado
-          )
-          VALUES (?, ?, ?, 1)
-        `, [id, especialidad.especialidad_id, especialidad.matricula])
+        const especialidadExistente = especialidadesActualesMap.get(especialidad.especialidad_id)
+
+        if (especialidadExistente) {
+          // Si existe y cambió la matrícula, actualizamos
+          if (especialidadExistente.matricula !== especialidad.matricula) {
+            await con.execute(/* sql */`
+              UPDATE especialidades_profesional 
+              SET matricula = ?
+              WHERE id_profesional = ? AND id_especialidad = ?
+            `, [especialidad.matricula, id, especialidad.especialidad_id])
+          }
+          // Removemos del map para saber cuáles eliminar después
+          especialidadesActualesMap.delete(especialidad.especialidad_id)
+        } else {
+          // Si no existe, la insertamos
+          await con.execute(/* sql */`
+            INSERT INTO especialidades_profesional (
+              id_profesional,
+              id_especialidad,
+              matricula,
+              estado
+            )
+            VALUES (?, ?, ?, 1)
+          `, [id, especialidad.especialidad_id, especialidad.matricula])
+        }
       }
 
-      con.commit()
+      // Las especialidades que quedaron en el map son las que ya no están en el input
+      // Solo las desactivamos en lugar de eliminarlas
+      for (const [idEspecialidad] of especialidadesActualesMap) {
+        await con.execute(/* sql */`
+          UPDATE especialidades_profesional 
+          SET estado = 0
+          WHERE id_profesional = ? AND id_especialidad = ?
+        `, [id, idEspecialidad])
+      }
+
+      await con.commit()
 
       return await ProfesionalesModel.getByIdWithUser({ id })
     } catch (error) {
-      con.rollback()
+      await con.rollback()
       throw error
     }
   }
