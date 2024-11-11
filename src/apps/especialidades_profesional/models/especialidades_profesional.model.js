@@ -1,40 +1,34 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
-
-const DEFAULT_CONFIG = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  port: process.env.DB_PORT,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME
-}
-
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-
-const con = await mysql.createConnection(connectionString)
+import pool from '../../../config/db.config.js'
 
 export class EspecialidadesProfesionalModel {
   static async getAll () {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM especialidades_profesional WHERE estado = 1;')
       return rows
     } catch (error) {
       console.error('Error al obtener todas las especialidades de los profesionales:', error)
       throw new Error('Error al obtener las especialidades de los profesionales')
+    } finally {
+      con.release()
     }
   }
 
   static async getById ({ id_profesional, id_especialidad }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM especialidades_profesional WHERE id_profesional = ? AND id_especialidad = ?;', [id_profesional, id_especialidad])
       return rows.length ? rows[0] : null
     } catch (error) {
       console.error('Error al obtener la especialidad del profesional por ID:', error)
       throw new Error('Error al obtener la especialidad del profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async create ({ input }) {
+    const con = await pool.getConnection()
     const { id_profesional, id_especialidad, matricula } = input
     try {
       await con.query(
@@ -48,10 +42,13 @@ export class EspecialidadesProfesionalModel {
     } catch (error) {
       console.error('Error al crear la relación especialidad-profesional:', error)
       throw error
+    } finally {
+      con.release()
     }
   }
 
   static async deactivate ({ id_profesional, id_especialidad }) {
+    const con = await pool.getConnection()
     try {
       await con.query('UPDATE especialidades_profesional SET estado = 0 WHERE id_profesional = ? AND id_especialidad = ?;', [id_profesional, id_especialidad])
 
@@ -60,10 +57,13 @@ export class EspecialidadesProfesionalModel {
     } catch (error) {
       console.error('Error al desactivar la relación especialidad-profesional:', error)
       throw new Error('Error al desactivar la relación especialidad-profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async activate ({ id_profesional, id_especialidad }) {
+    const con = await pool.getConnection()
     try {
       await con.query('UPDATE especialidades_profesional SET estado = 1 WHERE id_profesional = ? AND id_especialidad = ?;', [id_profesional, id_especialidad])
 
@@ -72,10 +72,13 @@ export class EspecialidadesProfesionalModel {
     } catch (error) {
       console.error('Error al activar la relación especialidad-profesional:', error)
       throw new Error('Error al activar la relación especialidad-profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async partiallyUpdate ({ id_profesional, id_especialidad, input }) {
+    const con = await pool.getConnection()
     const updateFields = []
     const updateValues = []
 
@@ -109,37 +112,48 @@ export class EspecialidadesProfesionalModel {
     } catch (error) {
       console.error('Error al actualizar la relación especialidad-profesional:', error)
       throw new Error('Error al actualizar la relación especialidad-profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async getByProfesional ({ id_profesional }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM especialidades_profesional WHERE id_profesional = ? AND estado = 1;', [id_profesional])
       return rows
     } catch (error) {
       console.error('Error al obtener las especialidades del profesional:', error)
       throw new Error('Error al obtener las especialidades del profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async getByEspecialidad ({ id_especialidad }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM especialidades_profesional WHERE id_especialidad = ? AND estado = 1;', [id_especialidad])
       return rows
     } catch (error) {
       console.error('Error al obtener los profesionales con la especialidad:', error)
       throw new Error('Error al obtener los profesionales con la especialidad')
+    } finally {
+      con.release()
     }
   }
 
   // Nuevo método para obtener una relación especialidad-profesional por matrícula
   static async getByMatricula ({ matricula }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM especialidades_profesional WHERE matricula = ? AND estado = 1;', [matricula])
       return rows.length ? rows[0] : null
     } catch (error) {
       console.error('Error al obtener la especialidad-profesional por matrícula:', error)
       throw new Error('Error al obtener la especialidad-profesional por matrícula')
+    } finally {
+      con.release()
     }
   }
 }

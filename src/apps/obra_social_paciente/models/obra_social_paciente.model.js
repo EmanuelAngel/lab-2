@@ -1,10 +1,6 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
-import { DEFAULT_CONFIG } from '../../../config/db.config.js'
-import { buildUpdateQuery } from '../../.shared/buildUpdateQuery.js'
+import pool from '../../../config/db.config.js'
 
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-const con = await mysql.createConnection(connectionString)
+import { buildUpdateQuery } from '../../.shared/buildUpdateQuery.js'
 
 // Definición de constantes para las consultas SQL
 const SELECT_ALL_QUERY = 'SELECT * FROM obra_social_paciente WHERE estado = 1;' // Consulta para obtener todas las obras sociales activas de los pacientes
@@ -31,17 +27,21 @@ const formatUpdatedAt = (row) => ({
 export class ObraSocialPacienteModel {
   // Obtener todas las relaciones obra social-paciente activas
   static async getAll () {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query(SELECT_ALL_QUERY)
       return rows.map(formatUpdatedAt) // Aplicar el formato a cada fila
     } catch (error) {
       console.error('Error al obtener todas las obras sociales de pacientes:', error)
       throw new Error('Error al obtener las obras sociales de pacientes')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener una obra social específica de un paciente por ID
   static async getById ({ idPaciente, idObraSocial }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query(SELECT_BY_ID_QUERY, [idPaciente, idObraSocial])
 
@@ -51,33 +51,42 @@ export class ObraSocialPacienteModel {
     } catch (error) {
       console.error('Error al obtener la obra social del paciente por ID:', error)
       throw new Error('Error al obtener la obra social del paciente')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener las obras sociales activas de un paciente
   static async getByPaciente ({ id_paciente }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query(SELECT_BY_PACIENTE_QUERY, [id_paciente])
       return rows.map(formatUpdatedAt) // Aplicar el formato a cada fila
     } catch (error) {
       console.error('Error al obtener las obras sociales del paciente:', error)
       throw new Error('Error al obtener las obras sociales del paciente')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener los pacientes con una obra social activa
   static async getByObraSocial ({ id_obra_social }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query(SELECT_BY_OBRA_SOCIAL_QUERY, [id_obra_social])
       return rows.map(formatUpdatedAt) // Aplicar el formato a cada fila
     } catch (error) {
       console.error('Error al obtener los pacientes con la obra social:', error)
       throw new Error('Error al obtener los pacientes con la obra social')
+    } finally {
+      con.release()
     }
   }
 
   // Crear una nueva relación obra social-paciente
   static async create ({ input }) {
+    const con = await pool.getConnection()
     const { id_paciente, id_obra_social } = input
     try {
       await con.query(INSERT_QUERY, [id_paciente, id_obra_social])
@@ -93,33 +102,42 @@ export class ObraSocialPacienteModel {
 
       console.error('Error al crear la relación obra social-paciente:', error)
       throw new Error('Error al crear la relación obra social-paciente')
+    } finally {
+      con.release()
     }
   }
 
   // Desactivar una relación obra social-paciente
   static async deactivate ({ idPaciente, idObraSocial }) {
+    const con = await pool.getConnection()
     try {
       await con.query(UPDATE_DEACTIVATE_QUERY, [idPaciente, idObraSocial])
       return true
     } catch (error) {
       console.error('Error al desactivar la relación obra social-paciente:', error)
       throw new Error('Error al desactivar la relación obra social-paciente')
+    } finally {
+      con.release()
     }
   }
 
   // Activar una relación obra social-paciente
   static async activate ({ idPaciente, idObraSocial }) {
+    const con = await pool.getConnection()
     try {
       await con.query(UPDATE_ACTIVATE_QUERY, [idPaciente, idObraSocial])
       return true
     } catch (error) {
       console.error('Error al activar la relación obra social-paciente:', error)
       throw new Error('Error al activar la relación obra social-paciente')
+    } finally {
+      con.release()
     }
   }
 
   // Actualizar parcialmente una relación obra social-paciente
   static async partiallyUpdate ({ idPaciente, idObraSocial, input }) {
+    const con = await pool.getConnection()
     const { updateFields, updateValues } = buildUpdateQuery(input)
 
     if (updateFields.length === 0) {
@@ -151,6 +169,8 @@ export class ObraSocialPacienteModel {
     } catch (error) {
       console.error('Error al actualizar la relación obra social-paciente:', error)
       throw new Error('Error al actualizar la relación obra social-paciente')
+    } finally {
+      con.release()
     }
   }
 }

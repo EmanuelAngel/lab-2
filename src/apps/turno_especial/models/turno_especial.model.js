@@ -1,16 +1,4 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
-
-const DEFAULT_CONFIG = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  port: process.env.DB_PORT,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME
-}
-
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-const con = await mysql.createConnection(connectionString)
+import pool from '../../../config/db.config.js'
 
 // Helper para formatear fechas
 const formatDate = (date) => {
@@ -29,6 +17,7 @@ const formatTime = (time) => {
 export class TurnoEspecialModel {
   // Obtener todos los turnos especiales
   static async getAll () {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turno_especial;')
       return rows.map(row => ({
@@ -42,11 +31,14 @@ export class TurnoEspecialModel {
     } catch (error) {
       console.error('Error al obtener todos los turnos especiales:', error)
       throw new Error('Error al obtener los turnos especiales')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener un turno especial por ID
   static async getById ({ id }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turno_especial WHERE id_turno_especial = ?;', [id])
       return rows.length ? {
@@ -58,11 +50,14 @@ export class TurnoEspecialModel {
     } catch (error) {
       console.error('Error al obtener el turno especial por ID:', error)
       throw new Error('Error al obtener el turno especial')
+    } finally {
+      con.release()
     }
   }
 
   // Crear un nuevo turno especial
   static async create ({ input }) {
+    const con = await pool.getConnection()
     const { id_agenda_base, fecha, horario_inicio, horario_fin, id_estado_turno, motivo } = input
     try {
       await con.query(
@@ -80,11 +75,14 @@ export class TurnoEspecialModel {
     } catch (error) {
       console.error('Error al crear el turno especial:', error)
       throw error
+    } finally {
+      con.release()
     }
   }
 
   // Actualizar parcialmente un turno especial
   static async partiallyUpdate ({ id, input }) {
+    const con = await pool.getConnection()
     const updateFields = []
     const updateValues = []
 
@@ -123,22 +121,28 @@ export class TurnoEspecialModel {
     } catch (error) {
       console.error('Error al actualizar el turno especial:', error)
       throw new Error('Error al actualizar el turno especial')
+    } finally {
+      con.release()
     }
   }
 
   // Eliminar un turno especial
   static async delete ({ id }) {
+    const con = await pool.getConnection()
     try {
       await con.query('DELETE FROM turno_especial WHERE id_turno_especial = ?;', [id])
       return { message: 'Turno especial eliminado' }
     } catch (error) {
       console.error('Error al eliminar el turno especial:', error)
       throw new Error('Error al eliminar el turno especial')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener turnos especiales por fecha
   static async getByFecha ({ fecha }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turno_especial WHERE fecha = ?;', [fecha])
       return rows.map(row => ({
@@ -150,11 +154,14 @@ export class TurnoEspecialModel {
     } catch (error) {
       console.error('Error al obtener turnos especiales por fecha:', error)
       throw new Error('Error al obtener turnos especiales por fecha')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener todos los turnos especiales relacionados con una agenda específica
   static async getByAgendaBase ({ id_agenda_base }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turno_especial WHERE id_agenda_base = ?;', [id_agenda_base])
       return rows.map(row => ({
@@ -166,11 +173,14 @@ export class TurnoEspecialModel {
     } catch (error) {
       console.error('Error al obtener turnos especiales por agenda base:', error)
       throw new Error('Error al obtener turnos especiales por agenda base')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener turnos especiales dentro de un rango de fechas
   static async getByDateRange ({ startDate, endDate }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turno_especial WHERE fecha BETWEEN ? AND ?;', [startDate, endDate])
       return rows.map(row => ({
@@ -182,11 +192,14 @@ export class TurnoEspecialModel {
     } catch (error) {
       console.error('Error al obtener turnos especiales por rango de fechas:', error)
       throw new Error('Error al obtener turnos especiales por rango de fechas')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener turnos especiales por estado
   static async getByEstadoTurno ({ id_estado_turno }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turno_especial WHERE id_estado_turno = ?;', [id_estado_turno])
       return rows.map(row => ({
@@ -198,17 +211,22 @@ export class TurnoEspecialModel {
     } catch (error) {
       console.error('Error al obtener turnos especiales por estado:', error)
       throw new Error('Error al obtener turnos especiales por estado')
+    } finally {
+      con.release()
     }
   }
 
   // Contar turnos especiales por fecha
   static async countTurnosByFecha ({ fecha }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT COUNT(*) as total FROM turno_especial WHERE fecha = ?;', [fecha])
       return rows[0].total
     } catch (error) {
       console.error('Error al contar turnos especiales por fecha:', error)
       throw new Error('Error al contar turnos especiales por fecha')
+    } finally {
+      con.release()
     }
   }
 }

@@ -1,21 +1,9 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
-
-const DEFAULT_CONFIG = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  port: process.env.DB_PORT,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME
-}
-
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-
-const con = await mysql.createConnection(connectionString)
+import pool from '../../../config/db.config.js'
 
 export class AdminsModel {
   // Obtener todos los administradores activos
   static async getAll () {
+    const con = await pool.getConnection()
     try {
       // Seleccionamos todos los admins que tienen estado 1 (activos)
       const [rows] = await con.query('SELECT * FROM admins WHERE estado = 1;')
@@ -23,22 +11,28 @@ export class AdminsModel {
     } catch (error) {
       console.error('Error al obtener todos los administradores:', error)
       throw new Error('Error al obtener los administradores')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener un administrador por ID
   static async getById ({ id }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM admins WHERE id_admin = ?;', [id])
       return rows.length ? rows[0] : null
     } catch (error) {
       console.error('Error al obtener el administrador por ID:', error)
       throw new Error('Error al obtener el administrador')
+    } finally {
+      con.release()
     }
   }
 
   // Crear un nuevo administrador
   static async create ({ input }) {
+    const con = await pool.getConnection()
     const { id_usuario } = input
     try {
       await con.query(
@@ -53,11 +47,14 @@ export class AdminsModel {
     } catch (error) {
       console.error('Error al crear el administrador:', error)
       throw error
+    } finally {
+      con.release()
     }
   }
 
   // Desactivar un administrador
   static async deactivate ({ id }) {
+    const con = await pool.getConnection()
     try {
       await con.query('UPDATE admins SET estado = 0 WHERE id_admin = ?;', [id])
 
@@ -66,11 +63,14 @@ export class AdminsModel {
     } catch (error) {
       console.error('Error al desactivar el administrador:', error)
       throw new Error('Error al desactivar el administrador')
+    } finally {
+      con.release()
     }
   }
 
   // Activar un administrador
   static async activate ({ id }) {
+    const con = await pool.getConnection()
     try {
       await con.query('UPDATE admins SET estado = 1 WHERE id_admin = ?;', [id])
 
@@ -79,11 +79,14 @@ export class AdminsModel {
     } catch (error) {
       console.error('Error al activar el administrador:', error)
       throw new Error('Error al activar el administrador')
+    } finally {
+      con.release()
     }
   }
 
   // Actualizar parcialmente un administrador
   static async partiallyUpdate ({ id, input }) {
+    const con = await pool.getConnection()
     const updateFields = []
     const updateValues = []
 
@@ -114,6 +117,8 @@ export class AdminsModel {
     } catch (error) {
       console.error('Error al actualizar el administrador:', error)
       throw new Error('Error al actualizar el administrador')
+    } finally {
+      con.release()
     }
   }
 }

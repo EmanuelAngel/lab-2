@@ -1,71 +1,65 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
-import { DEFAULT_CONFIG } from '../../../config/db.config.js'
+// import pool from '../../../config/db.config.js'
+// import bcrypt from 'bcrypt'
 
-import bcrypt from 'bcrypt'
+// export class AdminDashboardModel {
+//   static async registerAdmin ({ input }) {
+//     const con = await pool.getConnection()
+//     const {
+//       id_rol,
+//       nombre_usuario,
+//       contraseña,
+//       nombre,
+//       apellido,
+//       dni,
+//       telefono,
+//       direccion,
+//       email
+//     } = input
 
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
+//     try {
+//       con.beginTransaction()
 
-const con = await mysql.createConnection(connectionString)
+//       const hashedPassword = await bcrypt.hash(contraseña, 10)
 
-export class AdminDashboardModel {
-  static async registerAdmin ({ input }) {
-    const {
-      id_rol,
-      nombre_usuario,
-      contraseña,
-      nombre,
-      apellido,
-      dni,
-      telefono,
-      direccion,
-      email
-    } = input
+//       const [createdUser] = await con.execute(
+//         `INSERT INTO usuarios
+//         (id_rol, nombre_usuario, contraseña, nombre,
+//         apellido, dni, telefono, direccion, email, estado)
+//         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+//         [id_rol, nombre_usuario, hashedPassword, nombre,
+//           apellido, dni, telefono, direccion, email]
+//       )
 
-    try {
-      con.beginTransaction()
+//       if (createdUser.affectedRows === 0) {
+//         con.rollback()
+//         throw new Error('Error al registrar el usuario')
+//       }
 
-      const hashedPassword = await bcrypt.hash(contraseña, 10)
+//       const [createdAdmin] = await con.execute(
+//         `INSERT INTO admins (id_usuario)
+//         VALUES (?)`,
+//         [createdUser.insertId]
+//       )
 
-      const [createdUser] = await con.execute(
-        `INSERT INTO usuarios
-        (id_rol, nombre_usuario, contraseña, nombre,
-        apellido, dni, telefono, direccion, email, estado)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-        [id_rol, nombre_usuario, hashedPassword, nombre,
-          apellido, dni, telefono, direccion, email]
-      )
+//       if (createdAdmin.affectedRows === 0) {
+//         con.rollback()
+//         throw new Error('Error al registrar el admin')
+//       }
 
-      if (createdUser.affectedRows === 0) {
-        con.rollback()
-        throw new Error('Error al registrar el usuario')
-      }
+//       con.commit()
+//       return createdAdmin
+//     } catch (error) {
+//       con.rollback()
+//       console.log(error)
+//       throw new Error('Error al registrar el administrador')
+//     }
+//   }
 
-      const [createdAdmin] = await con.execute(
-        `INSERT INTO admins (id_usuario)
-        VALUES (?)`,
-        [createdUser.insertId]
-      )
+//   static async registerSecre ({ input }) {
+//     // Code to register a secre
+//   }
 
-      if (createdAdmin.affectedRows === 0) {
-        con.rollback()
-        throw new Error('Error al registrar el admin')
-      }
-
-      con.commit()
-      return createdAdmin
-    } catch (error) {
-      con.rollback()
-      console.log(error)
-      throw new Error('Error al registrar el administrador')
-    }
-  }
-
-  static async registerSecre ({ input }) {
-    // Code to register a secre
-  }
-
-  static async registerProfesional ({ input }) {
-    // Code to register a profesional
-  }
-}
+//   static async registerProfesional ({ input }) {
+//     // Code to register a profesional
+//   }
+// }

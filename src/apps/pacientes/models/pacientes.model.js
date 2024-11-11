@@ -1,40 +1,35 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
+import pool from '../../../config/db.config.js'
 import { hash } from 'bcrypt'
-
-const DEFAULT_CONFIG = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  port: process.env.DB_PORT,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME
-}
-
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-const con = await mysql.createConnection(connectionString)
 
 export class PacientesModel {
   static async getAll () {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM pacientes WHERE estado = 1;')
       return rows
     } catch (error) {
       console.error('Error al obtener todos los pacientes:', error)
       throw new Error('Error al obtener los pacientes')
+    } finally {
+      con.release()
     }
   }
 
   static async getById ({ id }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM pacientes WHERE id_paciente = ?;', [id])
       return rows.length ? rows[0] : null
     } catch (error) {
       console.error('Error al obtener el paciente por ID:', error)
       throw new Error('Error al obtener el paciente')
+    } finally {
+      con.release()
     }
   }
 
   static async create ({ input }) {
+    const con = await pool.getConnection()
     const { tiene_obra_social, id_usuario, fotocopia_dni = null } = input
     try {
       await con.query(
@@ -48,10 +43,13 @@ export class PacientesModel {
     } catch (error) {
       console.error('Error al crear el paciente:', error)
       throw error
+    } finally {
+      con.release()
     }
   }
 
   static async deactivate ({ id }) {
+    const con = await pool.getConnection()
     try {
       await con.query('UPDATE pacientes SET estado = 0 WHERE id_paciente = ?;', [id])
       const [paciente] = await con.query('SELECT * FROM pacientes WHERE id_paciente = ?;', [id])
@@ -59,10 +57,13 @@ export class PacientesModel {
     } catch (error) {
       console.error('Error al desactivar el paciente:', error)
       throw new Error('Error al desactivar el paciente')
+    } finally {
+      con.release()
     }
   }
 
   static async activate ({ id }) {
+    const con = await pool.getConnection()
     try {
       await con.query('UPDATE pacientes SET estado = 1 WHERE id_paciente = ?;', [id])
       const [paciente] = await con.query('SELECT * FROM pacientes WHERE id_paciente = ?;', [id])
@@ -70,10 +71,13 @@ export class PacientesModel {
     } catch (error) {
       console.error('Error al activar el paciente:', error)
       throw new Error('Error al activar el paciente')
+    } finally {
+      con.release()
     }
   }
 
   static async partiallyUpdate ({ id, input }) {
+    const con = await pool.getConnection()
     const updateFields = []
     const updateValues = []
 
@@ -104,30 +108,39 @@ export class PacientesModel {
     } catch (error) {
       console.error('Error al actualizar el paciente:', error)
       throw new Error('Error al actualizar el paciente')
+    } finally {
+      con.release()
     }
   }
 
   static async getByObraSocial ({ tiene_obra_social }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM pacientes WHERE tiene_obra_social = ? AND estado = 1;', [tiene_obra_social])
       return rows
     } catch (error) {
       console.error('Error al obtener pacientes por obra social:', error)
       throw new Error('Error al obtener pacientes por obra social')
+    } finally {
+      con.release()
     }
   }
 
   static async getByUsuario ({ id_usuario }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM pacientes WHERE id_usuario = ? AND estado = 1;', [id_usuario])
       return rows
     } catch (error) {
       console.error('Error al obtener pacientes por id_usuario:', error)
       throw new Error('Error al obtener pacientes por id_usuario')
+    } finally {
+      con.release()
     }
   }
 
   static async createWithUser ({ input }) {
+    const con = await pool.getConnection()
     try {
       await con.beginTransaction()
 
@@ -194,10 +207,13 @@ export class PacientesModel {
       await con.rollback()
       console.log(error)
       throw error
+    } finally {
+      con.release()
     }
   }
 
   static async getAllWithUser () {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query(/* sql */`
         SELECT 
@@ -243,10 +259,13 @@ export class PacientesModel {
     } catch (error) {
       console.log()
       throw error
+    } finally {
+      con.release()
     }
   }
 
   static async getByIdWithUser ({ id }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query(/* sql */`
         SELECT 
@@ -293,10 +312,13 @@ export class PacientesModel {
     } catch (error) {
       console.log(error)
       throw error
+    } finally {
+      con.release()
     }
   }
 
   static async updateWithUser ({ id, input }) {
+    const con = await pool.getConnection()
     try {
       await con.beginTransaction()
 
@@ -395,6 +417,8 @@ export class PacientesModel {
       await con.rollback()
       console.log(error)
       throw error
+    } finally {
+      con.release()
     }
   }
 }

@@ -1,21 +1,9 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
-import bcrypt from 'bcrypt'
-
-const DEFAULT_CONFIG = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  port: process.env.DB_PORT,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME
-}
-
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-
-const con = await mysql.createConnection(connectionString)
+import pool from '../../../config/db.config.js'
+import { hash } from 'bcrypt'
 
 export class ProfesionalesModel {
   static async getAll () {
+    const con = await pool.getConnection()
     try {
       // Intentamos obtener todos los profesionales que tienen estado 1 (activos)
       const [rows] = await con.query('SELECT * FROM profesionales WHERE estado = 1;')
@@ -25,10 +13,13 @@ export class ProfesionalesModel {
       console.error('Error al obtener todos los profesionales:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al obtener los profesionales')
+    } finally {
+      con.release()
     }
   }
 
   static async getById ({ id }) {
+    const con = await pool.getConnection()
     try {
       // Intentamos obtener el profesional por ID
       const [rows] = await con.query('SELECT * FROM profesionales WHERE id_profesional = ?;', [id])
@@ -39,10 +30,13 @@ export class ProfesionalesModel {
       console.error('Error al obtener el profesional por ID:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al obtener el profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async create ({ input }) {
+    const con = await pool.getConnection()
     const { id_usuario } = input
     try {
       // Intentamos crear un nuevo profesional en la base de datos
@@ -60,10 +54,13 @@ export class ProfesionalesModel {
       console.error('Error al crear el profesional:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw error
+    } finally {
+      con.release()
     }
   }
 
   static async deactivate ({ id }) {
+    const con = await pool.getConnection()
     try {
       // Intentamos desactivar el profesional cambiando el estado a 0
       await con.query('UPDATE profesionales SET estado = 0 WHERE id_profesional = ?;', [id])
@@ -76,10 +73,13 @@ export class ProfesionalesModel {
       console.error('Error al desactivar el profesional:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al desactivar el profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async activate ({ id }) {
+    const con = await pool.getConnection()
     try {
       // Intentamos activar el profesional cambiando el estado a 1
       await con.query('UPDATE profesionales SET estado = 1 WHERE id_profesional = ?;', [id])
@@ -92,10 +92,13 @@ export class ProfesionalesModel {
       console.error('Error al activar el profesional:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al activar el profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async partiallyUpdate ({ id, input }) {
+    const con = await pool.getConnection()
     const updateFields = []
     const updateValues = []
 
@@ -132,10 +135,13 @@ export class ProfesionalesModel {
       console.error('Error al actualizar el profesional:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al actualizar el profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async getAllWithUser () {
+    const con = await pool.getConnection()
     try {
       // Intentamos obtener todos los profesionales agrupando sus especialidades como un arreglo
       const [rows] = await con.query(/* sql */`
@@ -182,10 +188,13 @@ export class ProfesionalesModel {
     } catch (error) {
       console.error('Error al obtener todos los profesionales:', error)
       throw new Error('Error al obtener los profesionales')
+    } finally {
+      con.release()
     }
   }
 
   static async getByIdWithUser ({ id }) {
+    const con = await pool.getConnection()
     try {
       // Intentamos obtener el profesional por ID, agrupando sus especialidades como un arreglo
       const [rows] = await con.query(`
@@ -235,10 +244,13 @@ export class ProfesionalesModel {
     } catch (error) {
       console.error('Error al obtener el profesional por ID:', error)
       throw new Error('Error al obtener el profesional')
+    } finally {
+      con.release()
     }
   }
 
   static async createWithUser ({ input }) {
+    const con = await pool.getConnection()
     try {
       con.beginTransaction()
 
@@ -254,7 +266,7 @@ export class ProfesionalesModel {
         especialidades
       } = input
 
-      const hashedPassword = await bcrypt.hash(contraseña, 10)
+      const hashedPassword = await hash(contraseña, 10)
 
       // Creamos el usuario
       const [user] = await con.execute(/* sql */`
@@ -300,10 +312,13 @@ export class ProfesionalesModel {
     } catch (error) {
       con.rollback()
       throw error
+    } finally {
+      con.release()
     }
   }
 
   static async updateWithUser ({ id, input }) {
+    const con = await pool.getConnection()
     try {
       con.beginTransaction()
 
@@ -335,7 +350,7 @@ export class ProfesionalesModel {
       let passwordParams = []
 
       if (contraseña) {
-        const hashedPassword = await bcrypt.hash(contraseña, 10)
+        const hashedPassword = await hash(contraseña, 10)
         passwordQuery = 'contraseña = ?,'
         passwordParams = [hashedPassword]
       }
@@ -421,6 +436,8 @@ export class ProfesionalesModel {
     } catch (error) {
       await con.rollback()
       throw error
+    } finally {
+      con.release()
     }
   }
 }

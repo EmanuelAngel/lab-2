@@ -1,20 +1,8 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
-
-const DEFAULT_CONFIG = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  port: process.env.DB_PORT,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME
-}
-
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-
-const con = await mysql.createConnection(connectionString)
+import pool from '../../../config/db.config.js'
 
 export class SecreModel {
   static async getAll () {
+    const con = await pool.getConnection()
     try {
       // Intentamos obtener todo/as secretari@ que tienen estado 1 (activos)
       const [rows] = await con.query('SELECT * FROM secre WHERE estado = 1;')
@@ -24,10 +12,13 @@ export class SecreModel {
       console.error('Error al obtener todos los secretarios:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al obtener los secretarios')
+    } finally {
+      con.release()
     }
   }
 
   static async getById ({ id }) {
+    const con = await pool.getConnection()
     try {
       // Intentamos obtener el secretario por ID
       const [rows] = await con.query('SELECT * FROM secre WHERE id_secre = ?;', [id])
@@ -38,10 +29,13 @@ export class SecreModel {
       console.error('Error al obtener el secretario por ID:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al obtener el secretario')
+    } finally {
+      con.release()
     }
   }
 
   static async create ({ input }) {
+    const con = await pool.getConnection()
     const { id_usuario, id_sucursal } = input
     try {
       // Intentamos crear un nuevo secretario en la base de datos
@@ -59,10 +53,13 @@ export class SecreModel {
       console.error('Error al crear el secretario:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw error
+    } finally {
+      con.release()
     }
   }
 
   static async deactivate ({ id }) {
+    const con = await pool.getConnection()
     try {
       // Intentamos desactivar el secretario cambiando el estado a 0
       await con.query('UPDATE secre SET estado = 0 WHERE id_secre = ?;', [id])
@@ -75,10 +72,13 @@ export class SecreModel {
       console.error('Error al desactivar el secretario:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al desactivar el secretario')
+    } finally {
+      con.release()
     }
   }
 
   static async activate ({ id }) {
+    const con = await pool.getConnection()
     try {
       // Intentamos activar el secretario cambiando el estado a 1
       await con.query('UPDATE secre SET estado = 1 WHERE id_secre = ?;', [id])
@@ -91,10 +91,13 @@ export class SecreModel {
       console.error('Error al activar el secretario:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al activar el secretario')
+    } finally {
+      con.release()
     }
   }
 
   static async partiallyUpdate ({ id, input }) {
+    const con = await pool.getConnection()
     const updateFields = []
     const updateValues = []
 
@@ -131,6 +134,8 @@ export class SecreModel {
       console.error('Error al actualizar el profesional:', error)
       // Lanzamos el error para que el controlador lo pueda manejar
       throw new Error('Error al actualizar el profesional')
+    } finally {
+      con.release()
     }
   }
 }

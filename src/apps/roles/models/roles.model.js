@@ -1,21 +1,9 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
-
-const DEFAULT_CONFIG = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  port: process.env.DB_PORT,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME
-}
-
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-
-const con = await mysql.createConnection(connectionString)
+import pool from '../../../config/db.config.js'
 
 export class RolesModel {
   // Obtener todos los roles activos
   static async getAll () {
+    const con = await pool.getConnection()
     try {
       // Seleccionamos todos los roles
       const [rows] = await con.query('SELECT * FROM roles;')
@@ -23,22 +11,28 @@ export class RolesModel {
     } catch (error) {
       console.error('Error al obtener todos los roles:', error)
       throw new Error('Error al obtener los roles')
+    } finally {
+      con.release()
     }
   }
 
   // Obtener un rol por ID
   static async getById ({ id }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM roles WHERE id_rol = ?;', [id])
       return rows.length ? rows[0] : null
     } catch (error) {
       console.error('Error al obtener el rol por ID:', error)
       throw new Error('Error al obtener el rol')
+    } finally {
+      con.release()
     }
   }
 
   // Crear un nuevo rol
   static async create ({ input }) {
+    const con = await pool.getConnection()
     const { nombre, descripcion } = input
     try {
       await con.query(
@@ -53,11 +47,14 @@ export class RolesModel {
     } catch (error) {
       console.error('Error al crear el rol:', error)
       throw error
+    } finally {
+      con.release()
     }
   }
 
   // Actualizar un rol
   static async partiallyUpdate ({ id, input }) {
+    const con = await pool.getConnection()
     const updateFields = []
     const updateValues = []
 
@@ -88,17 +85,22 @@ export class RolesModel {
     } catch (error) {
       console.error('Error al actualizar el rol:', error)
       throw new Error('Error al actualizar el rol')
+    } finally {
+      con.release()
     }
   }
 
   // Desactivar un rol
   static async deactivate ({ id }) {
+    const con = await pool.getConnection()
     try {
       await con.query('DELETE FROM roles WHERE id_rol = ?;', [id])
       return { message: 'Rol desactivado' }
     } catch (error) {
       console.error('Error al desactivar el rol:', error)
       throw new Error('Error al desactivar el rol')
+    } finally {
+      con.release()
     }
   }
 }

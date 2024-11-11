@@ -1,16 +1,4 @@
-import 'dotenv/config'
-import mysql from 'mysql2/promise'
-
-const DEFAULT_CONFIG = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  port: process.env.DB_PORT,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME
-}
-
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-const con = await mysql.createConnection(connectionString)
+import pool from '../../../config/db.config.js'
 
 // Helper para formatear fechas
 const formatDate = (dateString) => {
@@ -34,6 +22,7 @@ const formatTime = (timeString) => {
 
 export class TurnoModel {
   static async getAll () {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turnos;')
       return rows.map(row => ({
@@ -45,10 +34,13 @@ export class TurnoModel {
     } catch (error) {
       console.error('Error al obtener todos los turnos:', error)
       throw new Error('Error al obtener los turnos')
+    } finally {
+      con.release()
     }
   }
 
   static async getById ({ id }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turnos WHERE id_turno = ?;', [id])
       return rows.length
@@ -62,10 +54,13 @@ export class TurnoModel {
     } catch (error) {
       console.error('Error al obtener el turno por ID:', error)
       throw new Error('Error al obtener el turno')
+    } finally {
+      con.release()
     }
   }
 
   static async create ({ input }) {
+    const con = await pool.getConnection()
     const { id_agenda_base, id_paciente, id_estado_turno, fecha, horario_inicio, horario_fin, motivo_consulta } = input
     try {
       await con.query(
@@ -78,10 +73,13 @@ export class TurnoModel {
     } catch (error) {
       console.error('Error al crear el turno:', error)
       throw error
+    } finally {
+      con.release()
     }
   }
 
   static async partiallyUpdate ({ id, input }) {
+    const con = await pool.getConnection()
     const updateFields = []
     const updateValues = []
 
@@ -119,20 +117,26 @@ export class TurnoModel {
     } catch (error) {
       console.error('Error al actualizar el turno:', error)
       throw new Error('Error al actualizar el turno')
+    } finally {
+      con.release()
     }
   }
 
   static async delete ({ id }) {
+    const con = await pool.getConnection()
     try {
       await con.query('DELETE FROM turnos WHERE id_turno = ?;', [id])
       return { message: 'Turno eliminado' }
     } catch (error) {
       console.error('Error al eliminar el turno:', error)
       throw new Error('Error al eliminar el turno')
+    } finally {
+      con.release()
     }
   }
 
   static async getByFecha ({ fecha }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turnos WHERE fecha = ?;', [fecha])
       return rows.map(row => ({
@@ -144,10 +148,13 @@ export class TurnoModel {
     } catch (error) {
       console.error('Error al obtener turnos por fecha:', error)
       throw new Error('Error al obtener turnos por fecha')
+    } finally {
+      con.release()
     }
   }
 
   static async getByPaciente ({ id_paciente }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turnos WHERE id_paciente = ?;', [id_paciente])
       return rows.map(row => ({
@@ -159,10 +166,13 @@ export class TurnoModel {
     } catch (error) {
       console.error('Error al obtener turnos por paciente:', error)
       throw new Error('Error al obtener turnos por paciente')
+    } finally {
+      con.release()
     }
   }
 
   static async getByEstadoTurno ({ id_estado_turno }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turnos WHERE id_estado_turno = ?;', [id_estado_turno])
       return rows.map(row => ({
@@ -174,10 +184,13 @@ export class TurnoModel {
     } catch (error) {
       console.error('Error al obtener turnos por estado de turno:', error)
       throw new Error('Error al obtener turnos por estado de turno')
+    } finally {
+      con.release()
     }
   }
 
   static async getByMotivoConsulta ({ consulta }) {
+    const con = await pool.getConnection()
     try {
       const [rows] = await con.query('SELECT * FROM turnos WHERE motivo_consulta LIKE ?;', [`%${consulta}%`])
       return rows.map(row => ({
@@ -189,6 +202,8 @@ export class TurnoModel {
     } catch (error) {
       console.error('Error al obtener turnos por motivo de consulta:', error)
       throw new Error('Error al obtener turnos por motivo de consulta')
+    } finally {
+      con.release()
     }
   }
 }
