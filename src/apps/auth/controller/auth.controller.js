@@ -4,7 +4,7 @@ import {
   validatePartialUsuarios
 } from '../../usuarios/controller/schemas/usuarios.schema.js'
 // import { AuthModel } from '../model/auth.model.js'
-import { AuthModel } from '../model/auth2.model.js'
+// import { AuthModel } from '../model/auth2.model.js'
 import { ObraSocialModel } from '../../obra_social/models/obra_social.model.js'
 
 export class AuthController {
