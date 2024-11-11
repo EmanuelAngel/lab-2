@@ -10,9 +10,6 @@ export function panelRouter () {
   // router.get('/register', panelController.registerView)
   // router.post('/register', panelController.register)
 
-  // router.get('/pacientes', panelController.pacientes)
-  // router.get('/pacientes/edit/:id', panelController.editPaciente)
-
   router.get('/profesionales', panelController.profesionales)
   router.get('/profesionales/register', panelController.createProfesional)
   router.get('/profesionales/edit/:id', panelController.editProfesional)
@@ -26,7 +23,7 @@ export function panelRouter () {
   // Pacientes
 
   router.get('/pacientes', panelController.pacientes)
-  // router.get('/profesionales/edit/:id', panelController.editPaciente)
+  router.get('/pacientes/edit/:id', panelController.editPaciente)
 
   return router
 }

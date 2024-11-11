@@ -1,0 +1,214 @@
+extends ../../../layouts/base-layout
+include ../../../lib/BaseUserForm
+
+block navbar
+  include ../../../lib/NavBar
+
+block styles 
+  style.
+    .obra-social-item {
+      border: 1px solid #404040;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.3rem;
+    }
+
+block content
+  +baseUserForm({
+    formId: 'pacienteForm',
+    title: 'Editar Paciente',
+    returnUrl: '/panel/pacientes',
+    submitText: 'Actualizar Paciente',
+    initialData: paciente
+  })
+    input(type="hidden" name="id_paciente" value=paciente.id_paciente)
+    
+    // Obras Sociales
+    h4.mb-3.mt-4 Obras Sociales (opcional)
+    #obras-sociales-container
+      // Template para una obra social
+      template#obra-social-template
+        .obra-social-item
+          .row
+            .col-md-10.mb-3
+              label.form-label Obra Social
+              select.form-control.obra-social-select
+                option(value="") Seleccione una obra social
+                each obraSocial in obrasSociales
+                  option(value=obraSocial.id_obra_social)= obraSocial.nombre
+            .col-md-2.mb-3.d-flex.align-items-end
+              button.btn.btn-outline-danger.border-0.remove-obra-social(type="button")
+                i.bi.bi-trash
+
+      // Obras sociales existentes
+      each obraSocialPaciente in paciente.obras_sociales || []
+        .obra-social-item
+          .row
+            .col-md-10.mb-3
+              label.form-label Obra Social
+              select.form-control.obra-social-select
+                option(value="") Seleccione una obra social
+                each obraSocial in obrasSociales
+                  option(
+                    value=obraSocial.id_obra_social
+                    selected=obraSocialPaciente && obraSocialPaciente.obra_social === obraSocial.nombre
+                  )= obraSocial.nombre
+            .col-md-2.mb-3.d-flex.align-items-end
+              button.btn.btn-outline-danger.border-0.remove-obra-social(type="button")
+                i.bi.bi-trash
+    
+    .mb-3
+      button#addObraSocial.btn.btn-secondary(type="button")
+        i.bi.bi-plus-circle.me-2
+        | Agregar Obra Social
+
+block scripts
+  script(type="module").
+    import { validateField, baseValidationRules } from '/js/baseValidation.js'
+    import { showToast } from '/js/showToast.js'
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('#pacienteForm')
+      const addObraSocialBtn = document.querySelector('#addObraSocial')
+      const obrasSocialesContainer = document.querySelector('#obras-sociales-container')
+      const obraSocialTemplate = document.querySelector('#obra-social-template')
+      const pacienteId = form.querySelector('input[name="id_paciente"]').value
+
+      // Configurar validación en línea para campos base
+      form.querySelectorAll('input').forEach(field => {
+        // No validamos campos readonly
+        if (field.id === 'nombre_usuario' || field.id === 'email') return
+
+        field.addEventListener('input', () => validateField(field, baseValidationRules))
+        field.addEventListener('blur', () => validateField(field, baseValidationRules))
+      })
+
+      // Setup inicial y manejo de obras sociales
+      function setupObraSocialListeners(obraSocialItem) {
+        const removeBtn = obraSocialItem.querySelector('.remove-obra-social')
+        const obraSocialSelect = obraSocialItem.querySelector('.obra-social-select')
+
+        // Validación en línea para select de obra social
+        if (obraSocialSelect) {
+          obraSocialSelect.addEventListener('change', () => {
+            if (!obraSocialSelect.value) {
+              obraSocialSelect.classList.add('is-invalid')
+            } else {
+              obraSocialSelect.classList.remove('is-invalid')
+            }
+          })
+        }
+
+        if (removeBtn) {
+          removeBtn.addEventListener('click', () => {
+            obraSocialItem.remove()
+          })
+        }
+      }
+
+      // Configurar obras sociales existentes
+      document.querySelectorAll('.obra-social-item').forEach(setupObraSocialListeners)
+
+      // Agregar nueva obra social
+      addObraSocialBtn.addEventListener('click', () => {
+        const newObraSocial = obraSocialTemplate.content.cloneNode(true)
+        setupObraSocialListeners(newObraSocial.querySelector('.obra-social-item'))
+        obrasSocialesContainer.appendChild(newObraSocial)
+      })
+
+      // Validar obras sociales
+      function validateObrasSociales() {
+        let isValid = true
+        document.querySelectorAll('.obra-social-item').forEach(os => {
+          const select = os.querySelector('.obra-social-select')
+
+          if (select.value === '') {
+            select.classList.add('is-invalid')
+            isValid = false
+          }
+        })
+        return true // Si no hay obras sociales o todas tienen valor, es válido
+      }
+
+      // Validar todos los campos base excepto readonly
+      function validateBaseFields() {
+        let isValid = true
+        form.querySelectorAll('input').forEach(field => {
+          if (field.id === 'nombre_usuario' || field.id === 'email') return
+          
+          if (!validateField(field, baseValidationRules)) {
+            isValid = false
+          }
+        })
+        return isValid
+      }
+
+      // Obtener datos del formulario
+      function getFormData() {
+        const formData = new FormData(form)
+        const data = {
+          nombre: formData.get('nombre'),
+          apellido: formData.get('apellido'),
+          dni: formData.get('dni'),
+          telefono: formData.get('telefono'),
+          direccion: formData.get('direccion'),
+          obras_sociales: []
+        }
+
+        // Obtener obras sociales (solo las que tengan valor seleccionado)
+        document.querySelectorAll('.obra-social-item').forEach(os => {
+          const select = os.querySelector('.obra-social-select')
+          if (select.value) {
+            const obra_social_id = parseInt(select.value)
+            data.obras_sociales.push({ obra_social_id })
+          }
+        })
+
+        return data
+      }
+
+      // Manejar envío del formulario
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault()
+
+        // Validar campos
+        if (!validateBaseFields() || !validateObrasSociales()) {
+          return
+        }
+
+        const submitButton = form.querySelector('button[type="submit"]')
+        submitButton.disabled = true
+        submitButton.innerHTML = `
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          Actualizando...
+        `
+
+        try {
+          const data = getFormData()
+          const response = await fetch(`/pacientes/${pacienteId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Error al actualizar el paciente')
+          }
+
+          showToast('Paciente actualizado exitosamente', 'success')
+          
+          setTimeout(() => {
+            window.location.href = '/panel/pacientes'
+          }, 1500)
+
+        } catch (error) {
+          showToast(error.message, 'danger')
+          console.error('Error:', error)
+          submitButton.disabled = false
+          submitButton.textContent = 'Actualizar Paciente'
+        }
+      })
+    })

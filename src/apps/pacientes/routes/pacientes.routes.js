@@ -16,7 +16,7 @@ export function pacientesRouter () {
   router.get('/usuario/:id_usuario', pacientesController.getByUsuario) // Nueva ruta
 
   router.post('/users', pacientesController.createWithUser)
-  // router.put('/:id', pacientesController.updateWithUser)
+  router.put('/:id', pacientesController.updateWithUser)
 
   return router
 }

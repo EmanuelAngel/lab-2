@@ -213,15 +213,18 @@ export class PacientesModel {
           u.email,
           u.estado AS estado_usuario,
           JSON_ARRAYAGG(
-            JSON_OBJECT(
-              'obra_social', os.nombre
-            )
+            CASE 
+              WHEN os.nombre IS NOT NULL 
+              THEN JSON_OBJECT('obra_social', os.nombre)
+              ELSE NULL 
+            END
           ) AS obras_sociales
         FROM pacientes p
         LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
-        LEFT JOIN obra_social_paciente op ON p.id_paciente = op.id_paciente
-        LEFT JOIN obra_social os ON op.id_obra_social = os.id_obra_social
-        WHERE op.estado = 1 AND os.estado = 1
+        LEFT JOIN obra_social_paciente op ON p.id_paciente = op.id_paciente 
+          AND op.estado = 1
+        LEFT JOIN obra_social os ON op.id_obra_social = os.id_obra_social 
+          AND os.estado = 1
         GROUP BY 
           p.id_paciente,
           p.estado,
@@ -239,6 +242,158 @@ export class PacientesModel {
       return rows
     } catch (error) {
       console.log()
+      throw error
+    }
+  }
+
+  static async getByIdWithUser ({ id }) {
+    try {
+      const [rows] = await con.query(/* sql */`
+        SELECT 
+          p.id_paciente,
+          p.estado AS estado_paciente,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado AS estado_usuario,
+          JSON_ARRAYAGG(
+            CASE 
+              WHEN os.nombre IS NOT NULL 
+              THEN JSON_OBJECT('obra_social', os.nombre)
+              ELSE NULL 
+            END
+          ) AS obras_sociales
+        FROM pacientes p
+        LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+        LEFT JOIN obra_social_paciente op ON p.id_paciente = op.id_paciente 
+          AND op.estado = 1
+        LEFT JOIN obra_social os ON op.id_obra_social = os.id_obra_social 
+          AND os.estado = 1
+        WHERE p.id_paciente = ?
+        GROUP BY 
+          p.id_paciente,
+          p.estado,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado
+      `, [id])
+
+      return rows[0] || null
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  }
+
+  static async updateWithUser ({ id, input }) {
+    try {
+      await con.beginTransaction()
+
+      const {
+        contraseña,
+        nombre,
+        apellido,
+        dni,
+        telefono,
+        direccion,
+        obras_sociales
+      } = input
+
+      // Obtenemos el id_usuario del paciente
+      const [[paciente]] = await con.execute(/* sql */`
+        SELECT id_usuario 
+        FROM pacientes 
+        WHERE id_paciente = ?
+      `, [id])
+
+      if (!paciente) {
+        return null
+      }
+
+      // Si viene contraseña la hasheamos, si no usamos la existente
+      let passwordQuery = ''
+      let passwordParams = []
+
+      if (contraseña) {
+        const hashedPassword = await hash(contraseña, 10)
+        passwordQuery = 'contraseña = ?,'
+        passwordParams = [hashedPassword]
+      }
+
+      await con.execute(/* sql */`
+        UPDATE usuarios 
+        SET ${passwordQuery}
+            nombre = ?,
+            apellido = ?,
+            dni = ?,
+            telefono = ?,
+            direccion = ?
+        WHERE id_usuario = ?
+      `, [
+        ...passwordParams,
+        nombre,
+        apellido,
+        dni,
+        telefono,
+        direccion,
+        paciente.id_usuario
+      ])
+
+      // Desactivamos todas las obras sociales existentes
+      await con.execute(/* sql */`
+        UPDATE obra_social_paciente
+        SET estado = 0
+        WHERE id_paciente = ?
+      `, [id])
+
+      // Insertamos las nuevas obras sociales
+      if (obras_sociales && obras_sociales.length > 0) {
+        for (const obraSocial of obras_sociales) {
+          // Verificamos si ya existe esa obra social para ese paciente
+          const [[existingOS]] = await con.execute(/* sql */`
+            SELECT id_paciente 
+            FROM obra_social_paciente 
+            WHERE id_paciente = ? AND id_obra_social = ?
+          `, [id, obraSocial.obra_social_id])
+
+          if (existingOS) {
+            // Si existe, la reactivamos
+            await con.execute(/* sql */`
+              UPDATE obra_social_paciente
+              SET estado = 1
+              WHERE id_paciente = ? AND id_obra_social = ?
+            `, [id, obraSocial.obra_social_id])
+          } else {
+            // Si no existe, la insertamos
+            await con.execute(/* sql */`
+              INSERT INTO obra_social_paciente (
+                id_paciente,
+                id_obra_social,
+                estado
+              )
+              VALUES (?, ?, 1)
+            `, [id, obraSocial.obra_social_id])
+          }
+        }
+      }
+
+      await con.commit()
+
+      return await PacientesModel.getByIdWithUser({ id })
+    } catch (error) {
+      await con.rollback()
+      console.log(error)
       throw error
     }
   }

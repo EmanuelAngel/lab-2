@@ -1,7 +1,8 @@
 import {
   validatePacientes,
   validatePartialPacientes,
-  validatePacientesWithUser
+  validatePacientesWithUser,
+  validatePartialPacientesWithUser
 }
   from './schemas/pacientes.schemas.js'
 
@@ -173,6 +174,48 @@ export class PacientesController {
       console.error('Error al crear el paciente:', error)
       return res.status(500).json({
         error: 'Error interno del servidor al crear el paciente'
+      })
+    }
+  }
+
+  updateWithUser = async (req, res) => {
+    try {
+      // Validamos el cuerpo de la solicitud
+      const result = validatePartialPacientesWithUser(req.body)
+
+      if (result.error) {
+        return res.status(422).json({ error: JSON.parse(result.error.message) })
+      }
+
+      // Obtenemos el ID de los parámetros de la solicitud
+      const { id } = req.params
+
+      // Intentamos actualizar el profesional
+      const updatedPaciente = await PacientesModel.updateWithUser(
+        { id, input: result.data }
+      )
+
+      console.log(updatedPaciente)
+
+      if (!updatedPaciente) {
+        // Si no se encuentra el profesional o no hay campos para actualizar, devolvemos un 404
+        return res.status(404).json({ error: 'Paciente no encontrado o sin cambios' })
+      }
+
+      return res.json({ updated: updatedPaciente })
+    } catch (error) {
+      // Si se produce un error específico de entrada duplicada
+      if (error.code === 'ER_DUP_ENTRY') {
+        console.error('Error al actualizar el paciente: Entrada duplicada:', error)
+        return res.status(409).json({
+          error: 'El nombre de usuario o email ingresado ya está asociado a otro paciente'
+        })
+      }
+
+      // Si ocurre otro tipo de error, lo registramos y respondemos
+      console.error('Error al actualizar el paciente:', error)
+      return res.status(500).json({
+        error: 'Error interno del servidor al actualizar el paciente'
       })
     }
   }

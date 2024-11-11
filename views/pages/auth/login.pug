@@ -1,0 +1,73 @@
+extends ../../layouts/base-layout
+
+block content
+  .container.mt-5.mb-5
+    .row.justify-content-center
+      .col-md-6
+        .card
+          .card-body
+            h1.text-center.mb-4 Iniciar Sesión
+            form
+              .mb-3
+                label(for="nombre_usuario") Nombre de Usuario
+                input.form-control(type="text", name="nombre_usuario", id="nombre_usuario", required)
+                span#nombre_usuario_err &nbsp;
+              .mb-3
+                label(for="contrasenia") Contraseña
+                input.form-control(type="password", name="contrasenia", id="contrasenia", required)
+                span#contrasenia_err &nbsp;
+              button.btn.btn-primary.btn-block(id="login-btn" type="button") Iniciar Sesión
+            .text-center.mt-3
+              a(href="/auth/register") Registrarse
+            
+            #error-container
+
+block scripts
+  script.
+    const form = document.querySelector('form');
+    const loginBtn = document.getElementById('login-btn');
+  
+    loginBtn.addEventListener('click', () => {
+      const nombre_usuario = document.getElementById('nombre_usuario').value;
+      const contrasenia = document.getElementById('contrasenia').value;
+      
+      let valid = true;
+      if (!nombre_usuario) {
+        document.getElementById('nombre_usuario_err').textContent = 'El nombre de usuario es requerido';
+        valid = false;
+      } else {
+        document.getElementById('nombre_usuario_err').textContent = '';
+      }
+      
+      if (!contrasenia) {
+        document.getElementById('contrasenia_err').textContent = 'La contrasenia es requerida';
+        valid = false;
+      } else {
+        document.getElementById('contrasenia_err').textContent = '';
+      }
+      
+      if (!valid) {
+        return;
+      }
+
+      fetch('/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ nombre_usuario, contraseña: contrasenia })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById('error-container').textContent = data.error;
+        } else {
+          if (confirm('Inicio de sesión exitoso. ¿Ingresar a su perfil?')) {
+            window.location.href = '/perfil';
+          }
+        }
+      })
+      .catch(err => {
+        document.getElementById('error-container').textContent = data.error;
+      });
+    });

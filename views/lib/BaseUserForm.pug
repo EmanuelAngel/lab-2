@@ -1,6 +1,7 @@
 //- mixins/forms/base-user-form.pug
 mixin baseUserForm(config)
   - const initialData = config.initialData || {}
+  - const isEdit = initialData && (initialData.id_profesional || initialData.id_paciente)
   form(id=config.formId style="max-width: 600px; margin: 0 auto;")
     h1.mb-3= config.title
     if session
@@ -13,7 +14,9 @@ mixin baseUserForm(config)
     h4.mb-3.pt-4 Datos Personales
     .mb-3
       label.form-label(for="nombre_usuario") Nombre de Usuario *
-      input#nombre_usuario.form-control(
+      input#nombre_usuario(
+        class=isEdit ? 'form-control-plaintext' : 'form-control'
+        readonly=isEdit
         type="text"
         name="nombre_usuario"
         required
@@ -45,19 +48,13 @@ mixin baseUserForm(config)
       )
     .mb-3
       label.form-label(for="email") Email *
-      input#email.form-control(
+      input#email(
+        class=isEdit ? 'form-control-plaintext' : 'form-control'
+        readonly=isEdit
         type="email"
         name="email"
         required
         value=initialData.email || ''
-      )
-    .mb-3
-      label.form-label(for="contrasenia") Contraseña#{initialData.id_profesional ? '' : ' *'}
-      input#contrasenia.form-control(
-        type="password"
-        name="contrasenia"
-        required=!initialData.id_profesional
-        placeholder=initialData.id_profesional ? "Dejar en blanco para mantener la actual" : ""
       )
     .mb-3
       label.form-label(for="telefono") Teléfono *
