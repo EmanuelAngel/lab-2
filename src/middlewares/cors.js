@@ -1,6 +1,6 @@
 import cors from 'cors'
 
-const WHITE_LIST = ['http://localhost:3000', 'http://localhost:3001', 'https://la-url-de-produccion.com']
+const WHITE_LIST = ['http://localhost:3000', 'http://localhost:3001', 'https://lab-2-p510.onrender.com']
 
 export const corsMiddleware = ({ whiteList = WHITE_LIST } = {}) =>
   cors({
