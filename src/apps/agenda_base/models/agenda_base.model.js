@@ -181,4 +181,120 @@ export class AgendaBaseModel {
       con.release()
     }
   }
+
+  static async getAllDetailed () {
+    const con = await pool.getConnection()
+    try {
+      const [result] = await con.query(/* sql */ `
+        SELECT 
+          a.*,
+          s.nombre as sucursal_nombre,
+          c.nombre_clasificacion as clasificacion_nombre,
+          ea.nombre_estado as estado_nombre,
+          u.nombre as profesional_nombre,
+          u.apellido as profesional_apellido,
+          e.nombre as especialidad_nombre
+        FROM agenda_base a
+        LEFT JOIN sucursal s ON a.id_sucursal = s.id_sucursal
+        LEFT JOIN clasificacion_consulta c ON a.id_clasificacion = c.id_clasificacion
+        LEFT JOIN estado_agenda ea ON a.id_estado_agenda = ea.id_estado_agenda
+        LEFT JOIN especialidades_profesional ep ON a.matricula = ep.matricula
+        LEFT JOIN profesionales p ON ep.id_profesional = p.id_profesional
+        LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+        LEFT JOIN especialidades e ON ep.id_especialidad = e.id_especialidad
+        ORDER BY a.createdAt DESC
+      `)
+
+      return result
+    } catch (error) {
+      console.log(error)
+      throw new Error(`Error al obtener agendas detalladas: ${error.message}`)
+    } finally {
+      con.release()
+    }
+  }
+
+  static async getByIdDetailed ({ id }) {
+    const con = await pool.getConnection()
+    try {
+      const [[result]] = await con.query(/* sql */ `
+        SELECT 
+          a.*,
+          s.nombre as sucursal_nombre,
+          c.nombre_clasificacion as clasificacion_nombre,
+          ea.nombre_estado as estado_nombre,
+          u.nombre as profesional_nombre,
+          u.apellido as profesional_apellido,
+          p.id_profesional,
+          e.nombre as especialidad_nombre
+        FROM agenda_base a
+        LEFT JOIN sucursal s ON a.id_sucursal = s.id_sucursal
+        LEFT JOIN clasificacion_consulta c ON a.id_clasificacion = c.id_clasificacion
+        LEFT JOIN estado_agenda ea ON a.id_estado_agenda = ea.id_estado_agenda
+        LEFT JOIN especialidades_profesional ep ON a.matricula = ep.matricula
+        LEFT JOIN profesionales p ON ep.id_profesional = p.id_profesional
+        LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+        LEFT JOIN especialidades e ON ep.id_especialidad = e.id_especialidad
+        WHERE a.id_agenda_base = ?
+        ORDER BY a.createdAt DESC;
+      `, [id])
+
+      return result
+    } catch (error) {
+      console.log(error)
+      throw new Error(`Error al obtener agendas detalladas: ${error.message}`)
+    } finally {
+      con.release()
+    }
+  }
+
+  static async getAgendaWithTurnos ({ id, fechaInicio = null, fechaFin = null }) {
+    const con = await pool.getConnection()
+    try {
+      const agenda = await AgendaBaseModel.getByIdDetailed({ id })
+      const [[turnos]] = await con.query(/* sql */ `
+        CALL ObtenerTurnosAgenda(?, ?, ?);
+        `, [id, fechaInicio, fechaFin])
+
+      return {
+        agenda,
+        turnos: turnos.map(turno => ({
+          ...turno,
+          fecha: turno.fecha.toISOString().split('T')[0]
+        }))
+      }
+    } catch (error) {
+      console.log(error)
+      throw new Error(`Error al obtener turnos de agenda: ${error.message}`)
+    } finally {
+      con.release()
+    }
+  }
+
+  static async asignarTurno ({ idTurno, idPaciente, motivoConsulta }) {
+    const con = await pool.getConnection()
+    try {
+      // Primero ejecutamos el procedimiento almacenado
+      await con.execute(
+        'CALL AsignarTurno(?, ?, ?, @p_resultado, @p_mensaje)',
+        [idTurno, idPaciente, motivoConsulta]
+      )
+
+      // Luego obtenemos los resultados de las variables de sesión
+      const [[result]] = await con.execute(
+        'SELECT @p_resultado as resultado, @p_mensaje as mensaje'
+      )
+
+      if (!result.resultado) {
+        throw new Error(result.mensaje)
+      }
+
+      return { mensaje: result.mensaje }
+    } catch (error) {
+      console.log(error)
+      throw error
+    } finally {
+      con.release()
+    }
+  }
 }

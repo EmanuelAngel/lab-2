@@ -25,5 +25,11 @@ export function panelRouter () {
   router.get('/pacientes', panelController.pacientes)
   router.get('/pacientes/edit/:id', panelController.editPaciente)
 
+  // Agendas
+  router.get('/agendas', panelController.agendas)
+  router.get('/agendas/:id', panelController.agenda)
+  // router.get('/agendas/edit/:id', panelController.editAgenda)
+  router.get('/agendas/:id/turnos/:id', panelController.asignar)
+
   return router
 }

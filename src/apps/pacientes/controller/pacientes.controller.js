@@ -219,4 +219,18 @@ export class PacientesController {
       })
     }
   }
+
+  getByEmailWithUser = async (req, res) => {
+    try {
+      const { email } = req.params
+      const paciente = await PacientesModel.getByEmailWithUser({ email })
+
+      if (!paciente) return res.status(404).json({ error: 'No se ha encontrado un paciente activo con el email especificado.' })
+
+      return res.json(paciente)
+    } catch (error) {
+      console.error('Error al obtener pacientes por email:', error)
+      return res.status(500).json({ error: 'Error interno del servidor al obtener pacientes por email' })
+    }
+  }
 }

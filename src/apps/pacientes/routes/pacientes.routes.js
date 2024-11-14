@@ -17,6 +17,7 @@ export function pacientesRouter () {
 
   router.post('/users', pacientesController.createWithUser)
   router.put('/:id', pacientesController.updateWithUser)
+  router.get('/users/:email', pacientesController.getByEmailWithUser)
 
   return router
 }

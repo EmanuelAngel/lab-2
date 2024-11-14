@@ -1,0 +1,113 @@
+extends ../../../layouts/base-layout
+
+block navbar
+  include ../../../lib/navbar
+
+block content
+  .row
+    .col-md-12.d-grid.gap-4
+      h1 Asignar Turno 
+      h5 Fecha #{turno.fecha}
+      h5 Hora #{turno.horario_inicio}
+      h5 Profesional #{profesional.nombre} #{profesional.apellido}
+      form#buscarPaciente.mb-4
+        label.mb-2 Para el paciente
+        fieldset.input-group.mb-3(style="max-width: 320px")
+          input#email.form-control(type="email" placeholder="Email" required)
+          button.btn.btn-primary.border-0.d-flex.gap-2.justify-content-center.px-4(type="submit")
+            i.bi.bi-search
+      #datosPaciente.d-none
+        input#idPaciente.visually-hidden(type="hidden")
+        .row.mb-3
+          .col-md-6
+            label.form-label(for="apellido")
+            strong Apellido
+            p#apellido.form-control-plaintext
+          .col-md-6  
+            label.form-label(for="nombre")
+            strong Nombre
+            p#nombre.form-control-plaintext
+        .mb-3
+          label.form-label(for="motivoConsulta") Motivo de consulta (opcional)
+          textarea#motivoConsulta.form-control(rows="3" maxlength="200")
+          .form-text.text-end
+            span#charCount 0
+            span /200 caracteres
+        button#btnAsignar.btn.btn-primary(type="button") Asignar
+
+      script.
+        // Variables del servidor
+        const TURNO = {
+          id_turno: '#{turno.id_turno}',
+          id_agenda_base: '#{turno.id_agenda_base}'
+        };
+
+      script(type='module').
+        import { showToast } from '/js/showToast.js'
+
+        const buscarPaciente = document.getElementById('buscarPaciente');
+        const datosPaciente = document.getElementById('datosPaciente');
+        const idPaciente = document.getElementById('idPaciente');
+        const apellido = document.getElementById('apellido');
+        const nombre = document.getElementById('nombre');
+        const btnAsignar = document.getElementById('btnAsignar');
+        const motivoConsulta = document.getElementById('motivoConsulta');
+        const charCount = document.getElementById('charCount');
+
+        motivoConsulta.addEventListener('input', function() {
+          charCount.textContent = this.value.length;
+        });
+
+        buscarPaciente.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('email').value;
+          
+          try {
+            const response = await fetch(`/pacientes/users/${email}`);
+            const data = await response.json();
+            
+            if (data.error) {
+              showToast('No se encontró ningún paciente con ese email', 'warning');
+              return;
+            }
+
+            idPaciente.value = data.id_paciente;
+            apellido.textContent = data.apellido;
+            nombre.textContent = data.nombre;
+            datosPaciente.classList.remove('d-none');
+            btnAsignar.classList.remove('disabled');
+
+          } catch (error) {
+            showToast('Algo salió mal', 'danger');
+          }
+        });
+
+        btnAsignar.addEventListener('click', async () => {
+          try {
+            const response = await fetch(`/agenda_base/turnos/${TURNO.id_turno}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                idPaciente: idPaciente.value,
+                motivoConsulta: motivoConsulta.value.trim() || null
+              })
+            });
+
+            const result = await response.json();
+            
+            if (result.error) {
+              showToast(result.error, 'danger');
+              return;
+            }
+
+            showToast(result.mensaje, 'success');
+            setTimeout(() => {
+              window.location.href = `/panel/agendas/${TURNO.id_agenda_base}`;
+            }, 3000);
+
+          } catch (error) {
+            showToast('Algo salió mal', 'danger');
+          }
+        });

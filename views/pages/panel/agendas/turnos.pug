@@ -1,0 +1,44 @@
+extends ../../../layouts/base-layout
+
+block navbar
+  include ../../../lib/navbar
+
+block content
+  .row
+    .col-md-12.d-grid.gap-4
+      h3 Agenda de #{agenda.profesional_nombre} #{agenda.profesional_apellido} - #{agenda.especialidad_nombre}
+      h4 En sucursal #{agenda.sucursal_nombre}
+      h4 Clasificación: #{agenda.clasificacion_nombre}
+      .mb-4 
+      h3 Turnos
+      h5 Duración de cada turno: #{agenda.duracion_turno} minutos
+      .table-responsive
+        table#tablaTurnos.table.table-striped.table-bordered.align-middle.table-hover
+          thead
+            tr.align-middle
+              th Fecha
+              th Dia 
+              th Hora
+              th Estado
+              th Paciente
+              th Motivo consulta
+              th Acciones
+          tbody
+            each turno in turnos
+              tr 
+                td= turno.fecha
+                td= turno.dia_semana
+                td= turno.hora_inicio
+                td= turno.estado
+                td= turno.paciente ? turno.paciente : 'No asignado'
+                td= turno.motivo_consulta ? turno.motivo_consulta : '-'
+                td
+                  a.btn.btn-outline-primary.border-0.d-flex.gap-2.justify-content-center(
+                    href=`/panel/agendas/${agenda.id_agenda_base}/turnos/${turno.id_turno}?id_profesional=${agenda.id_profesional}`
+                    )
+                    | Asignar
+                    i.bi.bi-calendar-plus
+
+block scripts
+  script.
+    initTable({ tableId: '#tablaTurnos' })

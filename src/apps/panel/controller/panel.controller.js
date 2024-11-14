@@ -2,6 +2,9 @@ import { ProfesionalesModel } from '../../profesionales/models/profesionales.mod
 import { EspecialidadesModel } from '../../especialidades/models/especialidades.model.js'
 import { PacientesModel } from '../../pacientes/models/pacientes.model.js'
 import { ObraSocialModel } from '../../obra_social/models/obra_social.model.js'
+import { AgendaBaseModel } from '../../agenda_base/models/agenda_base.model.js'
+import { EstadosTurnoModel } from '../../estados_turno/models/estados_turno.model.js'
+import { TurnoModel } from '../../turnos/models/turnos.model.js'
 
 export class PanelController {
   index = async (req, res) => {
@@ -113,5 +116,49 @@ export class PanelController {
         obrasSociales
       }
     )
+  }
+
+  agendas = async (_req, res) => {
+    const agendas = await AgendaBaseModel.getAllDetailed()
+
+    res.render('pages/panel/agendas/index',
+      {
+        title: 'Agendas',
+        agendas
+      }
+    )
+  }
+
+  agenda = async (req, res) => {
+    const { id } = req.params
+    const agenda = await AgendaBaseModel.getAgendaWithTurnos({ id })
+    const estadosTurnos = await EstadosTurnoModel.getAll()
+
+    if (!agenda) {
+      return res.status(404).json({ message: 'Agenda no encontrada' })
+    }
+
+    res.render('pages/panel/agendas/turnos',
+      {
+        title: 'Agenda',
+        agenda: agenda.agenda,
+        turnos: agenda.turnos,
+        estadosTurnos
+      }
+    )
+  }
+
+  asignar = async (req, res) => {
+    const { id } = req.params
+    const { id_profesional } = req.query
+
+    const turno = await TurnoModel.getById({ id })
+    const profesional = await ProfesionalesModel.getByIdWithUser({ id: id_profesional })
+
+    res.render('pages/panel/agendas/asignar', {
+      title: 'Asignar turno',
+      turno,
+      profesional
+    })
   }
 }

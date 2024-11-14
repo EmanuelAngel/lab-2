@@ -421,4 +421,58 @@ export class PacientesModel {
       con.release()
     }
   }
+
+  static async getByEmailWithUser ({ email }) {
+    const con = await pool.getConnection()
+    try {
+      const [rows] = await con.query(/* sql */`
+        SELECT 
+          p.id_paciente,
+          p.estado AS estado_paciente,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado AS estado_usuario,
+          JSON_ARRAYAGG(
+            CASE 
+              WHEN os.nombre IS NOT NULL 
+              THEN JSON_OBJECT('obra_social', os.nombre)
+              ELSE NULL 
+            END
+          ) AS obras_sociales
+        FROM pacientes p
+        LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+        LEFT JOIN obra_social_paciente op ON p.id_paciente = op.id_paciente 
+          AND op.estado = 1
+        LEFT JOIN obra_social os ON op.id_obra_social = os.id_obra_social 
+          AND os.estado = 1
+        WHERE u.email = ? 
+        AND u.id_rol = 4
+        GROUP BY 
+          p.id_paciente,
+          p.estado,
+          p.id_usuario,
+          u.nombre_usuario,
+          u.nombre,
+          u.apellido,
+          u.dni,
+          u.telefono,
+          u.direccion,
+          u.email,
+          u.estado
+      `, [email])
+
+      return rows[0] || null
+    } catch (error) {
+      console.log(error)
+      throw error
+    } finally {
+      con.release()
+    }
+  }
 }

@@ -19,5 +19,8 @@ export function agendaBaseRouter () {
   router.get('/sucursales', agendaBaseController.getAllSucursales) // Obtener todas las sucursales únicas
   router.get('/sucursal/:id_sucursal/clasificacion/:id_clasificacion', agendaBaseController.getBySucursalAndClasificacion) // Obtener agendas por combinación de sucursal y clasificación
 
+  router.get('/:id/turnos', agendaBaseController.getAgendaWithTurnos) // Obtener turnos por ID de agenda
+  router.post('/turnos/:idTurno', agendaBaseController.asignarTurno)
+
   return router
 }

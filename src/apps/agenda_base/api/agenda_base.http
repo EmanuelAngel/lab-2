@@ -47,3 +47,21 @@ GET http://localhost:3001/agenda_base/sucursales
 
 ### Obtener agendas por combinación de sucursal y clasificación
 GET http://localhost:3001/agenda_base/sucursal/1/clasificacion/2
+
+### All Detailed
+GET http://localhost:3001/agenda_base?expanded=true
+
+### One Detailed
+GET http://localhost:3001/agenda_base/1?expanded=true
+
+### AGENDA CON TURNOS
+GET http://localhost:3001/agenda_base/1/turnos
+
+###
+POST http://localhost:3001/agenda_base/turnos/115
+Content-Type: application/json
+
+{
+  "idPaciente": 33,
+  "motivoConsulta": "test"
+}

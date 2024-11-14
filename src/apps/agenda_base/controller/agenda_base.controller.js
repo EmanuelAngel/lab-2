@@ -5,7 +5,13 @@ export class AgendaBaseController {
   // Obtener todas las agendas base activas
   getAll = async (req, res) => {
     try {
-      const agendas = await AgendaBaseModel.getAll()
+      const { expanded } = req.query
+      let agendas
+
+      expanded === 'true'
+        ? agendas = await AgendaBaseModel.getAllDetailed()
+        : agendas = await AgendaBaseModel.getAll()
+
       return res.json(agendas)
     } catch (error) {
       console.error('Error al obtener todas las agendas base:', error)
@@ -17,7 +23,12 @@ export class AgendaBaseController {
   getById = async (req, res) => {
     try {
       const { id } = req.params
-      const agenda = await AgendaBaseModel.getById({ id })
+      const { expanded } = req.query
+      let agenda
+
+      expanded === 'true'
+        ? agenda = await AgendaBaseModel.getByIdDetailed({ id })
+        : agenda = await AgendaBaseModel.getById({ id })
 
       if (!agenda) {
         return res.status(404).json({ error: 'Agenda base no encontrada' })
@@ -158,6 +169,38 @@ export class AgendaBaseController {
     } catch (error) {
       console.error('Error al obtener agendas por sucursal y clasificación:', error)
       return res.status(500).json({ error: 'Error interno del servidor' })
+    }
+  }
+
+  getAgendaWithTurnos = async (req, res) => {
+    console.log('MUY LO QUE ES:', req.params.id)
+
+    try {
+      const { id } = req.params
+      const { fechaInicio, fechaFin } = req.query
+
+      const result = await AgendaBaseModel.getAgendaWithTurnos({ id, fechaInicio, fechaFin })
+
+      res.json(result)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  }
+
+  asignarTurno = async (req, res) => {
+    try {
+      const { idTurno } = req.params
+      const { idPaciente, motivoConsulta } = req.body
+
+      const result = await AgendaBaseModel.asignarTurno({
+        idTurno,
+        idPaciente,
+        motivoConsulta
+      })
+
+      res.json(result)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
     }
   }
 }
