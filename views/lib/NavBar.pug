@@ -6,24 +6,36 @@ nav.navbar.navbar-expand-lg.bg-body-tertiary.sticky-top
     #navbarSupportedContent.collapse.navbar-collapse
       ul.navbar-nav.me-auto.mb-2.mb-lg-0
         li.nav-item
-          a.nav-link(href='/panel/pacientes') Pacientes
-        li.nav-item
-          a.nav-link(href='/panel/profesionales') Profesionales
-        li.nav-item
-          a.nav-link(href='/panel/especialidades') Especialidades
+          a.nav-link(href='/panel/agendas') Agendas
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle(href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false')
-            | Dropdown
+          .nav-link.dropdown-toggle(href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false')
+            | Usuarios
           ul.dropdown-menu
             li
-              a.dropdown-item(href='#') Action
+              a.dropdown-item(href='/panel/pacientes') Pacientes
             li
-              a.dropdown-item(href='#') Another action
+              a.dropdown-item(href='/panel/profesionales') Profesionales
+            li
+              a.dropdown-item.disabled(aria-disabled='true' href='/panel/secretarias') Secretarias
+                |  &nbsp...
+                i.bi.bi-tools
             li
               hr.dropdown-divider
             li
-              a.dropdown-item(href='#') Something else here
+              a.dropdown-item.disabled(aria-disabled='true' href='/panel/admins') Administradores
+                |  &nbsp...
+                i.bi.bi-tools
         li.nav-item
-          a.nav-link.disabled(aria-disabled='true') Disabled
+          a.nav-link(href='/panel/especialidades') Especialidades
+        li.nav-item
+          a.nav-link.disabled(aria-disabled='true') Obras Sociales
+            |  &nbsp...
+            i.bi.bi-tools
+        li.nav-item
+          a.nav-link.disabled(aria-disabled='true') Roles
+            |  &nbsp...
+            i.bi.bi-tools
         
-      a.btn.btn-outline-secondary.border-0(href="/auth/logout") Cerrar Sesión
+      a.btn.btn-outline-secondary.border-0.disabled(href="/auth/logout") Cerrar Sesión
+        |  &nbsp...
+        i.bi.bi-tools
