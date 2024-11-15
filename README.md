@@ -1,6 +1,6 @@
 # Agenda de Consultorios - Laboratorio 2
 
-Repositorio donde se encuentra el código fuente para el proyecto Agenda de Consultorios, correspondiente a la materia Laboratorio 2, de la Universidad de la Punta, Técnicatura Universitaria en Desarrollo de Software.
+Repositorio donde se encuentra el código fuente para el proyecto Agenda de Consultorios, correspondiente a la materia Laboratorio 2, de la [Universidad de la Punta](https://www.ulp.edu.ar/), Técnicatura Universitaria en Desarrollo de Software.
 
 ## Integrantes
 - Angel Emanuel
