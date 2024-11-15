@@ -138,11 +138,24 @@ export class PanelController {
       return res.status(404).json({ message: 'Agenda no encontrada' })
     }
 
+    const turnosConPacientes = await Promise.all(
+      agenda.turnos.map(async (turno) => {
+        if (turno.id_paciente) {
+          const paciente = await PacientesModel.getByIdWithUser({ id: turno.id_paciente })
+          return {
+            ...turno,
+            paciente: paciente?.email
+          }
+        }
+        return turno
+      })
+    )
+
     res.render('pages/panel/agendas/turnos',
       {
         title: 'Agenda',
         agenda: agenda.agenda,
-        turnos: agenda.turnos,
+        turnos: turnosConPacientes,
         estadosTurnos
       }
     )
