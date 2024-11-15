@@ -73,10 +73,11 @@ npm run dev
 │   ├── migrations/         # Historial de cambios en la base de datos
 │   ├── apps/               # Módulos de la aplicación
 │   │   ├── agenda_base/    # Módulo de Agenda
+│   │   │   ├── agenda_base.http   # Testing para peticiones HTTP 
 │   │   │   ├── controller.js
 │   │   │   ├── router.js
 │   │   │   ├── model.js
-│   │   │   └── schema.js
+│   │   │   └── schema.js          # Esquemas de validación
 │   │   ├── pacientes/      # Módulo de Pacientes
 │   │   ├── profesionales/  # Módulo de Profesionales
 │   │   └── ...             # Otros módulos
@@ -95,6 +96,7 @@ npm run dev
 - **Zod**: Validaciones y Esquemas.
 - **Render**: Servicio de hosting para desplegar el [servidor](https://render.com/).
 - **StandardJS**: Estilizador, Linter y Formateador para JavaScript. [StandardJS](https://standardjs.com/).
+- **REST Client**: Para realizar y testear peticiones HTTP. [Extensión de Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
 
 ## Escalabilidad Futura
 Este proyecto ha sido diseñado y arquitecturado pensando en su escalabilidad, preparado para integrar futuras funcionalidades como:
