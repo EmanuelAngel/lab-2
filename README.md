@@ -17,7 +17,7 @@ Repositorio donde se encuentra el código fuente para el proyecto Agenda de Cons
 - Asignar un turno a un paciente en un horario disponible de una agenda.
 
 ## Detalles
-- Un paciente puede tener una o más obras sociales.
+- Un paciente puede tener ninguna o varias obras sociales.
 - Un profesional puede tener una o más especialidades.
 - Cada agenda corresponde a una matrícula de una especialidad de un profesional.
 - Los turnos de las agendas pueden ser en distintos días, tanto en la mañana como en la tarde.
