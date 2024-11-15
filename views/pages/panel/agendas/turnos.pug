@@ -29,7 +29,12 @@ block content
                 td= turno.fecha
                 td= turno.dia_semana
                 td= turno.hora_inicio
-                td= turno.estado
+                td.text-center
+                  case turno.estado
+                    when 'Confirmado'
+                      span.badge.bg-primary Confirmado
+                    when 'Libre'
+                      span.badge.bg-success Libre
                 td= turno.paciente ? turno.paciente : 'No asignado'
                 td= turno.motivo_consulta ? turno.motivo_consulta : '-'
                 td
