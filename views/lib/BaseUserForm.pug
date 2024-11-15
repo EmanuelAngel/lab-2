@@ -56,6 +56,16 @@ mixin baseUserForm(config)
         required
         value=initialData.email || ''
       )
+    //- Campo de contraseña solo visible en registro
+    if !isEdit
+      .mb-3
+        label.form-label(for="contrasenia") Contraseña *
+        input#contrasenia.form-control(
+          type="password"
+          name="contrasenia"
+          required
+          minlength="6"
+        )
     .mb-3
       label.form-label(for="telefono") Teléfono *
       input#telefono.form-control(
