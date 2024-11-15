@@ -33,11 +33,18 @@ block content
                 td= turno.paciente ? turno.paciente : 'No asignado'
                 td= turno.motivo_consulta ? turno.motivo_consulta : '-'
                 td
-                  a.btn.btn-outline-primary.border-0.d-flex.gap-2.justify-content-center(
-                    href=`/panel/agendas/${agenda.id_agenda_base}/turnos/${turno.id_turno}?id_profesional=${agenda.id_profesional}`
-                    )
-                    | Asignar
-                    i.bi.bi-calendar-plus
+                  if turno.estado === 'Confirmado'
+                    a.disabled.btn.btn-outline-danger.border-0.d-flex.gap-2.justify-content-center(
+                      href=`/panel/agendas/${agenda.id_agenda_base}/turnos/${turno.id_turno}?id_profesional=${agenda.id_profesional}`
+                      )
+                      | Cancelar
+                      i.bi.bi-calendar-minus
+                  else
+                    a.btn.btn-outline-primary.border-0.d-flex.gap-2.justify-content-center(
+                      href=`/panel/agendas/${agenda.id_agenda_base}/turnos/${turno.id_turno}?id_profesional=${agenda.id_profesional}`
+                      )
+                      | Asignar
+                      i.bi.bi-calendar-plus
 
 block scripts
   script.
