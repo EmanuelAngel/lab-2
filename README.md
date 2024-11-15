@@ -64,7 +64,7 @@ npm run dev
 ## Estructura del proyecto
 ```bash
 .
-├── public/                 # Archivos estáticos (CSS, JS, imágenes)
+├── public/                 # Archivos estáticos (CSS, JS)
 ├── views/                  # Vistas dinámicas en Pug
 ├── src/                    # Código fuente principal
 │   ├── .bin/               # Punto de entrada - Servidor
@@ -92,8 +92,8 @@ npm run dev
 - **Express**: Framework de Node.js. [v4.19.0](https://expressjs.com/).
 - **MySQL**: Sistema de gestión de base de datos relacional. [v8.0](https://www.mysql.com/) - Utilizado para el almacenamiento persistente de datos de pacientes, profesionales, agendas, turnos y obras sociales.
 - **Pug**: Motor de plantillas para Node.js que permite escribir HTML de manera elegante y con menos código. [v3.0.2](https://pugjs.org/) - Empleado para generar las vistas dinámicas de la aplicación.
-- **Bootstrap**: Componentes de UI. [v5.3.0](https://getbootstrap.com/).
-- **Zod**: Validaciones y Esquemas.
+- **Bootstrap y Bootstrap Icons**: Componentes de UI. [v5.3.0](https://getbootstrap.com/).
+- **Zod**: Validaciones y Esquemas. [Zod](https://zod.dev/)
 - **Render**: Servicio de hosting para desplegar el [servidor](https://render.com/).
 - **StandardJS**: Estilizador, Linter y Formateador para JavaScript. [StandardJS](https://standardjs.com/).
 - **REST Client**: Para realizar y testear peticiones HTTP. [Extensión de Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
