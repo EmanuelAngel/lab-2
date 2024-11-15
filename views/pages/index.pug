@@ -3,5 +3,65 @@ extends ../layouts/base-layout
 block navbar 
   include ../lib/NavBar
 
+block styles
+  style.
+    .hover-shadow:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
 block content
-  h1 Bienvenido a Laboratorio 2
+  h1.display-1 Bienvenido a Agenda de Consultorios 
+  h5.display-5.mb-4 - Laboratorio 2
+
+  h5.mt-4.mb-4(style="padding: 0 0 64px 0") Enlace al repositorio de 
+    a.mb-4(href='https://github.com/EmanuelAngel/lab-2' target='_blank') GitHub
+
+  h5.pb-4 Empieza a navegar...
+
+  .row.d-grid.gap-4
+    <div class="row">
+      <div class="col-sm-6 mb-3 mb-sm-0">
+        <div class="card hover-shadow" style="transition: all 0.3s ease;">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-person-badge-fill"></i> Profesionales</h5>
+            <p class="card-text">Listado de todos los profesionales registrados en la aplicación.</p>
+            <a href="panel/profesionales" class="btn btn-outline-primary border-0">Ir <i class="bi bi-arrow-right-short"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card hover-shadow" style="transition: all 0.3s ease;">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-star-fill"></i>  Especialidades</h5>
+            <p class="card-text">Listado de todas las especialidades registradas en la aplicación.</p>
+            <a href="panel/especialidades" class="btn btn-outline-primary border-0">Ir <i class="bi bi-arrow-right-short"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6 mb-3 mb-sm-0">
+        <div class="card hover-shadow" style="transition: all 0.3s ease;">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-people-fill"></i>  Pacientes</h5>
+            <p class="card-text">Listado de todos los pacientes registrados en la aplicación.</p>
+            <a href="panel/pacientes" class="btn btn-outline-primary border-0">Ir <i class="bi bi-arrow-right-short"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card hover-shadow" style="transition: all 0.3s ease;">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-calendar3-week-fill"></i>  Agendas</h5>
+            <p class="card-text">Listado de todas las agendas registradas en la aplicación.</p>
+            <a href="panel/agendas" class="btn btn-outline-primary border-0">Ir <i class="bi bi-arrow-right-short"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    p.text-center.mb-0.pb-0(style="padding: 64px 0 0 0") Por: 
+      a(href="https://github.com/EmanuelAngel") Angel Emanuel 
+      | y
+      a(href="https://github.com/RodrigoNAlcaraz")  Alcaraz Rodrigo Nicolás 
