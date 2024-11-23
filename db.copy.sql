@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 15, 2024 at 02:01 AM
+-- Generation Time: Nov 23, 2024 at 11:09 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -20,8 +20,189 @@ SET time_zone = "+00:00";
 --
 -- Database: `agenda_consultorio`
 --
-CREATE DATABASE IF NOT EXISTS `agenda_consultorio` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `agenda_consultorio`;
+
+DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AsignarTurno` (IN `p_id_turno` INT, IN `p_id_paciente` INT, IN `p_motivo_consulta` TEXT, OUT `p_resultado` BOOLEAN, OUT `p_mensaje` VARCHAR(255))   BEGIN
+    DECLARE v_estado_actual INT;
+    
+    START TRANSACTION;
+    
+    SELECT id_estado_turno INTO v_estado_actual
+    FROM turnos 
+    WHERE id_turno = p_id_turno
+    FOR UPDATE;
+    
+    IF v_estado_actual IS NULL THEN
+        SET p_resultado = FALSE;
+        SET p_mensaje = 'Turno no encontrado';
+        ROLLBACK;
+    ELSEIF v_estado_actual != 2 THEN
+        SET p_resultado = FALSE;
+        SET p_mensaje = 'El turno no está libre';
+        ROLLBACK;
+    ELSE
+        UPDATE turnos 
+        SET id_estado_turno = 1,
+            id_paciente = p_id_paciente,
+            motivo_consulta = p_motivo_consulta
+        WHERE id_turno = p_id_turno;
+        
+        SET p_resultado = TRUE;
+        SET p_mensaje = 'Turno asignado correctamente';
+        COMMIT;
+    END IF;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EliminarTodosLosTurnos` (IN `p_id_agenda_base` INT, IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
+    -- Eliminar los turnos que coincidan con los parámetros
+    DELETE FROM turnos 
+    WHERE id_agenda_base = p_id_agenda_base
+    AND fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    -- Opcionalmente, puedes agregar más condiciones, por ejemplo:
+    -- AND id_estado_turno = 2  -- Solo eliminar turnos libres
+    -- AND fecha >= CURDATE()   -- Solo eliminar turnos futuros
+    ;
+    
+    -- Opcionalmente, puedes retornar el número de turnos eliminados
+    SELECT ROW_COUNT() as turnos_eliminados;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GenerarTurnos` (IN `p_id_agenda_base` INT, IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
+    DECLARE v_fecha_actual DATE;
+    DECLARE v_dia_semana INT;
+    DECLARE v_horario_inicio TIME;
+    DECLARE v_horario_fin TIME;
+    DECLARE v_hora_turno TIME;
+    DECLARE v_duracion_turno INT;
+    DECLARE done INT DEFAULT FALSE;
+    
+    -- Declarar el cursor para las franjas horarias
+    DECLARE franja_cursor CURSOR FOR 
+        SELECT horario_inicio, horario_fin 
+        FROM dias_agendas
+        WHERE id_agenda_base = p_id_agenda_base 
+        AND estado = 1
+        AND id_dia = v_dia_semana;
+    
+    -- Declarar handler para cuando no hay más registros
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    -- Obtener la duración del turno de agenda_base
+    SELECT duracion_turno 
+    INTO v_duracion_turno 
+    FROM agenda_base 
+    WHERE id_agenda_base = p_id_agenda_base;
+    
+    -- Iniciar en la fecha de inicio
+    SET v_fecha_actual = p_fecha_inicio;
+    
+    -- Iterar por cada día en el rango de fechas
+    WHILE v_fecha_actual <= p_fecha_fin DO
+        -- Obtener el día de la semana (1=Domingo, 2=Lunes, ..., 7=Sábado)
+        SET v_dia_semana = DAYOFWEEK(v_fecha_actual);
+        
+        -- Abrir el cursor
+        OPEN franja_cursor;
+        
+        read_loop: LOOP
+            FETCH franja_cursor INTO v_horario_inicio, v_horario_fin;
+            
+            IF done THEN 
+                LEAVE read_loop;
+            END IF;
+            
+            -- Iniciar en el primer horario
+            SET v_hora_turno = v_horario_inicio;
+            SET done = FALSE;
+            
+            -- Generar turnos mientras estemos dentro del horario
+            WHILE ADDTIME(v_hora_turno, SEC_TO_TIME(v_duracion_turno * 60)) <= v_horario_fin DO
+                -- Verificar si ya existe un turno para esta fecha y hora
+                IF NOT EXISTS (
+                    SELECT 1 
+                    FROM turnos 
+                    WHERE id_agenda_base = p_id_agenda_base
+                    AND fecha = v_fecha_actual
+                    AND horario_inicio = v_hora_turno
+                ) THEN
+                    -- Insertar el turno
+                    INSERT INTO turnos (
+                        id_agenda_base,
+                        fecha,
+                        horario_inicio,
+                        horario_fin,
+                        id_estado_turno
+                    ) VALUES (
+                        p_id_agenda_base,
+                        v_fecha_actual,
+                        v_hora_turno,
+                        ADDTIME(v_hora_turno, SEC_TO_TIME(v_duracion_turno * 60)),
+                        2  -- Cambiado a estado 2 'LIBRE'
+                    );
+                END IF;
+                
+                -- Avanzar al siguiente horario
+                SET v_hora_turno = ADDTIME(v_hora_turno, SEC_TO_TIME(v_duracion_turno * 60));
+            END WHILE;
+        END LOOP;
+        
+        -- Cerrar el cursor
+        CLOSE franja_cursor;
+        SET done = FALSE;
+        
+        -- Avanzar al siguiente día
+        SET v_fecha_actual = DATE_ADD(v_fecha_actual, INTERVAL 1 DAY);
+    END WHILE;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ObtenerTurnosAgenda` (IN `p_id_agenda_base` INT, IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
+    SELECT 
+        t.id_turno,
+        t.fecha,
+        d.dia as dia_semana,
+        TIME_FORMAT(t.horario_inicio, '%H:%i') as hora_inicio,
+        TIME_FORMAT(t.horario_fin, '%H:%i') as hora_fin,
+        et.nombre_estado as estado,
+        t.id_paciente,
+        t.motivo_consulta
+    FROM turnos t
+    JOIN dias d ON d.id_dia = DAYOFWEEK(t.fecha)
+    JOIN estados_turno et ON et.id_estado_turno = t.id_estado_turno
+    WHERE t.id_agenda_base = p_id_agenda_base
+    AND (
+        (p_fecha_inicio IS NULL AND p_fecha_fin IS NULL) -- Si ambas son NULL, mostrar todos
+        OR 
+        (t.fecha BETWEEN p_fecha_inicio AND p_fecha_fin) -- Si no, filtrar por rango
+    )
+    ORDER BY t.fecha, t.horario_inicio;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `TestProcedure` ()   BEGIN
+    SELECT 'Hello World' as mensaje;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `VerTurnosGenerados` (IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
+    SELECT 
+        t.fecha,
+        d.dia as dia_semana,  -- Usando la tabla dias que ya tienes
+        TIME_FORMAT(t.horario_inicio, '%H:%i') as hora_inicio,
+        TIME_FORMAT(t.horario_fin, '%H:%i') as hora_fin,
+        CASE 
+            WHEN t.id_estado_turno = 1 THEN 'LIBRE'
+            WHEN t.id_estado_turno = 2 THEN 'RESERVADO'
+            -- Agregar más estados según corresponda
+            ELSE 'OTRO'
+        END as estado
+    FROM turnos t
+    JOIN dias d ON d.id_dia = DAYOFWEEK(t.fecha)
+    WHERE t.fecha BETWEEN p_fecha_inicio AND p_fecha_fin
+    ORDER BY t.fecha, t.horario_inicio;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -218,7 +399,7 @@ CREATE TABLE `especialidades_profesional` (
 
 INSERT INTO `especialidades_profesional` (`id_profesional`, `id_especialidad`, `matricula`, `estado`) VALUES
 (1, 1, 'PROF1234', 1),
-(1, 2, 'PROF9897', 1),
+(1, 2, 'PROF9897', 0),
 (1, 3, 'PROF3451', 1),
 (2, 2, 'PROF4567', 1),
 (2, 5, 'PROF5678', 1),
@@ -230,7 +411,8 @@ INSERT INTO `especialidades_profesional` (`id_profesional`, `id_especialidad`, `
 (8, 1, 'ALVAREZ99000', 1),
 (9, 6, 'OGONZ123', 1),
 (10, 6, 'OALVZ123', 1),
-(11, 5, 'PGIRA123', 1);
+(11, 5, 'PGIRA123', 1),
+(12, 3, 'MAT-233', 1);
 
 -- --------------------------------------------------------
 
@@ -352,7 +534,8 @@ INSERT INTO `obra_social_paciente` (`id_paciente`, `id_obra_social`, `updatedAt`
 (39, 1, '2024-11-09 01:18:34', 1),
 (39, 2, '2024-11-09 01:18:34', 1),
 (41, 1, '2024-11-10 01:52:25', 1),
-(41, 3, '2024-11-10 01:52:25', 1);
+(41, 3, '2024-11-10 01:52:25', 1),
+(42, 3, '2024-11-15 05:08:18', 1);
 
 -- --------------------------------------------------------
 
@@ -391,7 +574,8 @@ INSERT INTO `pacientes` (`id_paciente`, `tiene_obra_social`, `estado`, `id_usuar
 (38, 0, 1, 65, NULL),
 (39, 1, 1, 67, NULL),
 (40, 0, 1, 68, NULL),
-(41, 1, 1, 71, NULL);
+(41, 1, 1, 71, NULL),
+(42, 1, 1, 73, NULL);
 
 -- --------------------------------------------------------
 
@@ -420,7 +604,8 @@ INSERT INTO `profesionales` (`id_profesional`, `estado`, `id_usuario`) VALUES
 (8, 1, 57),
 (9, 1, 3),
 (10, 1, 46),
-(11, 1, 50);
+(11, 1, 50),
+(12, 1, 72);
 
 -- --------------------------------------------------------
 
@@ -517,7 +702,7 @@ INSERT INTO `turnos` (`id_turno`, `id_agenda_base`, `id_paciente`, `id_estado_tu
 (118, 1, NULL, 2, '2024-12-02', '09:20:00', '09:40:00', NULL),
 (119, 1, 29, 1, '2024-12-02', '09:40:00', '10:00:00', 'Messi'),
 (120, 1, NULL, 2, '2024-12-02', '10:00:00', '10:20:00', NULL),
-(121, 1, NULL, 2, '2024-12-02', '10:20:00', '10:40:00', NULL),
+(121, 1, 33, 1, '2024-12-02', '10:20:00', '10:40:00', 'Test'),
 (122, 1, NULL, 2, '2024-12-02', '10:40:00', '11:00:00', NULL),
 (123, 1, NULL, 2, '2024-12-02', '11:00:00', '11:20:00', NULL),
 (124, 1, NULL, 2, '2024-12-02', '11:20:00', '11:40:00', NULL),
@@ -763,12 +948,14 @@ INSERT INTO `usuarios` (`id_usuario`, `id_rol`, `nombre_usuario`, `contraseña`,
 (54, 3, 'dr_torres', 'pass9101', 'Roberto', 'Torres', 42123470, '1234567892', 'Calle Vieja 789', 'robertotorres@gmail.com', 1),
 (55, 3, 'dr_perez', 'pass1121', 'Lucía', 'Pérez', 43123471, '1234567893', 'Calle Sol 101', 'luciaperez@gmail.com', 1),
 (56, 3, 'dr_benitez', 'pass3141', 'Sergio', 'Benítez', 44123472, '1234567894', 'Calle Luna 202', 'sergiobenitez@gmail.com', 1),
-(57, 3, 'dr_alvarez', 'pass5161', 'María', 'Álvarez', 45123473, '1234567895', 'Calle Estrella 303', 'mariaalvarez@gmail.com', 1),
+(57, 3, 'dr_alvarez', 'pass5161', 'María', 'Álvares', 45123473, '1234567895', 'Calle Estrella 303', 'mariaalvarez@gmail.com', 1),
 (64, 4, 'Pere', '$2b$10$5f8f23BvUc5AjBb.t7mpiOoJt87uW4YtMDo.51fs4B8Z19hCBePWy', 'Pere', 'Pere', 12345699, '12345678', 'C/ Juan Perez, 1', 'PerePere@gmail.com', 1),
 (65, 4, 'Seba', '$2b$10$uUeDa5I/suWLJ6ELQwUAwu.dYBS1bg6sCVsfdgDanmVBA5Z/Pw2im', 'Seba', 'Seba', 12345699, '12345678', 'C/ Juan Seba, 1', 'SebaSeba@gmail.com', 1),
 (67, 4, 'Pedrito', '$2b$10$ZcDNtDNymZMOVVNaaTIXsehXhZnAQUzs1RjsNUh3wJkjTEa6mdhEu', 'Pedrito', 'Pedrito', 12345699, '12345678', 'C/ Juan Seba, 1', 'PedritoPedrito@gmail.com', 1),
 (68, 4, 'TESTPR', '$2b$10$bcx1W2Yd5JUt7icWHGSw7eiuCQcqCmO3VDsmVwvTCtn/FzRHyIv1y', 'PACIENTE1', 'REGISTRO', 33666999, '121212', 'En algún lugar', 'TESTPACIENTE@gmail.com', 1),
-(71, 4, 'TESTPR3', '$2b$10$K4KhDbs74TndkX5Lf.zy..gFaAIjgf0k32wKxp5oFUKmDzpJBN572', 'PACIENTE3', 'REGISTRO3', 44600506, '121212', 'En algún lugar', 'TESTPACIENTE3@gmail.com', 1);
+(71, 4, 'TESTPR3', '$2b$10$K4KhDbs74TndkX5Lf.zy..gFaAIjgf0k32wKxp5oFUKmDzpJBN572', 'PACIENTE3', 'REGISTRO3', 44600506, '121212', 'En algún lugar', 'TESTPACIENTE3@gmail.com', 1),
+(72, 3, 'TEST999', '$2b$10$aaDe87YPr5FMqsHNht4HceBUVzfSFK/rHKds4fN6CzbmDFH5oNHBy', 'Adolfo', 'Villaruel', 23444555, '777886', 'En algún lugar', 'adolfovillaruel@live.com', 1),
+(73, 4, 'J_SANTANA', '$2b$10$0EjPZGN2g0CCRe0ikLGnneV4afk9N2B1ievVR0mMXCaTfw4FeHrIO', 'Jorge', 'Santana', 348888555, '777886', 'En algún lugar', 'jsantana@live.com', 1);
 
 --
 -- Indexes for dumped tables
@@ -995,13 +1182,13 @@ ALTER TABLE `obra_social`
 -- AUTO_INCREMENT for table `pacientes`
 --
 ALTER TABLE `pacientes`
-  MODIFY `id_paciente` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id_paciente` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `profesionales`
 --
 ALTER TABLE `profesionales`
-  MODIFY `id_profesional` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id_profesional` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -1031,7 +1218,7 @@ ALTER TABLE `turnos`
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `id_usuario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- Constraints for dumped tables
@@ -1116,721 +1303,6 @@ ALTER TABLE `turnos`
 --
 ALTER TABLE `usuarios`
   ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`);
---
--- Database: `hr_db`
---
-CREATE DATABASE IF NOT EXISTS `hr_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-USE `hr_db`;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `countries`
---
-
-CREATE TABLE `countries` (
-  `country_id` char(2) NOT NULL,
-  `country_name` varchar(40) DEFAULT NULL,
-  `region_id` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `countries`
---
-
-INSERT INTO `countries` (`country_id`, `country_name`, `region_id`) VALUES
-('AR', 'Argentina', 2),
-('AU', 'Australia', 3),
-('BE', 'Belgium', 1),
-('BR', 'Brazil', 2),
-('CA', 'Canada', 2),
-('CH', 'Switzerland', 1),
-('CN', 'China', 3),
-('DE', 'Germany', 1),
-('DK', 'Denmark', 1),
-('EG', 'Egypt', 4),
-('FR', 'France', 1),
-('HK', 'HongKong', 3),
-('IL', 'Israel', 4),
-('IN', 'India', 3),
-('IT', 'Italy', 1),
-('JP', 'Japan', 3),
-('KW', 'Kuwait', 4),
-('MX', 'Mexico', 2),
-('NG', 'Nigeria', 4),
-('NL', 'Netherlands', 1),
-('SG', 'Singapore', 3),
-('UK', 'United Kingdom', 1),
-('US', 'United States of America', 2),
-('ZM', 'Zambia', 4),
-('ZW', 'Zimbabwe', 4);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `departments`
---
-
-CREATE TABLE `departments` (
-  `department_id` int NOT NULL,
-  `department_name` varchar(30) NOT NULL,
-  `manager_id` int DEFAULT NULL,
-  `location_id` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `departments`
---
-
-INSERT INTO `departments` (`department_id`, `department_name`, `manager_id`, `location_id`) VALUES
-(10, 'Administration', 200, 1700),
-(20, 'Marketing', 201, 1800),
-(30, 'Purchasing', 114, 1700),
-(40, 'Human Resources', 203, 2400),
-(50, 'Shipping', 121, 1500),
-(60, 'IT', 103, 1400),
-(70, 'Public Relations', 204, 2700),
-(80, 'Sales', 145, 2500),
-(90, 'Executive', 100, 1700),
-(100, 'Finance', 108, 1700),
-(110, 'Accounting', 205, 1700),
-(120, 'Treasury', NULL, 1700),
-(130, 'Corporate Tax', NULL, 1700),
-(140, 'Control And Credit', NULL, 1700),
-(150, 'Shareholder Services', NULL, 1700),
-(160, 'Benefits', NULL, 1700),
-(170, 'Manufacturing', NULL, 1700),
-(180, 'Construction', NULL, 1700),
-(190, 'Contracting', NULL, 1700),
-(200, 'Operations', NULL, 1700),
-(210, 'IT Support', NULL, 1700),
-(220, 'NOC', NULL, 1700),
-(230, 'IT Helpdesk', NULL, 1700),
-(240, 'Government Sales', NULL, 1700),
-(250, 'Retail Sales', NULL, 1700),
-(260, 'Recruiting', NULL, 1700),
-(270, 'Payroll', NULL, 1700),
-(280, 'ulp ventas', NULL, 2200),
-(290, 'ulp ventas2', NULL, 1700),
-(300, 'pru08072010', NULL, 1700),
-(310, 'ulp 08072010', NULL, 3200);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `employees`
---
-
-CREATE TABLE `employees` (
-  `employee_id` int NOT NULL,
-  `first_name` varchar(20) DEFAULT NULL,
-  `last_name` varchar(25) NOT NULL,
-  `email` varchar(25) NOT NULL,
-  `phone_number` varchar(20) DEFAULT NULL,
-  `hire_date` date NOT NULL,
-  `job_id` varchar(10) NOT NULL,
-  `salary` double DEFAULT NULL,
-  `commission_pct` double DEFAULT NULL,
-  `manager_id` int DEFAULT NULL,
-  `department_id` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `employees`
---
-
-INSERT INTO `employees` (`employee_id`, `first_name`, `last_name`, `email`, `phone_number`, `hire_date`, `job_id`, `salary`, `commission_pct`, `manager_id`, `department_id`) VALUES
-(100, 'Steven', 'King', 'SKINGbbbbbb', '515.123.4567', '2010-11-22', 'AD_PRES', 24000, NULL, NULL, 90),
-(101, 'Neena', 'Kochhar', 'NKOCHHAR', '515.123.4568', '1989-09-07', 'AD_VP', 17000, NULL, 100, 90),
-(102, 'Lex', 'De Haan', 'LDEHAAN', '515.123.4569', '1993-01-13', 'AD_VP', 17000, NULL, 100, 90),
-(103, 'Alexander', 'Hunold', 'AHUNOLD', '590.423.4567', '1990-01-03', 'IT_PROG', 9000, NULL, 102, 60),
-(104, 'Bruce', 'Ernst', 'BERNST', '590.423.4568', '1991-05-21', 'IT_PROG', 6000, NULL, 103, 60),
-(105, 'David', 'Austin', 'DAUSTIN', '590.423.4569', '1997-06-25', 'IT_PROG', 4800, NULL, 103, 60),
-(106, 'Valli', 'Pataballa', 'VPATABAL', '590.423.4560', '1998-02-05', 'IT_PROG', 4800, NULL, 103, 60),
-(107, 'Diana', 'Lorentz', 'DLORENTZ', '590.423.5567', '1999-02-07', 'IT_PROG', 4200, NULL, 103, 60),
-(108, 'Nancy', 'Greenberg', 'NGREENBE', '515.124.4569', '1994-08-17', 'FI_MGR', 12000, NULL, 101, 100),
-(109, 'Daniel', 'Faviet', 'DFAVIET', '515.124.4169', '1994-08-16', 'FI_ACCOUNT', 9000, NULL, 108, 100),
-(110, 'John', 'Chen', 'JCHEN', '515.124.4269', '1997-09-28', 'FI_ACCOUNT', 8200, NULL, 108, 100),
-(111, 'Ismael', 'Sciarra', 'ISCIARRA', '515.124.4369', '1997-09-30', 'FI_ACCOUNT', 7700, NULL, 108, 100),
-(112, 'Jose Manuel', 'Urman', 'JMURMAN', '515.124.4469', '1998-03-07', 'FI_ACCOUNT', 7800, NULL, 108, 100),
-(113, 'Luis', 'Popp', 'LPOPP', '515.124.4567', '1999-12-07', 'FI_ACCOUNT', 6900, NULL, 108, 100),
-(114, 'Den', 'Raphaely', 'DRAPHEAL', '515.127.4561', '1994-12-07', 'PU_MAN', 11000, NULL, 100, 30),
-(115, 'Alexander', 'Khoo', 'AKHOO', '515.127.4562', '1995-05-18', 'PU_CLERK', 3100, NULL, 114, 30),
-(116, 'Shelli', 'Baida', 'SBAIDA', '515.127.4563', '1997-12-24', 'PU_CLERK', 2900, NULL, 114, 30),
-(117, 'Sigal', 'Tobias', 'STOBIAS', '515.127.4564', '1997-07-24', 'PU_CLERK', 2800, NULL, 114, 30),
-(118, 'Guy', 'Himuro', 'GHIMURO', '515.127.4565', '1998-11-15', 'PU_CLERK', 2600, NULL, 114, 30),
-(119, 'Karen', 'Colmenares', 'KCOLMENA', '515.127.4566', '1999-08-10', 'PU_CLERK', 2500, NULL, 114, 30),
-(120, 'Matthew', 'Weiss', 'MWEISS', '650.123.1234', '1996-07-18', 'ST_MAN', 8000, NULL, 100, 50),
-(121, 'Adam', 'Fripp', 'AFRIPP', '650.123.2234', '1997-04-10', 'ST_MAN', 8200, NULL, 100, 50),
-(122, 'Payam', 'Kaufling', 'PKAUFLIN', '650.123.3234', '1995-05-01', 'ST_MAN', 7900, NULL, 100, 50),
-(123, 'Shanta', 'Vollman', 'SVOLLMAN', '650.123.4234', '1997-10-10', 'ST_MAN', 6500, NULL, 100, 50),
-(124, 'Kevin', 'Mourgos', 'KMOURGOS', '650.123.5234', '1999-11-16', 'ST_MAN', 5800, NULL, 100, 50),
-(125, 'Julia', 'Nayer', 'JNAYER', '650.124.1214', '1997-07-16', 'ST_CLERK', 3200, NULL, 120, 50),
-(126, 'Irene', 'Mikkilineni', 'IMIKKILI', '650.124.1224', '1998-09-28', 'ST_CLERK', 2700, NULL, 120, 50),
-(127, 'James', 'Landry', 'JLANDRY', '650.124.1334', '1999-01-14', 'ST_CLERK', 2400, NULL, 120, 50),
-(128, 'Steven', 'Markle', 'SMARKLE', '650.124.1434', '2000-03-08', 'ST_CLERK', 2200, NULL, 120, 50),
-(129, 'Laura', 'Bissot', 'LBISSOT', '650.124.5234', '1997-08-20', 'ST_CLERK', 3300, NULL, 121, 50),
-(130, 'Mozhe', 'Atkinson', 'MATKINSO', '650.124.6234', '1997-10-30', 'ST_CLERK', 2800, NULL, 121, 50),
-(131, 'James', 'Marlow', 'JAMRLOW', '650.124.7234', '1997-02-16', 'ST_CLERK', 2500, NULL, 121, 50),
-(132, 'TJ', 'Olson', 'TJOLSON', '650.124.8234', '1999-04-10', 'ST_CLERK', 2100, NULL, 121, 50),
-(133, 'Jason', 'Mallin', 'JMALLIN', '650.127.1934', '1996-06-14', 'ST_CLERK', 3300, NULL, 122, 50),
-(134, 'Michael', 'Rogers', 'MROGERS', '650.127.1834', '1998-08-26', 'ST_CLERK', 2900, NULL, 122, 50),
-(135, 'Ki', 'Gee', 'KGEE', '650.127.1734', '1999-12-12', 'ST_CLERK', 2400, NULL, 122, 50),
-(136, 'Hazel', 'Philtanker', 'HPHILTAN', '650.127.1634', '2000-02-06', 'ST_CLERK', 2200, NULL, 122, 50),
-(137, 'Renske', 'Ladwig', 'RLADWIG', '650.121.1234', '1995-07-14', 'ST_CLERK', 3600, NULL, 123, 50),
-(138, 'Stephen', 'Stiles', 'SSTILES', '650.121.2034', '1997-10-26', 'ST_CLERK', 3200, NULL, 123, 50),
-(139, 'John', 'Seo', 'JSEO', '650.121.2019', '1998-02-12', 'ST_CLERK', 2700, NULL, 123, 50),
-(140, 'Joshua', 'Patel', 'JPATEL', '650.121.1834', '1998-04-06', 'ST_CLERK', 2500, NULL, 123, 50),
-(141, 'Trenna', 'Rajs', 'TRAJS', '650.121.8009', '1995-10-17', 'ST_CLERK', 3500, NULL, 124, 50),
-(142, 'Curtis', 'Davies', 'CDAVIES', '650.121.2994', '1997-01-29', 'ST_CLERK', 3100, NULL, 124, 50),
-(143, 'Randall', 'Matos', 'RMATOS', '650.121.2874', '1998-03-15', 'ST_CLERK', 2600, NULL, 124, 50),
-(144, 'Peter', 'Vargas', 'PVARGAS', '650.121.2004', '1998-07-09', 'ST_CLERK', 2500, NULL, 124, 50),
-(145, 'John', 'Russell', 'JRUSSEL', '011.44.1344.429268', '1996-10-01', 'SA_MAN', 14000, 0.4, 100, 80),
-(146, 'Karen', 'Partners', 'KPARTNER', '011.44.1344.467268', '1997-01-05', 'SA_MAN', 13500, 0.3, 100, 80),
-(147, 'Alberto', 'Errazuriz', 'AERRAZUR', '011.44.1344.429278', '1997-03-10', 'SA_MAN', 12000, 0.3, 100, 80),
-(148, 'Gerald', 'Cambrault', 'GCAMBRAU', '011.44.1344.619268', '1999-10-15', 'SA_MAN', 11000, 0.3, 100, 80),
-(149, 'Eleni', 'Zlotkey', 'EZLOTKEY', '011.44.1344.429018', '2000-01-29', 'SA_MAN', 10500, 0.2, 100, 80),
-(150, 'Peter', 'Tucker', 'PTUCKER', '011.44.1344.129268', '1997-01-30', 'SA_REP', 10000, 0.3, 145, 80),
-(151, 'David', 'Bernstein', 'DBERNSTE', '011.44.1344.345268', '1997-03-24', 'SA_REP', 9500, 0.25, 145, 80),
-(152, 'Peter', 'Hall', 'PHALL', '011.44.1344.478968', '1997-08-20', 'SA_REP', 9000, 0.25, 145, 80),
-(153, 'Christopher', 'Olsen', 'COLSEN', '011.44.1344.498718', '1998-03-30', 'SA_REP', 8000, 0.2, 145, 80),
-(154, 'Nanette', 'Cambrault', 'NCAMBRAU', '011.44.1344.987668', '1998-12-09', 'SA_REP', 7500, 0.2, 145, 80),
-(155, 'Oliver', 'Tuvault', 'OTUVAULT', '011.44.1344.486508', '1999-11-23', 'SA_REP', 7000, 0.15, 145, 80),
-(156, 'Janette', 'King', 'JKING', '011.44.1345.429268', '1996-01-30', 'SA_REP', 10000, 0.35, 146, 80),
-(157, 'Patrick', 'Sully', 'PSULLY', '011.44.1345.929268', '1996-03-04', 'SA_REP', 9500, 0.35, 146, 80),
-(158, 'Allan', 'McEwen', 'AMCEWEN', '011.44.1345.829268', '1996-08-01', 'SA_REP', 9000, 0.35, 146, 80),
-(159, 'Lindsey', 'Smith', 'LSMITH', '011.44.1345.729268', '1997-03-10', 'SA_REP', 8000, 0.3, 146, 80),
-(160, 'Louise', 'Doran', 'LDORAN', '011.44.1345.629268', '1997-12-15', 'SA_REP', 7500, 0.3, 146, 80),
-(161, 'Sarath', 'Sewall', 'SSEWALL', '011.44.1345.529268', '1998-11-03', 'SA_REP', 7000, 0.25, 146, 80),
-(162, 'Clara', 'Vishney', 'CVISHNEY', '011.44.1346.129268', '1997-11-11', 'SA_REP', 10500, 0.25, 147, 80),
-(163, 'Danielle', 'Greene', 'DGREENE', '011.44.1346.229268', '1999-03-19', 'SA_REP', 9500, 0.15, 147, 80),
-(164, 'Mattea', 'Marvins', 'MMARVINS', '011.44.1346.329268', '2000-01-24', 'SA_REP', 7200, 0.1, 147, 80),
-(165, 'David', 'Lee', 'DLEE', '011.44.1346.529268', '2000-02-23', 'SA_REP', 6800, 0.1, 147, 80),
-(166, 'Sundar', 'Ande', 'SANDE', '011.44.1346.629268', '2000-03-24', 'SA_REP', 6400, 0.1, 147, 80),
-(167, 'Amit', 'Banda', 'ABANDA', '011.44.1346.729268', '2000-04-21', 'SA_REP', 6200, 0.1, 147, 80),
-(168, 'Lisa', 'Ozer', 'LOZER', '011.44.1343.929268', '1997-03-11', 'SA_REP', 11500, 0.25, 148, 80),
-(169, 'Harrison', 'Bloom', 'HBLOOM', '011.44.1343.829268', '1998-03-23', 'SA_REP', 10000, 0.2, 148, 80),
-(170, 'Tayler', 'Fox', 'TFOX', '011.44.1343.729268', '1998-01-24', 'SA_REP', 9600, 0.2, 148, 80),
-(171, 'William', 'Smith', 'WSMITH', '011.44.1343.629268', '1999-02-23', 'SA_REP', 7400, 0.15, 148, 80),
-(172, 'Elizabeth', 'Bates', 'EBATES', '011.44.1343.529268', '1999-03-24', 'SA_REP', 7300, 0.15, 148, 80),
-(173, 'Sundita', 'Kumar', 'SKUMAR', '011.44.1343.329268', '2000-04-21', 'SA_REP', 6100, 0.1, 148, 80),
-(174, 'Ellen', 'Abel', 'EABEL', '011.44.1644.429267', '1996-05-11', 'SA_REP', 11000, 0.3, 149, 80),
-(175, 'Alyssa', 'Hutton', 'AHUTTON', '011.44.1644.429266', '1997-03-19', 'SA_REP', 8800, 0.25, 149, 80),
-(176, 'Jonathon', 'Taylor', 'JTAYLOR', '011.44.1644.429265', '1998-03-24', 'SA_REP', 8600, 0.2, 149, 80),
-(177, 'Jack', 'Livingston', 'JLIVINGS', '011.44.1644.429264', '1998-04-23', 'SA_REP', 8400, 0.2, 149, 80),
-(178, 'Kimberely', 'Grant', 'KGRANT', '011.44.1644.429263', '1999-05-24', 'SA_REP', 7000, 0.15, 149, NULL),
-(179, 'Charles', 'Johnson', 'CJOHNSON', '011.44.1644.429262', '2000-01-04', 'SA_REP', 6200, 0.1, 149, 80),
-(180, 'Winston', 'Taylor', 'WTAYLOR', '650.507.9876', '1998-01-24', 'SH_CLERK', 3200, NULL, 120, 50),
-(181, 'Jean', 'Fleaur', 'JFLEAUR', '650.507.9877', '1998-02-23', 'SH_CLERK', 3100, NULL, 120, 50),
-(182, 'Martha', 'Sullivan', 'MSULLIVA', '650.507.9878', '1999-06-21', 'SH_CLERK', 2500, NULL, 120, 50),
-(183, 'Girard', 'Geoni', 'GGEONI', '650.507.9879', '2000-02-03', 'SH_CLERK', 2800, NULL, 120, 50),
-(184, 'Nandita', 'Sarchand', 'NSARCHAN', '650.509.1876', '1996-01-27', 'SH_CLERK', 4200, NULL, 121, 50),
-(185, 'Alexis', 'Bull', 'ABULL', '650.509.2876', '1997-02-20', 'SH_CLERK', 4100, NULL, 121, 50),
-(186, 'Julia', 'Dellinger', 'JDELLING', '650.509.3876', '1998-06-24', 'SH_CLERK', 3400, NULL, 121, 50),
-(187, 'Anthony', 'Cabrio', 'ACABRIO', '650.509.4876', '1999-02-07', 'SH_CLERK', 3000, NULL, 121, 50),
-(188, 'Kelly', 'Chung', 'KCHUNG', '650.505.1876', '1997-06-14', 'SH_CLERK', 3800, NULL, 122, 50),
-(189, 'Jennifer', 'Dilly', 'JDILLY', '650.505.2876', '1997-08-13', 'SH_CLERK', 3600, NULL, 122, 50),
-(190, 'Timothy', 'Gates', 'TGATES', '650.505.3876', '1998-07-11', 'SH_CLERK', 2900, NULL, 122, 50),
-(191, 'Randall', 'Perkins', 'RPERKINS', '650.505.4876', '1999-12-19', 'SH_CLERK', 2500, NULL, 122, 50),
-(192, 'Sarah', 'Bell', 'SBELL', '650.501.1876', '1996-02-04', 'SH_CLERK', 4000, NULL, 123, 50),
-(193, 'Britney', 'Everett', 'BEVERETT', '650.501.2876', '1997-03-03', 'SH_CLERK', 3900, NULL, 123, 50),
-(194, 'Samuel', 'McCain', 'SMCCAIN', '650.501.3876', '1998-07-01', 'SH_CLERK', 3200, NULL, 123, 50),
-(195, 'Vance', 'Jones', 'VJONES', '650.501.4876', '1999-03-17', 'SH_CLERK', 2800, NULL, 123, 50),
-(196, 'Alana', 'Walsh', 'AWALSH', '650.507.9811', '1998-04-24', 'SH_CLERK', 3100, NULL, 124, 50),
-(197, 'Kevin', 'Feeney', 'KFEENEY', '650.507.9822', '1998-05-23', 'SH_CLERK', 3000, NULL, 124, 50),
-(198, 'Donald', 'OConnell', 'DOCONNEL', '650.507.9833', '1999-06-21', 'SH_CLERK', 2600, NULL, 124, 50),
-(199, 'Douglas', 'Grant', 'DGRANT', '650.507.9844', '2000-01-13', 'SH_CLERK', 2600, NULL, 124, 50),
-(200, 'Jennifer', 'Whalen', 'JWHALEN', '515.123.4444', '1987-09-17', 'AD_ASST', 4400, NULL, 101, 10),
-(201, 'Michael', 'Hartstein', 'MHARTSTE', '515.123.5555', '1996-02-17', 'MK_MAN', 13000, NULL, 100, 20),
-(202, 'Pat', 'Fay', 'PFAY', '603.123.6666', '1997-08-17', 'MK_REP', 6000, NULL, 201, 20),
-(203, 'Susan', 'Mavris', 'SMAVRIS', '515.123.7777', '1994-06-07', 'HR_REP', 6500, NULL, 101, 40),
-(204, 'Hermann', 'Baer', 'HBAER', '515.123.8888', '1994-06-07', 'PR_REP', 10000, NULL, 101, 70),
-(205, 'Shelley', 'Higgins', 'SHIGGINS', '515.123.8080', '1994-06-07', 'AC_MGR', 12000, NULL, 101, 110),
-(206, 'William', 'Gietz', 'WGIETZ', '515.123.8181', '1994-06-07', 'AC_ACCOUNT', 8300, NULL, 205, 110);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `jobs`
---
-
-CREATE TABLE `jobs` (
-  `job_id` varchar(10) NOT NULL,
-  `job_title` varchar(35) NOT NULL,
-  `min_salary` int DEFAULT NULL,
-  `max_salary` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `jobs`
---
-
-INSERT INTO `jobs` (`job_id`, `job_title`, `min_salary`, `max_salary`) VALUES
-('AC_ACCOUNT', 'Public Accountant', 4200, 9000),
-('AC_MGR', 'Accounting Manager', 8200, 16000),
-('AD_ASST', 'Administration Assistant', 3000, 6000),
-('AD_PRES', 'President', 20000, 40000),
-('AD_VP', 'Administration Vice President', 15000, 30000),
-('FI_ACCOUNT', 'Accountant', 4200, 9000),
-('FI_MGR', 'Finance Manager', 8200, 16000),
-('HR_REP', 'Human Resources Representative', 4000, 9000),
-('IT_PROG', 'Programmer', 4000, 10000),
-('MK_MAN', 'Marketing Manager', 9000, 15000),
-('MK_REP', 'Marketing Representative', 4000, 9000),
-('PR_REP', 'Public Relations Representative', 4500, 10500),
-('PU_CLERK', 'Purchasing Clerk', 2500, 5500),
-('PU_MAN', 'Purchasing Manager', 8000, 15000),
-('SA_MAN', 'Sales Manager', 10000, 20000),
-('SA_REP', 'Sales Representative', 6000, 12000),
-('SH_CLERK', 'Shipping Clerk', 2500, 5500),
-('ST_CLERK', 'Stock Clerk', 2000, 5000),
-('ST_MAN', 'Stock Manager', 5500, 8500);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `job_history`
---
-
-CREATE TABLE `job_history` (
-  `employee_id` int NOT NULL,
-  `start_date` date NOT NULL,
-  `end_date` date NOT NULL,
-  `job_id` varchar(10) NOT NULL,
-  `department_id` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `job_history`
---
-
-INSERT INTO `job_history` (`employee_id`, `start_date`, `end_date`, `job_id`, `department_id`) VALUES
-(101, '1989-09-21', '1993-10-27', 'AC_ACCOUNT', 110),
-(101, '1993-10-28', '1997-03-15', 'AC_MGR', 110),
-(102, '1993-01-13', '1998-07-24', 'IT_PROG', 60),
-(114, '1998-03-24', '1999-12-31', 'ST_CLERK', 50),
-(122, '1999-01-01', '1999-12-31', 'ST_CLERK', 50),
-(176, '1998-03-24', '1998-12-31', 'SA_REP', 80),
-(176, '1999-01-01', '1999-12-31', 'SA_MAN', 80),
-(200, '1987-09-17', '1993-06-17', 'AD_ASST', 90),
-(200, '1994-07-01', '1998-12-31', 'AC_ACCOUNT', 90),
-(201, '1996-02-17', '1999-12-19', 'MK_REP', 20);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `locations`
---
-
-CREATE TABLE `locations` (
-  `location_id` int NOT NULL,
-  `street_address` varchar(40) DEFAULT NULL,
-  `postal_code` varchar(12) DEFAULT NULL,
-  `city` varchar(30) NOT NULL,
-  `state_province` varchar(25) DEFAULT NULL,
-  `country_id` char(2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `locations`
---
-
-INSERT INTO `locations` (`location_id`, `street_address`, `postal_code`, `city`, `state_province`, `country_id`) VALUES
-(1000, '1297 Via Cola di Rie', '00989', 'Roma', NULL, 'IT'),
-(1100, '93091 Calle della Testa', '10934', 'Venice', NULL, 'IT'),
-(1200, '2017 Shinjuku-ku', '1689', 'Tokyo', 'Tokyo Prefecture', 'JP'),
-(1300, '9450 Kamiya-cho', '6823', 'Hiroshima', NULL, 'JP'),
-(1400, '2014 Jabberwocky Rd', '26192', 'Southlake', 'Texas', 'US'),
-(1500, '2011 Interiors Blvd', '99236', 'South San Francisco', 'California', 'US'),
-(1600, '2007 Zagora St', '50090', 'South Brunswick', 'New Jersey', 'US'),
-(1700, '2004 Charade Rd', '98199', 'Seattle', 'Washington', 'US'),
-(1800, '147 Spadina Ave', 'M5V 2L7', 'Toronto', 'Ontario', 'CA'),
-(1900, '6092 Boxwood St', 'YSW 9T2', 'Whitehorse', 'Yukon', 'CA'),
-(2000, '40-5-12 Laogianggen', '190518', 'Beijing', NULL, 'CN'),
-(2100, '1298 Vileparle (E)', '490231', 'Bombay', 'Maharashtra', 'IN'),
-(2200, '12-98 Victoria Street', '2901', 'Sydney', 'New South Wales', 'AU'),
-(2300, '198 Clementi North', '540198', 'Singapore', NULL, 'SG'),
-(2400, '8204 Arthur St', NULL, 'London', NULL, 'UK'),
-(2500, 'Magdalen Centre, The Oxford Science Park', 'OX9 9ZB', 'Oxford', 'Oxford', 'UK'),
-(2600, '9702 Chester Road', '09629850293', 'Stretford', 'Manchester', 'UK'),
-(2700, 'Schwanthalerstr. 7031', '80925', 'Munich', 'Bavaria', 'DE'),
-(2800, 'Rua Frei Caneca 1360 ', '01307-002', 'Sao Paulo', 'Sao Paulo', 'BR'),
-(2900, '20 Rue des Corps-Saints', '1730', 'Geneva', 'Geneve', 'CH'),
-(3000, 'Murtenstrasse 921', '3095', 'Bern', 'BE', 'CH'),
-(3100, 'Pieter Breughelstraat 837', '3029SK', 'Utrecht', 'Utrecht', 'NL'),
-(3200, 'Mariano Escobedo 9991', '11932', 'Mexico City', 'Distrito Federal,', 'MX');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `regions`
---
-
-CREATE TABLE `regions` (
-  `region_id` int NOT NULL,
-  `region_name` varchar(25) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `regions`
---
-
-INSERT INTO `regions` (`region_id`, `region_name`) VALUES
-(1, 'Europe'),
-(2, 'Americas'),
-(3, 'Asia'),
-(4, 'Middle East and Africa');
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `countries`
---
-ALTER TABLE `countries`
-  ADD PRIMARY KEY (`country_id`),
-  ADD KEY `countr_reg_fk` (`region_id`);
-
---
--- Indexes for table `departments`
---
-ALTER TABLE `departments`
-  ADD PRIMARY KEY (`department_id`),
-  ADD KEY `dept_location_ix` (`location_id`),
-  ADD KEY `dept_mgr_fk` (`manager_id`);
-
---
--- Indexes for table `employees`
---
-ALTER TABLE `employees`
-  ADD PRIMARY KEY (`employee_id`),
-  ADD UNIQUE KEY `emp_email_uk` (`email`),
-  ADD KEY `emp_department_ix` (`department_id`),
-  ADD KEY `emp_job_ix` (`job_id`),
-  ADD KEY `emp_manager_ix` (`manager_id`),
-  ADD KEY `emp_name_ix` (`last_name`,`first_name`);
-
---
--- Indexes for table `jobs`
---
-ALTER TABLE `jobs`
-  ADD PRIMARY KEY (`job_id`);
-
---
--- Indexes for table `job_history`
---
-ALTER TABLE `job_history`
-  ADD PRIMARY KEY (`employee_id`,`start_date`),
-  ADD KEY `jhist_job_ix` (`job_id`),
-  ADD KEY `jhist_employee_ix` (`employee_id`),
-  ADD KEY `jhist_department_ix` (`department_id`);
-
---
--- Indexes for table `locations`
---
-ALTER TABLE `locations`
-  ADD PRIMARY KEY (`location_id`),
-  ADD KEY `loc_city_ix` (`city`),
-  ADD KEY `loc_state_province_ix` (`state_province`),
-  ADD KEY `loc_country_ix` (`country_id`);
-
---
--- Indexes for table `regions`
---
-ALTER TABLE `regions`
-  ADD PRIMARY KEY (`region_id`);
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `countries`
---
-ALTER TABLE `countries`
-  ADD CONSTRAINT `countr_reg_fk` FOREIGN KEY (`region_id`) REFERENCES `regions` (`region_id`);
-
---
--- Constraints for table `departments`
---
-ALTER TABLE `departments`
-  ADD CONSTRAINT `dept_loc_fk` FOREIGN KEY (`location_id`) REFERENCES `locations` (`location_id`),
-  ADD CONSTRAINT `dept_mgr_fk` FOREIGN KEY (`manager_id`) REFERENCES `employees` (`employee_id`);
-
---
--- Constraints for table `employees`
---
-ALTER TABLE `employees`
-  ADD CONSTRAINT `emp_dept_fk` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`),
-  ADD CONSTRAINT `emp_job_fk` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`job_id`),
-  ADD CONSTRAINT `emp_manager_fk` FOREIGN KEY (`manager_id`) REFERENCES `employees` (`employee_id`);
-
---
--- Constraints for table `job_history`
---
-ALTER TABLE `job_history`
-  ADD CONSTRAINT `jhist_dept_fk` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`),
-  ADD CONSTRAINT `jhist_emp_fk` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`employee_id`),
-  ADD CONSTRAINT `jhist_job_fk` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`job_id`);
-
---
--- Constraints for table `locations`
---
-ALTER TABLE `locations`
-  ADD CONSTRAINT `loc_c_id_fk` FOREIGN KEY (`country_id`) REFERENCES `countries` (`country_id`);
---
--- Database: `testdb`
---
-CREATE DATABASE IF NOT EXISTS `testdb` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-USE `testdb`;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
-
-CREATE TABLE `users` (
-  `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password_hash` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nationality` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` (`id`, `email`, `username`, `password_hash`, `name`, `nationality`, `phone`) VALUES
-('c69b8b77-7dc4-11ef-9068-0250b2c02df2', 'pepito@mail.com', 'xX_p3p1t0_Xx', '1234', 'Pedro Gonzales', 'Argentina', '1-234-567'),
-('c69b9d8a-7dc4-11ef-9068-0250b2c02df2', 'ggg@gmail.com', 'gg:)', 'a$$_lick3r', 'Helto Canenas', 'Perú', '3-666-999'),
-('c69ba5c2-7dc4-11ef-9068-0250b2c02df2', 'milei@yahoo.com.ar', 'Mata Zurdos', 'Leon_mieloso', 'Javier Mielei', 'Cielo', '0-000-000');
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `username` (`username`);
---
--- Database: `tp5`
---
-CREATE DATABASE IF NOT EXISTS `tp5` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `tp5`;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `clientes`
---
-
-CREATE TABLE `clientes` (
-  `nro` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `ciudad` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `estado` tinyint NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `clientes`
---
-
-INSERT INTO `clientes` (`nro`, `nombre`, `ciudad`, `estado`) VALUES
-(1, 'Cliente Test', 'Córdoba', 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `error`
---
-
-CREATE TABLE `error` (
-  `error_id` int NOT NULL,
-  `código` varchar(2000) COLLATE utf8mb4_general_ci NOT NULL,
-  `mensaje` varchar(2000) COLLATE utf8mb4_general_ci NOT NULL,
-  `programa` varchar(2000) COLLATE utf8mb4_general_ci NOT NULL,
-  `fecha` datetime NOT NULL,
-  `usuario` varchar(2000) COLLATE utf8mb4_general_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `error`
---
-
-INSERT INTO `error` (`error_id`, `código`, `mensaje`, `programa`, `fecha`, `usuario`) VALUES
-(1, 'MYSQL_ERRNO ERR106', 'MSGError al intentar eliminar el item', 'sp_eliminar_item', '2024-11-06 17:02:27', 'root@localhost'),
-(2, 'MYSQL_ERRNO ERR106', 'MSGError al intentar eliminar el item', 'sp_eliminar_item', '2024-11-06 17:04:07', 'root@localhost'),
-(3, 'MYSQL_ERRNO ERR206', 'MSGError al intentar eliminar el cliente', 'sp_eliminar_cliente', '2024-11-06 17:14:17', 'root@localhost'),
-(4, 'MYSQL_ERRNO ERR303', 'MSGNo existe un cliente activo con el número: 1', 'sp_agregar_pedido', '2024-11-06 18:04:55', 'root@localhost'),
-(5, 'MYSQL_ERRNO ERR301', 'MSGError al intentar agregar el pedido', 'sp_agregar_pedido', '2024-11-06 18:04:55', 'root@localhost'),
-(6, 'MYSQL_ERRNO ERR304', 'MSGNo existe un item activo con el número: 1', 'sp_agregar_pedido', '2024-11-06 18:05:10', 'root@localhost'),
-(7, 'MYSQL_ERRNO ERR301', 'MSGError al intentar agregar el pedido', 'sp_agregar_pedido', '2024-11-06 18:05:10', 'root@localhost'),
-(8, 'MYSQL_ERRNO ERR303', 'MSGNo existe un cliente activo con el número: 1', 'sp_agregar_pedido', '2024-11-06 18:05:19', 'root@localhost'),
-(9, 'MYSQL_ERRNO ERR301', 'MSGError al intentar agregar el pedido', 'sp_agregar_pedido', '2024-11-06 18:05:19', 'root@localhost'),
-(10, 'MYSQL_ERRNO ERR303', 'MSGNo existe un cliente activo con el número: 1', 'sp_agregar_pedido', '2024-11-06 18:11:45', 'root@localhost'),
-(11, 'MYSQL_ERRNO ERR301', 'MSGError al intentar agregar el pedido', 'sp_agregar_pedido', '2024-11-06 18:11:45', 'root@localhost'),
-(12, 'MYSQL_ERRNO ERR304', 'MSGNo existe un item activo con el número: 1', 'sp_agregar_pedido', '2024-11-06 18:15:31', 'root@localhost'),
-(13, 'MYSQL_ERRNO ERR301', 'MSGError al intentar agregar el pedido', 'sp_agregar_pedido', '2024-11-06 18:15:32', 'root@localhost'),
-(14, 'MYSQL_ERRNO ERR304', 'MSGNo existe un item activo con el número: 1', 'sp_agregar_pedido', '2024-11-06 18:15:57', 'root@localhost'),
-(15, 'MYSQL_ERRNO ERR301', 'MSGError al intentar agregar el pedido', 'sp_agregar_pedido', '2024-11-06 18:15:57', 'root@localhost'),
-(16, 'MYSQL_ERRNO ERR303', 'MSGNo existe un cliente activo con el número: 1', 'sp_agregar_pedido', '2024-11-06 18:32:36', 'root@localhost'),
-(17, 'MYSQL_ERRNO ERR301', 'MSGError al intentar agregar el pedido', 'sp_agregar_pedido', '2024-11-06 18:32:36', 'root@localhost');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `items`
---
-
-CREATE TABLE `items` (
-  `nro` int NOT NULL,
-  `descripcion` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `ciudad` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `estado` tinyint NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `items`
---
-
-INSERT INTO `items` (`nro`, `descripcion`, `ciudad`, `estado`) VALUES
-(1, 'Laptop HP', 'Buenos Aires', 1),
-(2, 'Mouse Logitech', 'Buenos Aires', 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pedidos`
---
-
-CREATE TABLE `pedidos` (
-  `nrop` int NOT NULL,
-  `nroc` int NOT NULL,
-  `nroi` int NOT NULL,
-  `fecha` datetime NOT NULL,
-  `cantidad` int NOT NULL,
-  `precio` decimal(10,2) NOT NULL,
-  `estado` tinyint NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `pedidos`
---
-
-INSERT INTO `pedidos` (`nrop`, `nroc`, `nroi`, `fecha`, `cantidad`, `precio`, `estado`) VALUES
-(1, 1, 1, '2024-11-06 18:39:57', 2, '1500.00', 1),
-(2, 1, 2, '2024-11-06 18:39:57', 1, '200.00', 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `proveedores`
---
-
-CREATE TABLE `proveedores` (
-  `nro` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `categoria` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ciudad` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `estado` tinyint NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `proveedores`
---
-
-INSERT INTO `proveedores` (`nro`, `nombre`, `categoria`, `ciudad`, `estado`) VALUES
-(1, 'Proveedor Test', 'Tecnología', 'Buenos Aires', 1);
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `clientes`
---
-ALTER TABLE `clientes`
-  ADD PRIMARY KEY (`nro`);
-
---
--- Indexes for table `error`
---
-ALTER TABLE `error`
-  ADD PRIMARY KEY (`error_id`);
-
---
--- Indexes for table `items`
---
-ALTER TABLE `items`
-  ADD PRIMARY KEY (`nro`);
-
---
--- Indexes for table `pedidos`
---
-ALTER TABLE `pedidos`
-  ADD PRIMARY KEY (`nrop`),
-  ADD KEY `nroc` (`nroc`),
-  ADD KEY `nroi` (`nroi`);
-
---
--- Indexes for table `proveedores`
---
-ALTER TABLE `proveedores`
-  ADD PRIMARY KEY (`nro`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `clientes`
---
-ALTER TABLE `clientes`
-  MODIFY `nro` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `error`
---
-ALTER TABLE `error`
-  MODIFY `error_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
-
---
--- AUTO_INCREMENT for table `items`
---
-ALTER TABLE `items`
-  MODIFY `nro` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `pedidos`
---
-ALTER TABLE `pedidos`
-  MODIFY `nrop` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `proveedores`
---
-ALTER TABLE `proveedores`
-  MODIFY `nro` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `pedidos`
---
-ALTER TABLE `pedidos`
-  ADD CONSTRAINT `pedidos_ibfk_1` FOREIGN KEY (`nroc`) REFERENCES `clientes` (`nro`),
-  ADD CONSTRAINT `pedidos_ibfk_2` FOREIGN KEY (`nroi`) REFERENCES `items` (`nro`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
