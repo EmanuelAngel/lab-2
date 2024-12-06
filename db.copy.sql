@@ -25,7 +25,7 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `AsignarTurno` (IN `p_id_turno` INT, IN `p_id_paciente` INT, IN `p_motivo_consulta` TEXT, OUT `p_resultado` BOOLEAN, OUT `p_mensaje` VARCHAR(255))   BEGIN
+CREATE PROCEDURE `AsignarTurno` (IN `p_id_turno` INT, IN `p_id_paciente` INT, IN `p_motivo_consulta` TEXT, OUT `p_resultado` BOOLEAN, OUT `p_mensaje` VARCHAR(255))   BEGIN
     DECLARE v_estado_actual INT;
     
     START TRANSACTION;
@@ -56,7 +56,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AsignarTurno` (IN `p_id_turno` INT,
     END IF;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `EliminarTodosLosTurnos` (IN `p_id_agenda_base` INT, IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
+CREATE PROCEDURE `EliminarTodosLosTurnos` (IN `p_id_agenda_base` INT, IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
     -- Eliminar los turnos que coincidan con los parámetros
     DELETE FROM turnos 
     WHERE id_agenda_base = p_id_agenda_base
@@ -70,7 +70,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `EliminarTodosLosTurnos` (IN `p_id_a
     SELECT ROW_COUNT() as turnos_eliminados;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `GenerarTurnos` (IN `p_id_agenda_base` INT, IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
+CREATE PROCEDURE `GenerarTurnos` (IN `p_id_agenda_base` INT, IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
     DECLARE v_fecha_actual DATE;
     DECLARE v_dia_semana INT;
     DECLARE v_horario_inicio TIME;
@@ -158,7 +158,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `GenerarTurnos` (IN `p_id_agenda_bas
     END WHILE;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `ObtenerTurnosAgenda` (IN `p_id_agenda_base` INT, IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
+CREATE PROCEDURE `ObtenerTurnosAgenda` (IN `p_id_agenda_base` INT, IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
     SELECT 
         t.id_turno,
         t.fecha,
@@ -180,11 +180,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ObtenerTurnosAgenda` (IN `p_id_agen
     ORDER BY t.fecha, t.horario_inicio;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `TestProcedure` ()   BEGIN
-    SELECT 'Hello World' as mensaje;
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `VerTurnosGenerados` (IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
+CREATE PROCEDURE `VerTurnosGenerados` (IN `p_fecha_inicio` DATE, IN `p_fecha_fin` DATE)   BEGIN
     SELECT 
         t.fecha,
         d.dia as dia_semana,  -- Usando la tabla dias que ya tienes
