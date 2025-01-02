@@ -43,6 +43,9 @@ import { turnosRouter } from './apps/turnos/routes/turnos.routes.js'
 import { diasRouter } from './apps/dias/routes/dias.routes.js'
 import { diasAgendasRouter } from './apps/dias_agendas/routes/dias_agendas.routes.js'
 
+import { notFoundHandler } from './middlewares/error/notFoundHandler.js'
+import { globalErrorHandler } from './middlewares/error/globalErrorHandler.js'
+
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export function createApp () {
@@ -90,9 +93,11 @@ export function createApp () {
 
   // app.use('/users', userRouter({ userModel }))
 
-  app.use((_req, res) => {
-    res.status(404).render('pages/error/404')
-  })
+  // Error 404
+  app.use(notFoundHandler)
+
+  // Manejador global de errores
+  app.use(globalErrorHandler)
 
   return app
 }
