@@ -46,6 +46,8 @@ import { diasAgendasRouter } from './apps/dias_agendas/routes/dias_agendas.route
 import { notFoundHandler } from './middlewares/error/notFoundHandler.js'
 import { globalErrorHandler } from './middlewares/error/globalErrorHandler.js'
 
+import { NODE_ENV } from './config/env.js'
+
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export function createApp () {
@@ -53,9 +55,7 @@ export function createApp () {
 
   app.disable('x-powered-by')
 
-  if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'))
-  }
+  if (NODE_ENV === 'development') app.use(morgan('dev'))
   app.use(corsMiddleware())
   app.use(express.json())
   app.use(express.static(join(__dirname, '..', 'public')))
