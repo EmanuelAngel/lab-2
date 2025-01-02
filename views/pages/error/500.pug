@@ -1,0 +1,38 @@
+extends ../../layouts/base-layout.pug
+
+block styles 
+  style.
+    pre { 
+      padding: 1rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .error-container {
+      margin: 4rem auto;
+      text-align: center;
+    }
+
+    .stack-trace {
+      text-align: left;
+      margin: 2rem 0;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 0.5rem;
+    }
+
+block content
+  .container.error-container
+    article
+      header
+        h1 Error del Servidor
+      
+      if message
+        p.error-message= message
+
+      if stack && Object.keys(error).length > 0
+        .stack-trace
+          pre= stack
+
+      footer
+        a(href='/' role='button') Volver a la página principal
