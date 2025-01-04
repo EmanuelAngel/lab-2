@@ -1,8 +1,6 @@
-import 'dotenv/config'
+import { PORT } from '../config/env.js'
 import { createApp } from '../app.js'
 import { createServer } from 'node:http'
-
-const PORT = normalizePort(process.env.PORT ?? '3001')
 
 const app = createApp()
 
@@ -12,20 +10,6 @@ server.listen(PORT)
 
 server.on('error', onError)
 server.on('listening', onListening)
-
-function normalizePort (port) {
-  const portNumber = parseInt(port, 10)
-
-  if (isNaN(portNumber)) {
-    throw new Error(`Invalid port: ${port}`)
-  }
-
-  if (portNumber >= 0 && portNumber <= 65535) {
-    return portNumber
-  }
-
-  throw new Error(`Port out of range: ${port}`)
-}
 
 function onError (error) {
   if (error.syscall !== 'listen') {
