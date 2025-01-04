@@ -1,4 +1,4 @@
-import { PORT } from '../config/env.js'
+import { PORT, NODE_ENV } from '../config/env.js'
 import { createApp } from '../app.js'
 import { createServer } from 'node:http'
 
@@ -35,6 +35,13 @@ function onError (error) {
 function onListening () {
   const addr = server.address()
   const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`
+  
   console.clear()
-  console.log(`Listening on ${bind}`)
+  
+  NODE_ENV === 'development'
+    ? console.log(
+      `Server listening on ${bind}`,
+      `\nIndex on: http://localhost:${PORT}`
+      )
+    : console.log(`Server listening on ${bind} in ${NODE_ENV} mode`)
 }
