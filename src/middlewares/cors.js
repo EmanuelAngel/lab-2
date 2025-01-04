@@ -3,7 +3,7 @@ import cors from 'cors'
 const WHITE_LIST = [
   'http://localhost:3000',
   'http://localhost:3001',
-  'https://lab-2-ap6x.onrender.com/'
+  'https://lab-2-ap6x.onrender.com'
 ]
 
 export const corsMiddleware = (
