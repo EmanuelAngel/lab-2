@@ -1,48 +1,60 @@
-# Agenda de Consultorios - Laboratorio 2
+# Welcome to our project / Bienvenido a nuestro proyecto
 
-Repositorio donde se encuentra el código fuente para el proyecto Agenda de Consultorios, correspondiente a la materia Laboratorio 2, de la [Universidad de la Punta](https://www.ulp.edu.ar/), Técnicatura Universitaria en Desarrollo de Software.
+- [🇪🇸 Leer en español](README_es.md)
 
-## Integrantes
-- Angel Emanuel
+# Clinic Appointment Scheduler - Laboratory 2
+
+Repository containing the source code for the Clinic Appointment Scheduler project, part of the "Laboratory 2" course in the "University Technical Degree in Software Development" program at [Universidad de la Punta](https://www.ulp.edu.ar/) in San Luis, Argentina.
+
+## Team Members
+
+- [Angel Emanuel](https://github.com/EmanuelAngel)
 - [Alcaraz Rodrigo Nicolás](https://github.com/RodrigoNAlcaraz)
 
-## Recomendaciones
-- **Node.js** Versión utilizada en el proyecto: v20.14. [Versión LTS Recomendada](https://nodejs.org/en/download/prebuilt-installer)
+## Recommendations
 
-## Descripción
-- Crear, listar, editar, activar y desactivar pacientes.
-- Crear, listar, editar, activar y desactivar profesionales (médicos).
-- Crear, listar, editar, activar y desactivar especialidades.
-- Listar agendas
-- Asignar un turno a un paciente en un horario disponible de una agenda.
+- **Node.js** Version used in the project: v20.14. [Recommended LTS Version](https://nodejs.org/en/download/prebuilt-installer)
 
-## Detalles
-- Un paciente puede tener ninguna o varias obras sociales.
-- Un profesional puede tener una o más especialidades.
-- Cada agenda corresponde a una matrícula de una especialidad de un profesional.
-- Los turnos de las agendas pueden ser en distintos días, tanto en la mañana como en la tarde.
-- Los horarios de las agendas pueden estar cortados, pudiendo tener horarios no disponibles en un mismo día.
+## Description
 
-## Instrucciones para poder ejecutar el proyecto de manera local
+- Create, list, edit, activate, and deactivate patients.
+- Create, list, edit, activate, and deactivate professionals (doctors).
+- Create, list, edit, activate, and deactivate specialties.
+- List schedules.
+- Assign an appointment to a patient in an available time slot of a schedule.
 
-1. Clonar el repositorio
+## Details
+
+- A patient can have none or multiple health insurance plans.
+- A professional can have one or more specialties.
+- Each schedule corresponds to a registration in a professional's specialty.
+- Schedules can include appointments on different days, both morning and afternoon.
+- Schedule time slots can be fragmented, allowing unavailable time slots on the same day.
+
+## Instructions to Run the Project Locally
+
+1. Clone the repository:
+
 ```bash
 git clone https://github.com/EmanuelAngel/lab-2.git
 ```
 
-2. Moverse a la carpeta clonada
+2. Navigate to the cloned folder:
+
 ```bash
 cd lab-2
 ```
 
-3. Instalar las dependecias
+3. Install dependencies:
+
 ```bash
-npm install
+npm|yarn|pnpm install
 ```
 
-4. Descargar la copia de la base de datos e importarla a un gestor mysql
+4. Download the database copy and import it into a MySQL manager.
 
-5. Crear un archivo .env y modificar las variables de entorno correspondientes a su entorno
+5. Create a `.env` file and modify the environment variables according to your setup:
+
 ```bash
 NODE_ENV = development
 PORT = 3001
@@ -56,55 +68,58 @@ JWT_SECRET = secret_very_secret
 JWT_EXPIRES = 1h
 ```
 
-6. Ejecutar el servidor
+6. Start the server:
+
 ```bash
-npm run dev
+npm|yarn|pnpm run dev
 ```
 
-## Estructura del proyecto
+## Project Structure
+
 ```bash
 .
-├── public/                 # Archivos estáticos (CSS, JS)
-├── views/                  # Vistas dinámicas en Pug
-├── src/                    # Código fuente principal
-│   ├── .bin/               # Punto de entrada - Servidor
-│   ├── config/             # Configuración de base de datos
-│   ├── middlewares/        # Middlewares de la aplicación
-│   ├── migrations/         # Historial de cambios en la base de datos
-│   ├── apps/               # Módulos de la aplicación
-│   │   ├── agenda_base/    # Módulo de Agenda
-│   │   │   ├── agenda_base.http   # Testing para peticiones HTTP 
+├── public/                 # Static files (CSS, JS)
+├── views/                  # Dynamic views in Pug
+├── src/                    # Main source code
+│   ├── .bin/               # Entry point - Server
+│   ├── config/             # Database configuration
+│   ├── middlewares/        # Application middlewares
+│   ├── migrations/         # Database change history
+│   ├── apps/               # Application modules
+│   │   ├── agenda_base/    # Schedule module
+│   │   │   ├── agenda_base.http   # HTTP request testing
 │   │   │   ├── controller.js
 │   │   │   ├── router.js
 │   │   │   ├── model.js
-│   │   │   └── schema.js          # Esquemas de validación
-│   │   ├── pacientes/      # Módulo de Pacientes
-│   │   ├── profesionales/  # Módulo de Profesionales
-│   │   └── ...             # Otros módulos
-│   └── app.js              # Configuración principal de la aplicación
+│   │   │   └── schema.js          # Validation schemas
+│   │   ├── pacientes/      # Patients module
+│   │   ├── profesionales/  # Professionals module
+│   │   └── ...             # Other modules
+│   └── app.js              # Main application configuration
 ├── package.json
-├── db.copy.sql             # Versión más reciente de la base de datos
-└── .env                    # Variables de entorno
-````
+├── db.copy.sql             # Latest database version
+└── .env                    # Environment variables
+```
 
-## Tecnologías utilizadas
+## Technologies Used
 
-- **Express**: Framework de Node.js. [v4.19.0](https://expressjs.com/).
-- **MySQL**: Sistema de gestión de base de datos relacional. [v8.0](https://www.mysql.com/) - Utilizado para el almacenamiento persistente de datos de pacientes, profesionales, agendas, turnos y obras sociales.
-- **Pug**: Motor de plantillas para Node.js que permite escribir HTML de manera elegante y con menos código. [v3.0.2](https://pugjs.org/) - Empleado para generar las vistas dinámicas de la aplicación.
-- **Bootstrap y Bootstrap Icons**: Componentes de UI. [v5.3.0](https://getbootstrap.com/).
-- **Zod**: Validaciones y Esquemas. [Zod](https://zod.dev/)
-- **Render**: Servicio de hosting para desplegar el [servidor](https://render.com/).
-- **StandardJS**: Estilizador, Linter y Formateador para JavaScript. [StandardJS](https://standardjs.com/).
-- **REST Client**: Para realizar y testear peticiones HTTP. [Extensión de Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
+- **Express**: Node.js Framework. [v4.19.0](https://expressjs.com/).
+- **MySQL**: Relational database management system. [v8.0](https://www.mysql.com/) - Used for persistent storage of patients, professionals, schedules, appointments, and health insurance data.
+- **Pug**: Template engine for Node.js that allows for elegant and concise HTML code. [v3.0.2](https://pugjs.org/) - Used to generate dynamic views.
+- **Bootstrap y Bootstrap Icons**: UI components. [v5.3.0](https://getbootstrap.com/).
+- **Zod**: Validations and schemas. [Zod](https://zod.dev/)
+- **Render**: Hosting service for deploying the [server](https://render.com/).
+- **StandardJS**: JavaScript style guide, linter, and formatter. [StandardJS](https://standardjs.com/).
+- **REST Client**: Tool for making and testing HTTP requests. [Extensión de Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
 
-## Escalabilidad Futura
-Este proyecto ha sido diseñado y arquitecturado pensando en su escalabilidad, preparado para integrar futuras funcionalidades como:
+## Future Scalability
 
-- Sistema de autenticación y autorización de usuarios
-- Gestión de sobreturnos
-- Estados adicionales para los turnos (cancelados, reprogramados, etc.)
-- Manejo de fotocopias de DNIs.
-- Panel de administración avanzado
+This project has been designed and architected with scalability in mind, ready to integrate future functionalities such as:
 
-La estructura modular del proyecto facilita la incorporación de estas y otras características, manteniendo un código organizado y mantenible.
+- User authentication and authorization system.
+- Management of overbooked appointments.
+- Additional appointment states (canceled, rescheduled, etc.).
+- Handling photocopies of ID documents.
+- Advanced administration panel.
+
+The modular structure of the project facilitates the incorporation of these and other features while maintaining organized and maintainable code.
