@@ -110,7 +110,7 @@ npm|yarn|pnpm run dev
 - **Zod**: Validations and schemas. [Zod](https://zod.dev/)
 - **Render**: Hosting service for deploying the [server](https://render.com/).
 - **StandardJS**: JavaScript style guide, linter, and formatter. [StandardJS](https://standardjs.com/).
-- **REST Client**: Tool for making and testing HTTP requests. [Extensión de Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
+- **REST Client**: Tool for making and testing HTTP requests. [Visual Studio Code Extension](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
 
 ## Future Scalability
 
