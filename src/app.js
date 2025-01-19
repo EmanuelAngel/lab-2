@@ -4,24 +4,19 @@ import express from 'express'
 import morgan from 'morgan'
 import { corsMiddleware } from './middlewares/cors.js'
 
-/*
-Auth
+// Auth
 import cookieParser from 'cookie-parser'
-import verifyToken from './middlewares/auth/verifyToken.js'
+import { verifyAccessToken } from './middlewares/auth/verifyAccessToken.js'
 
-Roles Middlewares
 import isLoggedIn from './middlewares/auth/isLoggedIn.js'
 import isAdmin from './middlewares/auth/isAdmin.js'
 import isSecre from './middlewares/auth/isSecre.js'
 import isProfesional from './middlewares/auth/isProfesional.js'
 
-*/
-
 import { authRouter } from './apps/auth/routes/auth.routes.js'
 
 import { panelRouter } from './apps/panel/routes/panel.routes.js'
 
-// import { userRouter } from './apps/users/routes/user.routes.js'
 import { profesionalesRouter } from './apps/profesionales/routes/profesionales.routes.js'
 import { especialidadesRouter } from './apps/especialidades/routes/especialidades.routes.js'
 import { pacientesRouter } from './apps/pacientes/routes/pacientes.routes.js'
@@ -58,8 +53,13 @@ export function createApp () {
   if (NODE_ENV === 'development') app.use(morgan('dev'))
   app.use(corsMiddleware())
   app.use(express.json())
+  app.use(express.urlencoded({ extended: true }))
   app.use(express.static(join(__dirname, '..', 'public')))
-  // (Auth) app.use(cookieParser())
+
+  // Auth
+  app.use(cookieParser())
+  app.use(verifyAccessToken)
+
   app.set('view engine', 'pug')
 
   app.get('/', (_req, res) =>
@@ -68,30 +68,34 @@ export function createApp () {
 
   app.use('/auth', authRouter())
 
-  app.use('/panel', panelRouter())
+  app.use('/panel', [isLoggedIn], panelRouter())
 
-  app.use('/profesionales', profesionalesRouter())
-  app.use('/especialidades', especialidadesRouter())
-  app.use('/pacientes', pacientesRouter())
-  app.use('/usuarios', usuariosRouter())
-  app.use('/secre', secreRouter())
-  app.use('/admins', adminsRouter())
-  app.use('/roles', rolesRouter())
-  app.use('/especialidades_profesional', especialidadesProfesionalRouter())
-  app.use('/obra_social', obraSocialRouter())
-  app.use('/obra_social_paciente', obraSocialPacienteRouter())
-  app.use('/sucursal', sucursalRouter())
-  app.use('/agenda_base', agendaBaseRouter())
-  app.use('/estado_agenda', estadoAgendaRouter())
-  app.use('/dias_no_disponibles', diasNoDisponiblesRouter())
-  app.use('/clasificacion_consulta', clasificacionConsultaRouter())
-  app.use('/turno_especial', turnoEspecialRouter())
-  app.use('/estados_turno', estadosTurnoRouter())
-  app.use('/turnos', turnosRouter())
-  app.use('/dias', diasRouter())
-  app.use('/dias_agendas', diasAgendasRouter())
+  app.use('/profesionales', [isLoggedIn], profesionalesRouter())
+  app.use('/especialidades', [isLoggedIn], especialidadesRouter())
+  app.use('/pacientes', [isLoggedIn], pacientesRouter())
+  app.use('/usuarios', [isLoggedIn], usuariosRouter())
+  app.use('/secre', [isLoggedIn], secreRouter())
+  app.use('/admins', [isLoggedIn], adminsRouter())
+  app.use('/roles', [isLoggedIn], rolesRouter())
+  app.use('/especialidades_profesional', [isLoggedIn], especialidadesProfesionalRouter())
+  app.use('/obra_social', [isLoggedIn], obraSocialRouter())
+  app.use('/obra_social_paciente', [isLoggedIn], obraSocialPacienteRouter())
+  app.use('/sucursal', [isLoggedIn], sucursalRouter())
+  app.use('/agenda_base', [isLoggedIn], agendaBaseRouter())
+  app.use('/estado_agenda', [isLoggedIn], estadoAgendaRouter())
+  app.use('/dias_no_disponibles', [isLoggedIn], diasNoDisponiblesRouter())
+  app.use('/clasificacion_consulta', [isLoggedIn], clasificacionConsultaRouter())
+  app.use('/turno_especial', [isLoggedIn], turnoEspecialRouter())
+  app.use('/estados_turno', [isLoggedIn], estadosTurnoRouter())
+  app.use('/turnos', [isLoggedIn], turnosRouter())
+  app.use('/dias', [isLoggedIn], diasRouter())
+  app.use('/dias_agendas', [isLoggedIn], diasAgendasRouter())
 
-  // app.use('/users', userRouter({ userModel }))
+  // Test de auth
+  app.use('/test', [
+    isLoggedIn,
+    (_req, res) => res.send('Logged in!')
+  ])
 
   // Error 404
   app.use(notFoundHandler)

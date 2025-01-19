@@ -1,73 +1,110 @@
 extends ../../layouts/base-layout
 
+block navbar 
+  include ../../lib/NavBar
+
+block styles 
+  style.
+    #login-form {
+      max-width: 512px;
+      margin: 0 auto;
+    }
+
 block content
-  .container.mt-5.mb-5
-    .row.justify-content-center
-      .col-md-6
-        .card
-          .card-body
-            h1.text-center.mb-4 Iniciar Sesión
-            form
-              .mb-3
-                label(for="nombre_usuario") Nombre de Usuario
-                input.form-control(type="text", name="nombre_usuario", id="nombre_usuario", required)
-                span#nombre_usuario_err &nbsp;
-              .mb-3
-                label(for="contrasenia") Contraseña
-                input.form-control(type="password", name="contrasenia", id="contrasenia", required)
-                span#contrasenia_err &nbsp;
-              button.btn.btn-primary.btn-block(id="login-btn" type="button") Iniciar Sesión
-            .text-center.mt-3
-              a(href="/auth/register") Registrarse
-            
-            #error-container
+  form#login-form
+    fieldset.mb-3 
+      label.form-label(for="nombre-de-usuario") Nombre de usuario
+      input.form-control(
+        type="text"
+        name="nombre_usuario"
+        id="nombre-de-usuario"
+        placeholder="Nombre de usuario"
+        required
+        )
+    fieldset.mb-3 
+      label.form-label(for="contrasenia") Contraseña
+      input.form-control(
+        type="password"
+        name="contraseña"
+        id="contraseña"
+        placeholder="Contraseña"
+        required
+        value="12341234"
+        )
+    input.btn.btn-primary(type="submit" value="Iniciar sesión")
 
-block scripts
-  script.
-    const form = document.querySelector('form');
-    const loginBtn = document.getElementById('login-btn');
-  
-    loginBtn.addEventListener('click', () => {
-      const nombre_usuario = document.getElementById('nombre_usuario').value;
-      const contrasenia = document.getElementById('contrasenia').value;
-      
-      let valid = true;
-      if (!nombre_usuario) {
-        document.getElementById('nombre_usuario_err').textContent = 'El nombre de usuario es requerido';
-        valid = false;
-      } else {
-        document.getElementById('nombre_usuario_err').textContent = '';
-      }
-      
-      if (!contrasenia) {
-        document.getElementById('contrasenia_err').textContent = 'La contrasenia es requerida';
-        valid = false;
-      } else {
-        document.getElementById('contrasenia_err').textContent = '';
-      }
-      
-      if (!valid) {
-        return;
-      }
+block scripts 
+  script(type="module").
+    import { showToast } from '/js/showToast.js'
+    import {
+      baseValidationRules,
+      validateField
+    } from '/js/baseValidation.js'
 
-      fetch('/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ nombre_usuario, contraseña: contrasenia })
+    const loginValidationRules = {
+      nombre_usuario: baseValidationRules.nombre_usuario,
+      contraseña: baseValidationRules.contraseña
+    }
+
+    const loginForm = document.querySelector('#login-form')
+    loginForm.addEventListener('submit', handleSubmit)
+
+    loginForm.querySelectorAll('input').forEach(input => {
+      input.addEventListener('blur', () => {
+        validateField(input, loginValidationRules)
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          document.getElementById('error-container').textContent = data.error;
-        } else {
-          if (confirm('Inicio de sesión exitoso. ¿Ingresar a su perfil?')) {
-            window.location.href = '/perfil';
-          }
+    })
+
+    async function handleSubmit(event) {
+      event.preventDefault()
+      
+      let isValid = true
+      loginForm.querySelectorAll('input').forEach(field => {
+        if (!validateField(field, loginValidationRules)) {
+          isValid = false
         }
       })
-      .catch(err => {
-        document.getElementById('error-container').textContent = data.error;
-      });
-    });
+
+      if (!isValid) {
+        showToast('Por favor, corrija los errores en el formulario', 'danger')
+        return
+      }
+
+      const formData = new FormData(loginForm)
+      const nombre_usuario = formData.get('nombre_usuario')
+      const contraseña = formData.get('contraseña')
+      
+      const submitButton = loginForm.querySelector('input[type="submit"]')
+      submitButton.disabled = true
+      submitButton.value = 'Iniciando sesión...'
+
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ nombre_usuario, contraseña }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+          showToast(data.error, 'danger')
+          if (res.status === 422) {
+            showToast('Datos inválidos', 'danger')
+          }
+        } else {
+          showToast('Sesión iniciada', 'success')
+          setTimeout(() => {
+            window.location.href = '/'
+          }, 2000)
+        }
+      } catch (error) {
+        showToast('Error al iniciar sesión', 'danger')
+      } finally {
+        submitButton.disabled = false
+        submitButton.value = 'Iniciar sesión'
+      }
+    }
+    
