@@ -54,10 +54,57 @@ nav.navbar.navbar-expand-lg.bg-body-tertiary.sticky-top
             | &nbsp;Roles
             |  &nbsp...
             i.bi.bi-tools
-        
-      a.btn.btn-outline-secondary.border-0.disabled(href="/auth/logout")
-        i.bi.bi-box-arrow-right
-        | &nbsp;Cerrar Sesión
-        |  &nbsp...
-        i.bi.bi-tools
-      include ./ColorModeToggler
+
+      ul.navbar-nav
+        li.nav-item
+          a.nav-link(href="/auth/logout")
+            i.bi.bi-box-arrow-right
+            | &nbsp;Cerrar Sesión
+        li.nav-item
+          include ./ColorModeToggler
+
+block scripts 
+  script(type="module").
+    document.addEventListener('DOMContentLoaded', () => {
+      const currentPath = window.location.pathname
+      const navLinks = document.querySelectorAll('.nav-link, .dropdown-item')
+
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+          link.classList.add('active')
+
+          const icon = link.querySelector('.bi')
+          if (icon) {
+            const classes = [...icon.classList]
+
+            const iconClass = classes.find(cls =>
+              cls.startsWith('bi-') && !cls.endsWith('-fill')
+            )
+
+            if (iconClass) {
+              icon.classList.remove(iconClass)
+              icon.classList.add(`${iconClass}-fill`)
+            }
+          }
+
+          const dropdownParent = link.closest('.dropdown')
+          if (dropdownParent) {
+            const parentLink = dropdownParent.querySelector('.nav-link')
+            parentLink.classList.add('active')
+
+            const parentIcon = parentLink.querySelector('.bi')
+            if (parentIcon) {
+              const parentClasses = [...parentIcon.classList]
+              const parentIconClass = parentClasses.find(cls =>
+                cls.startsWith('bi-') && !cls.endsWith('-fill')
+              )
+
+              if (parentIconClass) {
+                parentIcon.classList.remove(parentIconClass)
+                parentIcon.classList.add(`${parentIconClass}-fill`)
+              }
+            }
+          }
+        }
+      })
+    })
