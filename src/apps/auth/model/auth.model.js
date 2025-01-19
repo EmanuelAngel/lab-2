@@ -12,8 +12,6 @@ export class AuthModel {
 
     const user = await UsuariosModel.getByNombreUsuario({ nombre_usuario })
 
-    console.log('user:', user)
-
     if (!user) throw new Error('Usuario no encontrado')
 
     const isPasswordValid = await comparePassword({

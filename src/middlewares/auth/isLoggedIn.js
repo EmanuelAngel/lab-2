@@ -1,4 +1,4 @@
-const isLoggedIn = (req, res, next) => {
+export const isLoggedIn = (req, res, next) => {
   if (!req.session.user) {
     return res
       .status(401)
@@ -7,5 +7,3 @@ const isLoggedIn = (req, res, next) => {
 
   next()
 }
-
-export default isLoggedIn

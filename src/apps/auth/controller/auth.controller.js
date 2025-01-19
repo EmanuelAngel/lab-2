@@ -101,15 +101,10 @@ export class AuthController {
 
   login = async (req, res) => {
     try {
-      console.log('req.body:', req.body)
-
-      // Validar los datos de entrada
       const result = validatePartialUsuarios(req.body)
       if (!result.success) {
         return res.status(422).json({ error: result.error.issues })
       }
-
-      console.log('result.data:', result.data)
 
       const { userData, token } = await AuthModel.login({ input: result.data })
 

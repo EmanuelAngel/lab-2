@@ -8,10 +8,8 @@ import { corsMiddleware } from './middlewares/cors.js'
 import cookieParser from 'cookie-parser'
 import { verifyAccessToken } from './middlewares/auth/verifyAccessToken.js'
 
-import isLoggedIn from './middlewares/auth/isLoggedIn.js'
-import isAdmin from './middlewares/auth/isAdmin.js'
-import isSecre from './middlewares/auth/isSecre.js'
-import isProfesional from './middlewares/auth/isProfesional.js'
+import { isLoggedIn } from './middlewares/auth/isLoggedIn.js'
+import { checkRoles } from './middlewares/auth/checkRoles.js'
 
 import { authRouter } from './apps/auth/routes/auth.routes.js'
 
@@ -62,9 +60,7 @@ export function createApp () {
 
   app.set('view engine', 'pug')
 
-  app.get('/', (_req, res) =>
-    res.render('pages/index', { title: 'Inicio' })
-  )
+  app.get('/', (_req, res) => res.render('pages/index', { title: 'Inicio' }))
 
   app.use('/auth', authRouter())
 
@@ -90,12 +86,6 @@ export function createApp () {
   app.use('/turnos', [isLoggedIn], turnosRouter())
   app.use('/dias', [isLoggedIn], diasRouter())
   app.use('/dias_agendas', [isLoggedIn], diasAgendasRouter())
-
-  // Test de auth
-  app.use('/test', [
-    isLoggedIn,
-    (_req, res) => res.send('Logged in!')
-  ])
 
   // Error 404
   app.use(notFoundHandler)
