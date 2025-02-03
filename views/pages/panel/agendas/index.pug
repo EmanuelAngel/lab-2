@@ -13,12 +13,13 @@ block content
   .row
     .col-md-12.d-grid.gap-4
       h1 Agendas
-      a.btn.btn-primary.d-flex.gap-2.justify-content-center.disabled(
-        style="width: max-content",
-        href="/auth/register"
-        )
-        i.bi.bi-plus
-        | Crear Agenda
+      if user.id_rol == 1
+        a.btn.btn-primary.d-flex.gap-2.justify-content-center.disabled(
+          style="width: max-content",
+          href="/auth/register"
+          )
+          i.bi.bi-plus
+          | Crear Agenda
       section.d-grid.gap-4
         each agenda in agendas
           .card(style="max-width: max-content;")
@@ -33,22 +34,23 @@ block content
               p.card-text= agenda.clasificacion_nombre
             .card-footer
               .actions.d-inline-flex.gap-2.mb-2
-                a.btn.btn-outline-info.border-0.d-inline-flex.gap-1.disabled(
-                  href=`/panel/agendas/${agenda.id_agenda_base}`
-                  style='width: max-content;'
-                  data-bs-toggle='tooltip'
-                  data-bs-placement='bottom'
-                  data-bs-title='Editar'
-                  ) 
-                  i.bi.bi-pencil
-                a.btn.btn-outline-danger.border-0.d-inline-flex.gap-1.disabled(
-                  href=`/panel/agendas/${agenda.id_agenda_base}`
-                  style='width: max-content;'
-                  data-bs-toggle='tooltip'
-                  data-bs-placement='bottom'
-                  data-bs-title='Desactivar'
-                  )
-                  i.bi.bi-trash
+                if user.id_rol == 1
+                  a.btn.btn-outline-info.border-0.d-inline-flex.flex-row.gap-1(
+                    href=`/panel/agendas/${agenda.id_agenda_base}`
+                    style='width: max-content;'
+                    data-bs-toggle='tooltip'
+                    data-bs-placement='bottom'
+                    data-bs-title='Editar'
+                    ) 
+                    i.bi.bi-pencil
+                  a.btn.btn-outline-danger.border-0.d-inline-flex.flex-row.gap-1(
+                    href=`/panel/agendas/${agenda.id_agenda_base}`
+                    style='width: max-content;'
+                    data-bs-toggle='tooltip'
+                    data-bs-placement='bottom'
+                    data-bs-title='Desactivar'
+                    )
+                    i.bi.bi-trash
                 a.btn.btn-outline-info.border-0(
                   href=`/panel/agendas/${agenda.id_agenda_base}`
                   style='width: max-content;'

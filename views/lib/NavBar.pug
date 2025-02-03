@@ -7,104 +7,160 @@ nav.navbar.navbar-expand-lg.bg-body-tertiary.sticky-top
       span.navbar-toggler-icon
     #navbarSupportedContent.collapse.navbar-collapse
       ul.navbar-nav.me-auto.mb-2.mb-lg-0
-        li.nav-item
-          a.nav-link(href='/panel/agendas')
-            i.bi.bi-calendar3-week
-            | &nbsp;Agendas
-        li.nav-item.dropdown
-          .nav-link.dropdown-toggle(href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false')
-            i.bi.bi-people
-            | &nbsp;Usuarios
-          ul.dropdown-menu
-            li
-              a.dropdown-item(href='/panel/pacientes')
-                i.bi.bi-person
-                | &nbsp;Pacientes
-            li
-              a.dropdown-item(href='/panel/profesionales')
-                i.bi.bi-person-badge
-                | &nbsp;Profesionales
-            li
-              a.dropdown-item.disabled(aria-disabled='true' href='/panel/secretarias')
-                i.bi.bi-person-workspace
-                | &nbsp;Secretari@s
+        if user
+          li.nav-item
+            a.nav-link(href='/panel/agendas')
+              i.bi.bi-calendar3-week
+              | &nbsp;Agendas
+          li.nav-item.dropdown
+            a.nav-link.dropdown-toggle(href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false')
+              i.bi.bi-people
+              | &nbsp;Usuarios
+            ul.dropdown-menu
+              if user.id_rol != 4
+                li
+                  a.dropdown-item(href='/panel/pacientes')
+                    i.bi.bi-person
+                    | &nbsp;Pacientes
+              else 
+                li
+                  a.dropdown-item(href=`/panel/pacientes/${user.id_usuario}`)
+                    i.bi.bi-person
+                    | &nbsp;Mis datos
+              li
+                a.dropdown-item(href='/panel/profesionales')
+                  i.bi.bi-person-badge
+                  | &nbsp;Profesionales
+              if user.id_rol == 1 || user.id_rol == 2
+                li
+                  a.dropdown-item.disabled(aria-disabled='true' href='/panel/secretarias')
+                    i.bi.bi-person-workspace
+                    | &nbsp;Secretari@s
+                    |  &nbsp...
+                    i.bi.bi-tools
+                li
+                  hr.dropdown-divider
+                li
+                  a.dropdown-item.disabled(aria-disabled='true' href='/panel/admins')
+                    i.bi.bi-person-check
+                    | &nbsp;Administradores
+                    |  &nbsp...
+                    i.bi.bi-tools
+          li.nav-item
+            a.nav-link(href='/panel/especialidades')
+              i.bi.bi-star
+              | &nbsp;Especialidades
+          li.nav-item
+            a.nav-link.disabled(aria-disabled='true')
+              i.bi.bi-card-text
+              | &nbsp;Obras Sociales
+              |  &nbsp...
+              i.bi.bi-tools
+          if user.id_rol == 1
+            li.nav-item
+              a.nav-link.disabled(aria-disabled='true')
+                i.bi.bi-person-gear
+                | &nbsp;Roles
                 |  &nbsp...
                 i.bi.bi-tools
-            li
-              hr.dropdown-divider
-            li
-              a.dropdown-item.disabled(aria-disabled='true' href='/panel/admins')
-                i.bi.bi-person-check
-                | &nbsp;Administradores
-                |  &nbsp...
-                i.bi.bi-tools
-        li.nav-item
-          a.nav-link(href='/panel/especialidades')
-            i.bi.bi-star
-            | &nbsp;Especialidades
-        li.nav-item
-          a.nav-link.disabled(aria-disabled='true')
-            i.bi.bi-card-text
-            | &nbsp;Obras Sociales
-            |  &nbsp...
-            i.bi.bi-tools
-        li.nav-item
-          a.nav-link.disabled(aria-disabled='true')
-            i.bi.bi-person-gear
-            | &nbsp;Roles
-            |  &nbsp...
-            i.bi.bi-tools
-
-      ul.navbar-nav
-        li.nav-item
-          a.nav-link(href="/auth/logout")
-            i.bi.bi-box-arrow-right
-            | &nbsp;Cerrar Sesión
+      ul.navbar-nav.ms-auto.d-flex.align-items-center
+        if user
+          li.nav-item.dropdown
+            a.nav-link.dropdown-toggle.d-flex.align-items-center(href='#' id='userDropdown' role='button' data-bs-toggle='dropdown' aria-expanded='false')
+              - let avatarPath = ''
+              case user.id_rol
+                when 1
+                  - avatarPath = '/assets/avatars/admin.png';
+                when 2
+                  - avatarPath = '/assets/avatars/secre.png';
+                when 3
+                  - avatarPath = '/assets/avatars/profesional.png';
+                when 4
+                  - avatarPath = '/assets/avatars/paciente.png';
+              img.rounded-circle.me-2(
+                src=avatarPath
+                alt='user'
+                width='32'
+                height='32'
+              )
+            ul.dropdown-menu.dropdown-menu-end(aria-labelledby='userDropdown')
+              li
+                small.dropdown-item.disabled
+                  case user.id_rol
+                    when 1
+                      i.bi.bi-person-check
+                      | &nbsp;Administrador
+                    when 2
+                      i.bi.bi-person-workspace
+                      | &nbsp;Secretaria
+                    when 3
+                      i.bi.bi-person-badge
+                      | &nbsp;Profesional
+                    when 4
+                      i.bi.bi-person
+                      | &nbsp;Paciente
+              li
+                - let userType = ''
+                case user.id_rol
+                  when 1
+                    - userType = 'admins'
+                  when 2
+                    - userType = 'secretarias'
+                  when 3
+                    - userType = 'profesionales'
+                  when 4
+                    - userType = 'pacientes'
+                a.dropdown-item(href=`/panel/${userType}/${user.id_usuario}`)
+                  i.bi.bi-person
+                  | &nbsp;Mis datos
+              li
+                hr.dropdown-divider
+              li
+                a.dropdown-item(href='/auth/logout')
+                  i.bi.bi-box-arrow-right
+                  | &nbsp;Cerrar Sesión
+        else 
+          li.nav-item
+            a.nav-link(href='/auth/login')
+              i.bi.bi-box-arrow-right
+              | &nbsp;Iniciar Sesión
         li.nav-item
           include ./ColorModeToggler
 
 block scripts 
-  script(type="module").
+  script(type='module').
     document.addEventListener('DOMContentLoaded', () => {
-      const currentPath = window.location.pathname
-      const navLinks = document.querySelectorAll('.nav-link, .dropdown-item')
+      const currentPath = window.location.pathname;
+      const navLinks = document.querySelectorAll('.nav-link, .dropdown-item');
 
       navLinks.forEach(link => {
         if (link.getAttribute('href') === currentPath) {
-          link.classList.add('active')
+          link.classList.add('active');
 
-          const icon = link.querySelector('.bi')
+          const icon = link.querySelector('.bi');
           if (icon) {
-            const classes = [...icon.classList]
-
-            const iconClass = classes.find(cls =>
-              cls.startsWith('bi-') && !cls.endsWith('-fill')
-            )
-
+            const classes = [...icon.classList];
+            const iconClass = classes.find(cls => cls.startsWith('bi-') && !cls.endsWith('-fill'));
             if (iconClass) {
-              icon.classList.remove(iconClass)
-              icon.classList.add(`${iconClass}-fill`)
+              icon.classList.remove(iconClass);
+              icon.classList.add(`${iconClass}-fill`);
             }
           }
-
-          const dropdownParent = link.closest('.dropdown')
+          
+          const dropdownParent = link.closest('.dropdown');
           if (dropdownParent) {
-            const parentLink = dropdownParent.querySelector('.nav-link')
-            parentLink.classList.add('active')
-
-            const parentIcon = parentLink.querySelector('.bi')
+            const parentLink = dropdownParent.querySelector('.nav-link');
+            parentLink.classList.add('active');
+            const parentIcon = parentLink.querySelector('.bi');
             if (parentIcon) {
-              const parentClasses = [...parentIcon.classList]
-              const parentIconClass = parentClasses.find(cls =>
-                cls.startsWith('bi-') && !cls.endsWith('-fill')
-              )
-
+              const parentClasses = [...parentIcon.classList];
+              const parentIconClass = parentClasses.find(cls => cls.startsWith('bi-') && !cls.endsWith('-fill'));
               if (parentIconClass) {
-                parentIcon.classList.remove(parentIconClass)
-                parentIcon.classList.add(`${parentIconClass}-fill`)
+                parentIcon.classList.remove(parentIconClass);
+                parentIcon.classList.add(`${parentIconClass}-fill`);
               }
             }
           }
         }
-      })
-    })
+      });
+    });
