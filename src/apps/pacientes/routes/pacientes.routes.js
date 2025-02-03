@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { PacientesController } from '../controller/pacientes.controller.js'
 
+import { checkRoles } from '../../../middlewares/auth/checkRoles.js'
+
 const pacientesController = new PacientesController()
 
 export function pacientesRouter () {
