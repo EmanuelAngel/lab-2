@@ -1,7 +1,7 @@
 extends ../../../layouts/base-layout
 
 block navbar
-  include ../../../lib/NavBar
+  include ../../../partials/NavBar
 
 block content
   .row
@@ -35,8 +35,8 @@ block content
                   case turno.estado
                     when 'Confirmado'
                       span.badge.bg-primary Confirmado
-                    when 'Libre'
-                      span.badge.bg-success Libre
+                    when 'partialsre'
+                      span.badge.bg-success partialsre
                 if user.id_rol == 1 || user.id_rol == 2
                   td= turno.paciente ? turno.paciente : 'No asignado'
                   td= turno.motivo_consulta ? turno.motivo_consulta : '-'
