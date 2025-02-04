@@ -1,11 +1,12 @@
 {
   "name": "lab-2",
-  "version": "0.2.10",
+  "version": "0.3.0",
   "type": "module",
   "main": "./src/.bin/www",
   "scripts": {
     "start": "node ./src/.bin/www",
-    "dev": "nodemon ./src/.bin/www"
+    "dev": "nodemon ./src/.bin/www",
+    "hash-password": "node ./src/apps/.utils/hashPassword.js"
   },
   "author": "EmanuelAngel, RodrigoNAlcaraz",
   "license": "ISC",

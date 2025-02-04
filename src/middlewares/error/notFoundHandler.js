@@ -14,7 +14,7 @@ export const notFoundHandler = (req, res, _next) => {
         })
     }
 
-    return res.status(404).render('pages/error/404', {
+    return res.status(404).render('error/404', {
       title: 'Página no encontrada',
       message: 'La página que buscas no existe',
       user: req.session.user

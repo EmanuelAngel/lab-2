@@ -96,7 +96,7 @@ export class AuthController {
 
     obrasSociales.unshift({ id_obra_social: '0', nombre: 'No tengo obra social' })
 
-    return res.render('pages/auth/register', {
+    return res.render('auth/register', {
       obrasSociales,
       user: req.session.user
     })
@@ -136,7 +136,7 @@ export class AuthController {
   }
 
   loginView = async (req, res) => {
-    return res.render('pages/auth/login', { user: req.session.user })
+    return res.render('auth/login', { user: req.session.user })
   }
 
   // Método para cerrar sesión

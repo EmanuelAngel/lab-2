@@ -17,7 +17,7 @@ export function checkRoles (...allowedRoles) {
       }
 
       if (!allowedRoles.includes(roles)) {
-        return res.render('pages/error/500', {
+        return res.render('error/500', {
           message: 'No tienes permiso para acceder a este recurso',
           error: 'No tienes permiso para acceder a este recurso',
           user: req.session.user
@@ -28,7 +28,7 @@ export function checkRoles (...allowedRoles) {
     } catch (error) {
       console.error('Error al verificar el rol:', error)
 
-      return res.render('pages/error/500', {
+      return res.render('error/500', {
         message: 'Error al verificar el rol',
         user: req.session.user
       })

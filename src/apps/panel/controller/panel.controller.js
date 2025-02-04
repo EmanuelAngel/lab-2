@@ -8,7 +8,7 @@ import { TurnoModel } from '../../turnos/models/turnos.model.js'
 
 export class PanelController {
   index = async (req, res) => {
-    res.render('pages/panel/index', {
+    res.render('panel/index', {
       title: 'Panel de Administración',
       user: req.session.user
     })
@@ -17,7 +17,7 @@ export class PanelController {
   profesionales = async (req, res) => {
     const profesionales = await ProfesionalesModel.getAllWithUser()
 
-    res.render('pages/panel/profesionales/index',
+    res.render('panel/profesionales/index',
       {
         title: 'Profesionales',
         profesionales,
@@ -29,7 +29,7 @@ export class PanelController {
   createProfesional = async (req, res) => {
     const especialidades = await EspecialidadesModel.getAll()
 
-    res.render('pages/panel/profesionales/register',
+    res.render('panel/profesionales/register',
       {
         title: 'Crear Profesional',
         especialidades,
@@ -48,7 +48,7 @@ export class PanelController {
       return res.status(404).json({ message: 'Profesional no encontrado' })
     }
 
-    res.render('pages/panel/profesionales/edit',
+    res.render('panel/profesionales/edit',
       {
         title: 'Editar Profesional',
         profesional,
@@ -60,7 +60,7 @@ export class PanelController {
 
   especialidades = async (req, res) => {
     const especialidades = await EspecialidadesModel.getAll()
-    res.render('pages/panel/especialidades/index',
+    res.render('panel/especialidades/index',
       {
         title: 'Especialidades',
         especialidades,
@@ -72,7 +72,7 @@ export class PanelController {
   createEspecialidades = async (req, res) => {
     const especialidades = await EspecialidadesModel.getAll()
 
-    res.render('pages/panel/especialidades/registrarEsp',
+    res.render('panel/especialidades/registrarEsp',
       {
         title: 'Crear Especialidad',
         especialidades,
@@ -89,7 +89,7 @@ export class PanelController {
       return res.status(404).json({ message: 'Especialidad no encontrado' })
     }
 
-    res.render('pages/panel/especialidades/edit',
+    res.render('panel/especialidades/edit',
       {
         title: 'Editar Especialidad',
         especialidades,
@@ -101,7 +101,7 @@ export class PanelController {
   pacientes = async (req, res) => {
     const pacientes = await PacientesModel.getAllWithUser()
 
-    res.render('pages/panel/pacientes/index',
+    res.render('panel/pacientes/index',
       {
         title: 'Pacientes',
         pacientes,
@@ -119,7 +119,7 @@ export class PanelController {
       return res.status(404).json({ message: 'Paciente no encontrado' })
     }
 
-    res.render('pages/panel/pacientes/edit',
+    res.render('panel/pacientes/edit',
       {
         title: 'Editar Paciente',
         paciente,
@@ -132,7 +132,7 @@ export class PanelController {
   agendas = async (req, res) => {
     const agendas = await AgendaBaseModel.getAllDetailed()
 
-    res.render('pages/panel/agendas/index',
+    res.render('panel/agendas/index',
       {
         title: 'Agendas',
         agendas,
@@ -163,7 +163,7 @@ export class PanelController {
       })
     )
 
-    res.render('pages/panel/agendas/turnos',
+    res.render('panel/agendas/turnos',
       {
         title: 'Agenda',
         agenda: agenda.agenda,
@@ -181,7 +181,7 @@ export class PanelController {
     const turno = await TurnoModel.getById({ id })
     const profesional = await ProfesionalesModel.getByIdWithUser({ id: id_profesional })
 
-    res.render('pages/panel/agendas/asignar', {
+    res.render('panel/agendas/asignar', {
       title: 'Asignar turno',
       turno,
       profesional,
