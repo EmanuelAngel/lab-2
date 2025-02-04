@@ -7,12 +7,13 @@ block content
   .row
     .col-md-12.d-grid.gap-4
       h1 Especialidades
-      a.btn.btn-primary.d-flex.gap-2.justify-content-center(
-        style="width: max-content",
-        href="/panel/especialidades/registrarEsp"
-      )
-        i.bi.bi-plus
-        | Registrar Especialidades
+      if user.id_rol == 1
+        a.btn.btn-primary.d-flex.gap-2.justify-content-center(
+          style="width: max-content",
+          href="/panel/especialidades/registrarEsp"
+        )
+          i.bi.bi-plus
+          | Registrar Especialidades
 
       .table-responsive
         table.table.table-striped.table-bordered.align-middle
@@ -20,37 +21,41 @@ block content
             tr.align-middle
               th N° 
               th Nombre
-              th Estado
-              th Acciones
+              if user.id_rol == 1
+                th Estado
+              if user.id_rol == 1
+                th Acciones
 
           tbody
             each especialidad in especialidades
               tr 
                 td= especialidad.id_especialidad
                 td= especialidad.nombre
-                td 
-                  if especialidad.estado
-                    span.badge.bg-success Activo
-                  else
-                    span.badge.bg-danger Inactivo
-                td
-                  a.btn.btn-outline-primary.border-0.d-flex.gap-2.mb-2(
-                    href=`/panel/especialidades/edit/${especialidad.id_especialidad}`
-                  )
-                    i.bi.bi-pencil
-                    | Editar
-                  if especialidad.estado
-                    button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-especialidad(
-                      data-id=especialidad.id_especialidad
+                if user.id_rol == 1
+                  td 
+                    if especialidad.estado
+                      span.badge.bg-success Activo
+                    else
+                      span.badge.bg-danger Inactivo
+                if user.id_rol == 1  
+                  td
+                    a.btn.btn-outline-primary.border-0.d-flex.gap-2.mb-2(
+                      href=`/panel/especialidades/edit/${especialidad.id_especialidad}`
                     )
-                      i.bi.bi-ban
-                      | Desactivar
-                  else
-                    a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-especialidad(
-                      data-id=especialidad.id_especialidad
-                    )
-                      i.bi.bi-check-lg  
-                      | Activar
+                      i.bi.bi-pencil
+                      | Editar
+                    if especialidad.estado
+                      button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-especialidad(
+                        data-id=especialidad.id_especialidad
+                      )
+                        i.bi.bi-ban
+                        | Desactivar
+                    else
+                      a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-especialidad(
+                        data-id=especialidad.id_especialidad
+                      )
+                        i.bi.bi-check-lg  
+                        | Activar
 
   // Modales de confirmación
   div.modal.fade#deactivateModal(

@@ -1,6 +1,9 @@
 import { Router } from 'express'
 import { AgendaBaseController } from '../controller/agenda_base.controller.js'
 
+import { checkRoles } from '../../../middlewares/auth/checkRoles.js'
+import { isLoggedIn } from '../../../middlewares/auth/isLoggedIn.js'
+
 const agendaBaseController = new AgendaBaseController()
 
 export function agendaBaseRouter () {

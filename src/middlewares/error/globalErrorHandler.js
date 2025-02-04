@@ -40,6 +40,7 @@ export const globalErrorHandler = (err, req, res) => {
   // Para solicitudes que esperan renderizar
   res.status(statusCode).render('pages/error/500', {
     ...errorResponse,
-    title: `Error ${statusCode}`
+    title: `Error ${statusCode}`,
+    session: req.session
   })
 }

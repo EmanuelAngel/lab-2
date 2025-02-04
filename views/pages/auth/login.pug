@@ -29,9 +29,12 @@ block content
         id="contraseña"
         placeholder="Contraseña"
         required
-        value="12341234"
         )
     input.btn.btn-primary(type="submit" value="Iniciar sesión")
+    br
+    br
+    p ¿No tienes cuenta? 
+      a(href="/auth/register") Regístrate
 
 block scripts 
   script(type="module").
