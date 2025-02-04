@@ -1,0 +1,28 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    link(rel="stylesheet", href="/css/main.css")
+    //- Bootstrap Color Modes js
+    script(src="/lib/bootstrap/js/dist/js/color-modes.js")
+
+    block styles
+
+    title= title
+    
+  body 
+
+    block navbar
+
+    .container.mt-5.mb-5
+      block content
+
+    block footer
+
+    block toast-notifications
+      include ../partials/ToastContainer
+
+    script(type="module" defer src="/js/main.js")
+
+    block scripts

@@ -1,3 +1,14 @@
+/* Bootstrap 5.3.3 */
+@import "/lib/bootstrap/css/dist/css/bootstrap.min.css";
+
+/* Bootstrap Icons 1.11.3 */
+@import "/lib/bootstrap/icons/font/bootstrap-icons.min.css";
+
+/* DataTables 2.1.8 */
+@import "/lib/dataTables/datatables.min.css";
+
+/* Custom CSS */
+
 @view-transition {
   navigation: auto;
 }
