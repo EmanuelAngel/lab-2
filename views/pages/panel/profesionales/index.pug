@@ -13,34 +13,43 @@ block content
   .row
     .col-md-12.d-grid.gap-4
       h1 Profesionales
-      a.btn.btn-primary.d-flex.gap-2.justify-content-center(
-        style="width: max-content",
-        href="/panel/profesionales/register"
-        )
-        i.bi.bi-plus
-        |Registrar Profesional
+      if user.id_rol == 1
+        a.btn.btn-primary.d-flex.gap-2.justify-content-center(
+          style="width: max-content",
+          href="/panel/profesionales/register"
+          )
+          i.bi.bi-plus
+          |Registrar Profesional
         
       .table-responsive
         table#tablaProfesionales.table.table-striped.table-bordered.align-middle
           thead
             tr.align-middle
-              th Nombre Usuario
+              if user.id_rol != 4
+                th Nombre Usuario
               th Nombre
               th Apellido
-              th DNI
+              if user.id_rol != 4
+                th DNI
               th Especialidad
-              th Teléfono 
-              th Dirección
-              th E-mail
+              if user.id_rol != 4
+                th Teléfono 
+              if user.id_rol != 4
+                th Dirección
+              if user.id_rol != 4
+                th E-mail
               th Estado
-              th Acciones
+              if user.id_rol == 1
+                th Acciones
           tbody
             each profesional in profesionales
               tr 
-                td= profesional.nombre_usuario
+                if user.id_rol != 4
+                  td= profesional.nombre_usuario
                 td= profesional.nombre
                 td= profesional.apellido
-                td= profesional.dni
+                if user.id_rol != 4
+                  td= profesional.dni
                 td
                   if profesional.especialidades != null 
                     if profesional.especialidades.length > 0
@@ -48,39 +57,44 @@ block content
                         each especialidad in profesional.especialidades 
                           span.badge.bg-secondary
                             |  #{especialidad.especialidad || '?'}
-                            | - 
-                            |  #{especialidad.matricula || '?'}
+                            if user.id_rol != 4
+                              | -
+                              |  #{especialidad.matricula || '?'}
                     else
                       span Sin Especialidad
                   else
                     span Sin Especialidades
 
-                td= profesional.telefono
-                td= profesional.direccion
-                td= profesional.email 
+                if user.id_rol != 4
+                  td= profesional.telefono
+                if user.id_rol != 4
+                  td= profesional.direccion
+                if user.id_rol != 4
+                  td= profesional.email 
                 td 
                   if profesional.estado_profesional
                     span.badge.bg-success Activo
                   else
                     span.badge.bg-danger Inactivo
-                td
-                  a.btn.btn-outline-primary.border-0.d-flex.gap-2.mb-2(
-                    href=`/panel/profesionales/edit/${profesional.id_profesional}`
-                    )
-                    i.bi.bi-pencil
-                    | Editar
-                  if profesional.estado_profesional
-                    button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-profesional(
-                      data-id=profesional.id_profesional
-                    )
-                      i.bi.bi-ban
-                      | Desactivar
-                  else
-                    a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-profesional(
-                      data-id=profesional.id_profesional
+                if user.id_rol == 1
+                  td
+                    a.btn.btn-outline-primary.border-0.d-flex.gap-2.mb-2(
+                      href=`/panel/profesionales/edit/${profesional.id_profesional}`
                       )
-                      i.bi.bi-check-lg  
-                      | Activar
+                      i.bi.bi-pencil
+                      | Editar
+                    if profesional.estado_profesional
+                      button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-profesional(
+                        data-id=profesional.id_profesional
+                      )
+                        i.bi.bi-ban
+                        | Desactivar
+                    else
+                      a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-profesional(
+                        data-id=profesional.id_profesional
+                        )
+                        i.bi.bi-check-lg  
+                        | Activar
 
   div.modal.fade#deactivateModal(
     tabindex="-1",

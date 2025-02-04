@@ -20,9 +20,11 @@ block content
               th Dia 
               th Hora
               th Estado
-              th Paciente
-              th Motivo consulta
-              th Acciones
+              if user.id_rol == 1 || user.id_rol == 2
+                th Paciente
+                th Motivo consulta
+              if user.id_rol != 3
+                th Acciones
           tbody
             each turno in turnos
               tr 
@@ -35,21 +37,23 @@ block content
                       span.badge.bg-primary Confirmado
                     when 'Libre'
                       span.badge.bg-success Libre
-                td= turno.paciente ? turno.paciente : 'No asignado'
-                td= turno.motivo_consulta ? turno.motivo_consulta : '-'
-                td
-                  if turno.estado === 'Confirmado'
-                    a.disabled.btn.btn-outline-danger.border-0.d-flex.gap-2.justify-content-center(
-                      href=`/panel/agendas/${agenda.id_agenda_base}/turnos/${turno.id_turno}?id_profesional=${agenda.id_profesional}`
-                      )
-                      | Cancelar
-                      i.bi.bi-calendar-minus
-                  else
-                    a.btn.btn-outline-primary.border-0.d-flex.gap-2.justify-content-center(
-                      href=`/panel/agendas/${agenda.id_agenda_base}/turnos/${turno.id_turno}?id_profesional=${agenda.id_profesional}`
-                      )
-                      | Asignar
-                      i.bi.bi-calendar-plus
+                if user.id_rol == 1 || user.id_rol == 2
+                  td= turno.paciente ? turno.paciente : 'No asignado'
+                  td= turno.motivo_consulta ? turno.motivo_consulta : '-'
+                if user.id_rol != 3
+                  td
+                    if turno.estado === 'Confirmado'
+                      a.disabled.btn.btn-outline-danger.border-0.d-flex.gap-2.justify-content-center(
+                        href=`/panel/agendas/${agenda.id_agenda_base}/turnos/${turno.id_turno}?id_profesional=${agenda.id_profesional}`
+                        )
+                        | Cancelar
+                        i.bi.bi-calendar-minus
+                    else
+                      a.btn.btn-outline-primary.border-0.d-flex.gap-2.justify-content-center(
+                        href=`/panel/agendas/${agenda.id_agenda_base}/turnos/${turno.id_turno}?id_profesional=${agenda.id_profesional}`
+                        )
+                        | Asignar
+                        i.bi.bi-calendar-plus
 
 block scripts
   script.

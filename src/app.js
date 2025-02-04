@@ -8,9 +8,6 @@ import { corsMiddleware } from './middlewares/cors.js'
 import cookieParser from 'cookie-parser'
 import { verifyAccessToken } from './middlewares/auth/verifyAccessToken.js'
 
-import { isLoggedIn } from './middlewares/auth/isLoggedIn.js'
-import { checkRoles } from './middlewares/auth/checkRoles.js'
-
 import { authRouter } from './apps/auth/routes/auth.routes.js'
 
 import { panelRouter } from './apps/panel/routes/panel.routes.js'
@@ -60,32 +57,37 @@ export function createApp () {
 
   app.set('view engine', 'pug')
 
-  app.get('/', (_req, res) => res.render('pages/index', { title: 'Inicio' }))
+  app.get('/', (req, res) =>
+    res.render('pages/index', {
+      title: 'Inicio',
+      user: req.session.user
+    }
+    ))
 
   app.use('/auth', authRouter())
 
-  app.use('/panel', [isLoggedIn], panelRouter())
+  app.use('/panel', panelRouter())
 
-  app.use('/profesionales', [isLoggedIn], profesionalesRouter())
-  app.use('/especialidades', [isLoggedIn], especialidadesRouter())
-  app.use('/pacientes', [isLoggedIn], pacientesRouter())
-  app.use('/usuarios', [isLoggedIn], usuariosRouter())
-  app.use('/secre', [isLoggedIn], secreRouter())
-  app.use('/admins', [isLoggedIn], adminsRouter())
-  app.use('/roles', [isLoggedIn], rolesRouter())
-  app.use('/especialidades_profesional', [isLoggedIn], especialidadesProfesionalRouter())
-  app.use('/obra_social', [isLoggedIn], obraSocialRouter())
-  app.use('/obra_social_paciente', [isLoggedIn], obraSocialPacienteRouter())
-  app.use('/sucursal', [isLoggedIn], sucursalRouter())
-  app.use('/agenda_base', [isLoggedIn], agendaBaseRouter())
-  app.use('/estado_agenda', [isLoggedIn], estadoAgendaRouter())
-  app.use('/dias_no_disponibles', [isLoggedIn], diasNoDisponiblesRouter())
-  app.use('/clasificacion_consulta', [isLoggedIn], clasificacionConsultaRouter())
-  app.use('/turno_especial', [isLoggedIn], turnoEspecialRouter())
-  app.use('/estados_turno', [isLoggedIn], estadosTurnoRouter())
-  app.use('/turnos', [isLoggedIn], turnosRouter())
-  app.use('/dias', [isLoggedIn], diasRouter())
-  app.use('/dias_agendas', [isLoggedIn], diasAgendasRouter())
+  app.use('/profesionales', profesionalesRouter())
+  app.use('/especialidades', especialidadesRouter())
+  app.use('/pacientes', pacientesRouter())
+  app.use('/usuarios', usuariosRouter())
+  app.use('/secre', secreRouter())
+  app.use('/admins', adminsRouter())
+  app.use('/roles', rolesRouter())
+  app.use('/especialidades_profesional', especialidadesProfesionalRouter())
+  app.use('/obra_social', obraSocialRouter())
+  app.use('/obra_social_paciente', obraSocialPacienteRouter())
+  app.use('/sucursal', sucursalRouter())
+  app.use('/agenda_base', agendaBaseRouter())
+  app.use('/estado_agenda', estadoAgendaRouter())
+  app.use('/dias_no_disponibles', diasNoDisponiblesRouter())
+  app.use('/clasificacion_consulta', clasificacionConsultaRouter())
+  app.use('/turno_especial', turnoEspecialRouter())
+  app.use('/estados_turno', estadosTurnoRouter())
+  app.use('/turnos', turnosRouter())
+  app.use('/dias', diasRouter())
+  app.use('/dias_agendas', diasAgendasRouter())
 
   // Error 404
   app.use(notFoundHandler)

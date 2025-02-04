@@ -13,12 +13,13 @@ block content
   .row
     .col-md-12.d-grid.gap-4
       h1 Pacientes
-      a.btn.btn-primary.d-flex.gap-2.justify-content-center(
-        style="width: max-content",
-        href="/auth/register"
-        )
-        i.bi.bi-plus
-        |Registrar Paciente
+      if user.id_rol == 1
+        a.btn.btn-primary.d-flex.gap-2.justify-content-center(
+          style="width: max-content",
+          href="/auth/register"
+          )
+          i.bi.bi-plus
+          |Registrar Paciente
       .table-responsive
         table#tablaPacientes.table.table-striped.table-bordered.align-middle
           thead
@@ -32,7 +33,8 @@ block content
               th Dirección
               th E-mail
               th Estado
-              th Acciones
+              if user.id_rol == 1 || user.id_rol == 2
+                th Acciones
           tbody
             each paciente in pacientes
               tr 
@@ -59,24 +61,25 @@ block content
                     span.badge.bg-success Activo
                   else
                     span.badge.bg-danger Inactivo
-                td
-                  a.btn.btn-outline-primary.border-0.d-flex.gap-2.mb-2(
-                    href=`/panel/pacientes/edit/${paciente.id_paciente}`
-                    )
-                    i.bi.bi-pencil
-                    | Editar
-                  if paciente.estado_paciente
-                    button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-paciente(
-                      data-id=paciente.id_paciente
-                    )
-                      i.bi.bi-ban
-                      | Desactivar
-                  else
-                    a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-paciente(
-                      data-id=paciente.id_paciente
+                if user.id_rol == 1 || user.id_rol == 2
+                  td
+                    a.btn.btn-outline-primary.border-0.d-flex.gap-2.mb-2(
+                      href=`/panel/pacientes/edit/${paciente.id_paciente}`
                       )
-                      i.bi.bi-check-lg  
-                      | Activar
+                      i.bi.bi-pencil
+                      | Editar
+                    if paciente.estado_paciente
+                      button.btn.btn-outline-danger.border-0.d-flex.gap-2.deactivate-paciente(
+                        data-id=paciente.id_paciente
+                      )
+                        i.bi.bi-ban
+                        | Desactivar
+                    else
+                      a.btn.btn-outline-success.border-0.d-flex.gap-2.activate-paciente(
+                        data-id=paciente.id_paciente
+                        )
+                        i.bi.bi-check-lg  
+                        | Activar
 
   div.modal.fade#deactivateModal(
     tabindex="-1",

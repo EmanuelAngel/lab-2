@@ -91,12 +91,15 @@ export class AuthController {
   }
 
   // Vista para registro
-  registerView = async (_req, res) => {
+  registerView = async (req, res) => {
     const obrasSociales = await ObraSocialModel.getAll()
 
     obrasSociales.unshift({ id_obra_social: '0', nombre: 'No tengo obra social' })
 
-    return res.render('pages/auth/register', { obrasSociales })
+    return res.render('pages/auth/register', {
+      obrasSociales,
+      user: req.session.user
+    })
   }
 
   login = async (req, res) => {
@@ -132,8 +135,8 @@ export class AuthController {
     }
   }
 
-  loginView = async (_req, res) => {
-    return res.render('pages/auth/login')
+  loginView = async (req, res) => {
+    return res.render('pages/auth/login', { user: req.session.user })
   }
 
   // Método para cerrar sesión

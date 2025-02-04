@@ -17,6 +17,7 @@ Repository containing the source code for the Clinic Appointment Scheduler proje
 
 ## Description
 
+- Sign up, log in, and log out.
 - Create, list, edit, activate, and deactivate patients.
 - Create, list, edit, activate, and deactivate professionals (doctors).
 - Create, list, edit, activate, and deactivate specialties.
@@ -30,6 +31,7 @@ Repository containing the source code for the Clinic Appointment Scheduler proje
 - Each schedule corresponds to a registration in a professional's specialty.
 - Schedules can include appointments on different days, both morning and afternoon.
 - Schedule time slots can be fragmented, allowing unavailable time slots on the same day.
+- Secure access to the application based on user roles (e.g., admin, professional, patient).
 
 ## Instructions to Run the Project Locally
 
@@ -92,6 +94,7 @@ npm|yarn|pnpm run dev
 │   │   │   ├── router.js
 │   │   │   ├── model.js
 │   │   │   └── schema.js          # Validation schemas
+│   │   ├── auth/           # Authentication and authorization module
 │   │   ├── pacientes/      # Patients module
 │   │   ├── profesionales/  # Professionals module
 │   │   └── ...             # Other modules
@@ -103,20 +106,27 @@ npm|yarn|pnpm run dev
 
 ## Technologies Used
 
-- **Express**: Node.js Framework. [v4.19.0](https://expressjs.com/).
-- **MySQL**: Relational database management system. [v8.0](https://www.mysql.com/) - Used for persistent storage of patients, professionals, schedules, appointments, and health insurance data.
-- **Pug**: Template engine for Node.js that allows for elegant and concise HTML code. [v3.0.2](https://pugjs.org/) - Used to generate dynamic views.
-- **Bootstrap y Bootstrap Icons**: UI components. [v5.3.0](https://getbootstrap.com/).
-- **Zod**: Validations and schemas. [Zod](https://zod.dev/)
-- **Render**: Hosting service for deploying the [server](https://render.com/).
-- **StandardJS**: JavaScript style guide, linter, and formatter. [StandardJS](https://standardjs.com/).
-- **REST Client**: Tool for making and testing HTTP requests. [Visual Studio Code Extension](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
+- [Express v4.19.0](https://expressjs.com/): Node.js Framework.
+- [MySQL v8.0](https://www.mysql.com/): Relational database management system. - Used for persistent storage of patients, professionals, schedules, appointments, and health insurance data.
+- [Pug](https://pugjs.org/): Template engine for Node.js - Used to generate dynamic views.
+- [Bootstrap](https://getbootstrap.com/): Feature-packed frontend toolkit.
+- [Bootstrap Icons](https://icons.getbootstrap.com/): Icons for Bootstrap
+- [Zod](https://zod.dev/): Schema declaration and validation library.
+- [Render](https://render.com/): Hosting service for deployment.
+- [StandardJS](https://standardjs.com/): JavaScript style guide, linter, and formatter.
+- [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client): Visual Studio Code Extension tool for making and testing HTTP requests.
+- [JSON Web Tokens](https://jwt.io/): For authentication and role-based access control.
+- [bcrypt](https://www.npmjs.com/package/bcrypt): For hashing, salting, and verifying passwords.
+- [cookie-parser](https://www.npmjs.com/package/cookie-parser): Middleware for parsing cookies in HTTP requests.
+- [morgan](https://www.npmjs.com/package/morgan): Middleware for logging HTTP requests in Node.js.
+- [dotenv](https://www.npmjs.com/package/dotenv): Loads environment variables from a `.env` file.
+- [cors](https://www.npmjs.com/package/cors): Middleware to enable CORS (Cross-Origin Resource Sharing) in web applications.
+- [nodemon](https://nodemon.io/): Tool that automatically restarts a Node.js application when file changes are detected.
 
 ## Future Scalability
 
 This project has been designed and architected with scalability in mind, ready to integrate future functionalities such as:
 
-- User authentication and authorization system.
 - Management of overbooked appointments.
 - Additional appointment states (canceled, rescheduled, etc.).
 - Handling photocopies of ID documents.

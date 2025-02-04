@@ -8,7 +8,10 @@ import { TurnoModel } from '../../turnos/models/turnos.model.js'
 
 export class PanelController {
   index = async (req, res) => {
-    res.render('pages/panel/index', { title: 'Panel de Administración' })
+    res.render('pages/panel/index', {
+      title: 'Panel de Administración',
+      user: req.session.user
+    })
   }
 
   profesionales = async (req, res) => {
@@ -17,7 +20,8 @@ export class PanelController {
     res.render('pages/panel/profesionales/index',
       {
         title: 'Profesionales',
-        profesionales
+        profesionales,
+        user: req.session.user
       }
     )
   }
@@ -28,7 +32,8 @@ export class PanelController {
     res.render('pages/panel/profesionales/register',
       {
         title: 'Crear Profesional',
-        especialidades
+        especialidades,
+        user: req.session.user
       }
     )
   }
@@ -47,7 +52,8 @@ export class PanelController {
       {
         title: 'Editar Profesional',
         profesional,
-        especialidades
+        especialidades,
+        user: req.session.user
       }
     )
   }
@@ -57,7 +63,8 @@ export class PanelController {
     res.render('pages/panel/especialidades/index',
       {
         title: 'Especialidades',
-        especialidades
+        especialidades,
+        user: req.session.user
       }
     )
   }
@@ -68,7 +75,8 @@ export class PanelController {
     res.render('pages/panel/especialidades/registrarEsp',
       {
         title: 'Crear Especialidad',
-        especialidades
+        especialidades,
+        user: req.session.user
       }
     )
   }
@@ -84,7 +92,8 @@ export class PanelController {
     res.render('pages/panel/especialidades/edit',
       {
         title: 'Editar Especialidad',
-        especialidades
+        especialidades,
+        user: req.session.user
       }
     )
   }
@@ -95,7 +104,8 @@ export class PanelController {
     res.render('pages/panel/pacientes/index',
       {
         title: 'Pacientes',
-        pacientes
+        pacientes,
+        user: req.session.user
       }
     )
   }
@@ -113,18 +123,20 @@ export class PanelController {
       {
         title: 'Editar Paciente',
         paciente,
-        obrasSociales
+        obrasSociales,
+        user: req.session.user
       }
     )
   }
 
-  agendas = async (_req, res) => {
+  agendas = async (req, res) => {
     const agendas = await AgendaBaseModel.getAllDetailed()
 
     res.render('pages/panel/agendas/index',
       {
         title: 'Agendas',
-        agendas
+        agendas,
+        user: req.session.user
       }
     )
   }
@@ -156,7 +168,8 @@ export class PanelController {
         title: 'Agenda',
         agenda: agenda.agenda,
         turnos: turnosConPacientes,
-        estadosTurnos
+        estadosTurnos,
+        user: req.session.user
       }
     )
   }
@@ -171,7 +184,8 @@ export class PanelController {
     res.render('pages/panel/agendas/asignar', {
       title: 'Asignar turno',
       turno,
-      profesional
+      profesional,
+      user: req.session.user
     })
   }
 }
