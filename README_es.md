@@ -17,6 +17,7 @@ Repositorio donde se encuentra el código fuente para el proyecto Agenda de Cons
 
 ## Descripción
 
+- Registrarse, iniciar sesión y cerrar sesión.
 - Crear, listar, editar, activar y desactivar pacientes.
 - Crear, listar, editar, activar y desactivar profesionales (médicos).
 - Crear, listar, editar, activar y desactivar especialidades.
@@ -30,6 +31,7 @@ Repositorio donde se encuentra el código fuente para el proyecto Agenda de Cons
 - Cada agenda corresponde a una matrícula de una especialidad de un profesional.
 - Los turnos de las agendas pueden ser en distintos días, tanto en la mañana como en la tarde.
 - Los horarios de las agendas pueden estar cortados, pudiendo tener horarios no disponibles en un mismo día.
+- Acceso seguro a la aplicación basado en roles (por ejemplo, administrador, profesional, paciente).
 
 ## Instrucciones para poder ejecutar el proyecto de manera local
 
@@ -92,6 +94,7 @@ npm|yarn|pnpm run dev
 │   │   │   ├── router.js
 │   │   │   ├── model.js
 │   │   │   └── schema.js          # Esquemas de validación
+│   │   ├── auth/           # Módulo de autenticación y autorización
 │   │   ├── pacientes/      # Módulo de Pacientes
 │   │   ├── profesionales/  # Módulo de Profesionales
 │   │   └── ...             # Otros módulos
@@ -103,20 +106,27 @@ npm|yarn|pnpm run dev
 
 ## Tecnologías utilizadas
 
-- **Express**: Framework de Node.js. [v4.19.0](https://expressjs.com/).
-- **MySQL**: Sistema de gestión de base de datos relacional. [v8.0](https://www.mysql.com/) - Utilizado para el almacenamiento persistente de datos de pacientes, profesionales, agendas, turnos y obras sociales.
-- **Pug**: Motor de plantillas para Node.js que permite escribir HTML de manera elegante y con menos código. [v3.0.2](https://pugjs.org/) - Empleado para generar las vistas dinámicas de la aplicación.
-- **Bootstrap y Bootstrap Icons**: Componentes de UI. [v5.3.0](https://getbootstrap.com/).
-- **Zod**: Validaciones y Esquemas. [Zod](https://zod.dev/)
-- **Render**: Servicio de hosting para desplegar el [servidor](https://render.com/).
-- **StandardJS**: Estilizador, Linter y Formateador para JavaScript. [StandardJS](https://standardjs.com/).
-- **REST Client**: Para realizar y testear peticiones HTTP. [Extensión de Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
+- [Express v4.19.0](https://expressjs.com/): Framework de Node.js.
+- [MySQL v8.0](https://www.mysql.com/): Sistema de gestión de bases de datos relacional. - Usado para el almacenamiento persistente de datos de pacientes, profesionales, etc.
+- [Pug](https://pugjs.org/): Motor de plantillas para Node.js - Usado para generar vistas dinámicas.
+- [Bootstrap](https://getbootstrap.com/): Kit de herramientas frontend.
+- [Bootstrap Icons](https://icons.getbootstrap.com/): Iconos para Bootstrap.
+- [Zod](https://zod.dev/): Declaración y validación de esquemas.
+- [Render](https://render.com/): Servicio de hosting para despliegue.
+- [StandardJS](https://standardjs.com/): Guía de estilo, linter y formateador de JavaScript.
+- [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client): Extensión de Visual Studio Code para realizar y probar solicitudes HTTP.
+- [JSON Web Tokens](https://jwt.io/): Para autenticación y control de acceso basado en roles.
+- [bcrypt](https://www.npmjs.com/package/bcrypt): Para el hash, salteo y verificación de contraseñas.
+- [cookie-parser](https://www.npmjs.com/package/cookie-parser): Middleware para analizar cookies en solicitudes HTTP.
+- [Morgan](https://www.npmjs.com/package/morgan): Middleware para registrar solicitudes HTTP en Node.js.
+- [dotenv](https://www.npmjs.com/package/dotenv): Carga variables de entorno desde un archivo `.env`.
+- [cors](https://www.npmjs.com/package/cors): Middleware para habilitar CORS (Intercambio de Recursos de Origen Cruzado) en aplicaciones web.
+- [nodemon](https://nodemon.io/): Herramienta que reinicia automáticamente una aplicación de Node.js cuando detecta cambios en los archivos.
 
 ## Escalabilidad Futura
 
 Este proyecto ha sido diseñado y arquitecturado pensando en su escalabilidad, preparado para integrar futuras funcionalidades como:
 
-- Sistema de autenticación y autorización de usuarios
 - Gestión de sobreturnos
 - Estados adicionales para los turnos (cancelados, reprogramados, etc.)
 - Manejo de fotocopias de DNIs.
