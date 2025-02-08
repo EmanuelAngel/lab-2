@@ -1,16 +1,36 @@
 {
   "name": "lab-2",
+  "description": "Medical Web App for Laboratory 2 subject",
+  "keywords": [
+    "nodejs",
+    "express",
+    "medical"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EmanuelAngel/lab-2.git"
+  },
+  "homepage": "https://lab-2-ap6x.onrender.com/",
+  "engines": {
+    "node": ">=20.x",
+    "npm": ">=10.x"
+  },
+  "private": "true",
   "version": "0.3.1",
   "type": "module",
   "main": "./src/.bin/www",
   "scripts": {
-    "start": "node ./src/.bin/www",
-    "dev": "nodemon ./src/.bin/www",
-    "hash-password": "node ./src/apps/.utils/hashPassword.js"
+    "start": "node src/.bin/www",
+    "dev": "nodemon src/.bin/www --watch src --ext js,pug",
+    "hash-password": "node src/apps/.utils/hashPassword.js",
+    "lint": "standard",
+    "security:audit": "npm audit --audit-level=critical"
   },
-  "author": "EmanuelAngel, RodrigoNAlcaraz",
+  "authors": [
+    "Emanuel Angel <emanuelangelsbr@gmail.com> (https://github.com/EmanuelAngel)",
+    "Rodrigo Nicolás Alcaraz (https://github.com/RodrigoNAlcaraz)"
+  ],
   "license": "ISC",
-  "description": "Medical Web App for Laboratory 2 subject",
   "dependencies": {
     "bcrypt": "5.1.1",
     "cookie-parser": "1.4.6",
