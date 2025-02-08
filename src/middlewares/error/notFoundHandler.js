@@ -1,27 +1,26 @@
-export const notFoundHandler = (req, res, _next) => {
-  try {
-    const acceptHeader = req.get('Accept') || ''
-    const wantsJson = req.xhr ||
-                      acceptHeader.includes('application/json') ||
-                      req.query.format === 'json'
+const determineResponseType = (req) => {
+  return req.xhr ||
+    req.get('Accept')?.includes('application/json') ||
+    req.query.format === 'json'
+}
 
+export const notFoundHandler = (req, res, next) => {
+  const wantsJson = determineResponseType(req)
+
+  try {
     if (wantsJson) {
-      return res.status(404)
-        .contentType('application/json')
-        .json({
-          error: 'Not Found',
-          message: 'La ruta solicitada no existe'
-        })
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'El recurso solicitado no existe'
+      })
     }
 
-    return res.status(404).render('error/404', {
+    res.status(404).render('error/404', {
       title: 'Página no encontrada',
-      message: 'La página que buscas no existe',
-      user: req.session.user
+      message: 'El recurso solicitado no existe',
+      user: req.session?.user || null
     })
   } catch (error) {
-    console.error('Error en notFoundHandler:', error)
-
-    res.status(404).send('Página no encontrada')
+    next(error)
   }
 }

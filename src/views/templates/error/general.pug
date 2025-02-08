@@ -1,0 +1,63 @@
+extends ../../layouts/base-layout.pug
+
+
+block navbar
+  include ../../partials/NavBar
+
+
+block styles 
+  style.
+    pre { 
+      padding: 1rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .error-container {
+      margin: 4rem auto;
+      text-align: center;
+    }
+
+    .stack-trace {
+      text-align: left;
+      margin: 2rem 0;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 0.5rem;
+    }
+
+    .error-actions {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+
+block content
+  .container.error-container
+    article.text-center
+      header.mb-5
+        h1.display-1.fw-bold.text-danger= status || 500
+        h2.fs-3.mt-3= title || 'Error del Servidor'
+      
+      if message
+        p.lead.mb-4= message
+
+      if stack && NODE_ENV === 'development'
+        .stack-trace.p-4.rounded-3.mt-4.text-start
+          pre.m-0= stack
+
+      footer.mt-5
+        .error-actions
+          button.btn.btn-secondary(onclick="window.history.back()")
+            i.bi.bi-arrow-left.me-2
+            | Volver atrás
+          a.btn.btn-primary(href='/')
+            i.bi.bi-house-door.me-2
+            | Ir al inicio
+
+          if NODE_ENV === 'development' && errorId
+            .mt-4
+              small.text-muted ID de error: #{errorId}
+              

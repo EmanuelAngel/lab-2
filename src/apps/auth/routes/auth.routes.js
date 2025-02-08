@@ -1,29 +1,10 @@
 import { Router } from 'express'
 import { AuthController } from '../controller/auth.controller.js'
 
-const authController = new AuthController()
+export const authRouter = Router()
 
-export function authRouter () {
-  const router = Router()
-
-  router.get('/register', authController.registerView)
-  router.post('/register', authController.register)
-  router.get('/login', authController.loginView)
-  router.post('/login', authController.login)
-  router.get('/logout', authController.logout)
-
-  /*
-  Para futuro desarrollo
-
-  router.get('/reset-password', (_req, res) => {
-    res.json({ message: 'reset password page' })
-  })
-
-  // post o put o patch?
-  router.post('/reset-password', (_req, res) => {
-    res.json({ message: 'reset password action' })
-  })
-  */
-
-  return router
-}
+authRouter
+  .get('/register', AuthController.registerView)
+  .get('/login', AuthController.loginView)
+  .post('/login', AuthController.login)
+  .get('/logout', AuthController.logout)

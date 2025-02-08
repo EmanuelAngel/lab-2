@@ -1,0 +1,39 @@
+extends ../../layouts/base-layout.pug
+
+
+block navbar
+  include ../../partials/NavBar
+
+
+block content
+  .container
+    .row.justify-content-center.mt-5
+      .col-12.col-md-8.col-lg-6.text-center
+        .card-body.py-5
+          i.bi.bi-shield-exclamation.display-1.text-danger.mb-4
+          h1.display-5.fw-bold.mb-3 Acceso denegado
+          p.lead.text-muted.mb-4
+            | No tienes los permisos necesarios para acceder a este recurso.
+            br
+            | Contacta con el administrador si crees que es un error.
+          
+          .d-grid.gap-3.d-sm-flex.justify-content-sm-center
+            button.btn.btn-secondary(onclick="window.history.back()")
+              i.bi.bi-arrow-left.me-2
+              | Volver atrás
+            a.btn.btn-primary(href='/')
+              i.bi.bi-house-door.me-2
+              | Ir al inicio
+
+          if NODE_ENV === 'development'
+            .mt-4.text-start
+              details
+                summary.mb-2 Detalles técnicos
+                pre.small.bg-light.p-3.rounded
+                  code
+                    | Ruta: #{req.path}
+                    br
+                    | Método: #{req.method}
+                    br
+                    | Rol del usuario: #{req.session.user.id_rol || 'N/A'}
+

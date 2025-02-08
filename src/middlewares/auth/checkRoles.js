@@ -1,37 +1,39 @@
-/**
- * Middleware that checks if the user has one of the allowed roles
- * @param {...number} allowedRoles - Allowed roles (1: admin, 2: secretari@, 3: médico, 4: paciente)
- * @returns {Function} Middleware function
- */
 export function checkRoles (...allowedRoles) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     try {
-      const roles = req.session?.user?.id_rol
+      // 1. Determinar tipo de respuesta
+      const wantsJson = req.xhr ||
+        req.get('Accept')?.includes('application/json') ||
+        req.query.format === 'json'
 
-      console.log('roles', roles)
-
-      if (!roles) {
-        return res
-          .status(401)
-          .redirect('/auth/login')
+      // 2. Verificar autenticación
+      if (!req.session?.user) {
+        return wantsJson
+          ? res.status(401).json({ error: 'No autenticado' })
+          : res.redirect('/auth/login')
       }
 
-      if (!allowedRoles.includes(roles)) {
-        return res.render('error/500', {
-          message: 'No tienes permiso para acceder a este recurso',
-          error: 'No tienes permiso para acceder a este recurso',
-          user: req.session.user
-        })
+      // 3. Obtener y validar rol
+      const userRole = Number(req.session.user.id_rol)
+      if (isNaN(userRole)) {
+        throw new Error('Rol de usuario inválido')
+      }
+
+      // 4. Verificar permisos
+      if (!allowedRoles.includes(userRole)) {
+        return wantsJson
+          ? res.status(403).json({ error: 'Acceso no autorizado' })
+          : res.status(403).render('error/403', {
+            title: 'Acceso denegado',
+            message: 'No tienes permisos para esta acción',
+            user: req.session.user
+          })
       }
 
       next()
     } catch (error) {
-      console.error('Error al verificar el rol:', error)
-
-      return res.render('error/500', {
-        message: 'Error al verificar el rol',
-        user: req.session.user
-      })
+      // 5. Manejo centralizado de errores
+      next(error)
     }
   }
 }

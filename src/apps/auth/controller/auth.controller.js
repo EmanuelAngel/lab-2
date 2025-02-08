@@ -1,97 +1,10 @@
 import { NODE_ENV } from '../../../config/env.js'
-import {
-  validateUsuarios,
-  validatePartialUsuarios
-} from '../../usuarios/controller/schemas/usuarios.schema.js'
+import { validatePartialUsuarios } from '../../usuarios/controller/schemas/usuarios.schema.js'
 import { AuthModel } from '../model/auth.model.js'
-// import { AuthModel } from '../model/auth2.model.js'
 import { ObraSocialModel } from '../../obra_social/models/obra_social.model.js'
 
 export class AuthController {
-  // register = async (req, res) => {
-  //   const { user } = req.session
-  //   const requestedRoleId = req.body.id_rol
-
-  //   // Verificar si el usuario no está logueado y está intentando registrar un rol que no sea paciente
-  //   if (!user && requestedRoleId !== 4) {
-  //     return res.status(403).json({
-  //       error: 'Usuarios no autenticados solo pueden registrar pacientes'
-  //     })
-  //   }
-
-  //   // Verificar si el usuario logueado no es admin y está intentando registrar un rol que no sea paciente
-  //   if (user && user.id_rol !== 1 && requestedRoleId !== 4) {
-  //     return res.status(403).json({
-  //       error: 'Solo los administradores pueden registrar este tipo de usuario'
-  //     })
-  //   }
-
-  //   try {
-  //     const result = validatePartialUsuarios(req.body)
-
-  //     if (!result.success) {
-  //       return res.status(422).json({ error: result.error.issues })
-  //     }
-
-  //     const createdUser = await AuthModel.register({ input: req.body })
-
-  //     console.log('createdUser:', createdUser)
-
-  //     return res.status(201).json({ created: createdUser })
-  //   } catch (error) {
-  //     if (error.code === 'ER_DUP_ENTRY') {
-  //       console.error('Error al registrar el usuario: Entrada duplicada:', error)
-  //       return res.status(409).json({ error: 'El nombre de usuario, email o dni ya están en uso' })
-  //     }
-
-  //     console.error('Error al registrar el usuario:', error)
-  //     return res.status(500).json({ error: 'Error interno del servidor al registrar el usuario' })
-  //   }
-  // }
-
-  register = async (req, res) => {
-    const { user } = req.session
-    const requestedRoleId = req.body.id_rol
-
-    // Verificar si el usuario no está logueado y está intentando registrar un rol que no sea paciente
-    if (!user && requestedRoleId !== 4) {
-      return res.status(403).json({
-        error: 'Usuarios no autenticados solo pueden registrar pacientes'
-      })
-    }
-
-    // Verificar si el usuario logueado no es admin y está intentando registrar un rol que no sea paciente
-    if (user && user.id_rol !== 1 && requestedRoleId !== 4) {
-      return res.status(403).json({
-        error: 'Solo los administradores pueden registrar este tipo de usuario'
-      })
-    }
-
-    try {
-      const result = validatePartialUsuarios(req.body)
-
-      if (!result.success) {
-        return res.status(422).json({ error: result.error.issues })
-      }
-
-      const createdUser = await AuthModel.register({ input: req.body })
-
-      console.log('createdUser:', createdUser)
-
-      return res.status(201).json({ created: createdUser })
-    } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        console.error('Error al registrar el usuario: Entrada duplicada:', error)
-        return res.status(409).json({ error: 'El nombre de usuario, email o dni ya están en uso' })
-      }
-
-      console.error('Error al registrar el usuario:', error)
-      return res.status(500).json({ error: 'Error interno del servidor al registrar el usuario' })
-    }
-  }
-
-  // Vista para registro
-  registerView = async (req, res) => {
+  static registerView = async (req, res) => {
     const obrasSociales = await ObraSocialModel.getAll()
 
     obrasSociales.unshift({ id_obra_social: '0', nombre: 'No tengo obra social' })
@@ -102,7 +15,7 @@ export class AuthController {
     })
   }
 
-  login = async (req, res) => {
+  static login = async (req, res) => {
     try {
       const result = validatePartialUsuarios(req.body)
       if (!result.success) {
@@ -135,12 +48,12 @@ export class AuthController {
     }
   }
 
-  loginView = async (req, res) => {
+  static loginView = async (req, res) => {
     return res.render('auth/login', { user: req.session.user })
   }
 
   // Método para cerrar sesión
-  logout = async (_req, res) => {
+  static logout = async (_req, res) => {
     try {
       res.clearCookie('access_token')
 

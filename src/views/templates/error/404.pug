@@ -1,11 +1,19 @@
 extends ../../layouts/base-layout
 
+
 block navbar
   include ../../partials/NavBar
 
+
 block content
-  .d-grid.place-items-center.text-center(style="min-height: 540px;")
-    .d-flex.flex-column.align-items-center.justify-content-center
-      h1.display-1 404
-      p.lead.fs-5 Página no encontrada
-      a.btn.btn-primary.btn-lg(href="/") Volver al Inicio
+  .container.text-center.mt-5
+    h1.display-1.text-muted 404
+    h2.mb-4 Epa! Página no encontrada
+    p.lead La página que buscas podría haber sido eliminada o no existe.
+    .d-grid.gap-3.d-sm-flex.justify-content-sm-center
+      button.btn.btn-secondary(onclick="window.history.back()")
+        i.bi.bi-arrow-left.me-2
+        | Volver atrás
+      a.btn.btn-primary(href='/')
+        i.bi.bi-house-door.me-2
+        | Ir al inicio

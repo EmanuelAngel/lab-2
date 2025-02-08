@@ -1,46 +1,23 @@
 import { NODE_ENV } from '../../config/env.js'
 
-export const globalErrorHandler = (err, req, res) => {
-  // Valores por defecto
-  const statusCode = err.status || err.statusCode || 500
-  const errorName = err.name || 'Error'
-
-  // Log del error
-  console.error(`
-    [${errorName}]
-    ${err.message}`,
-  {
-    status: statusCode,
-    stack: err.stack,
-    timestamp: new Date().toISOString()
-  })
-
-  // Determinar si estamos en desarrollo
+export const globalErrorHandler = (err, req, res, next) => {
+  const statusCode = err.status || 500
   const isDevelopment = NODE_ENV === 'development'
 
-  // Construir respuesta de error
-  const errorResponse = {
-    success: false,
-    status: statusCode,
-    message: isDevelopment
-      ? err.message
-      : 'Ha ocurrido un error interno en el servidor',
-    ...(isDevelopment && {
-      name: errorName,
-      stack: err.stack
-    })
-  }
-
-  // Respuesta según el tipo de solicitud
-  if (req.xhr || req.headers.accept.indexOf('json') > -1) {
-    // Para solicitudes AJAX o que esperan JSON
-    return res.status(statusCode).json(errorResponse)
-  }
-
-  // Para solicitudes que esperan renderizar
-  res.status(statusCode).render('error/500', {
-    ...errorResponse,
+  const errorData = {
     title: `Error ${statusCode}`,
-    session: req.session
+    message: isDevelopment ? err.message : 'Ha ocurrido un error',
+    stack: isDevelopment ? err.stack : null,
+    status: statusCode,
+    NODE_ENV
+  }
+
+  let template = 'error/general'
+  if (statusCode === 404) template = 'error/404'
+  if (statusCode === 403) template = 'error/403'
+
+  res.status(statusCode).render(template, {
+    ...errorData,
+    user: req.session?.user || null
   })
 }

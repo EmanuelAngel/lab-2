@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { PanelController } from '../controller/panel.controller.js'
 
 import { checkRoles } from '../../../middlewares/auth/checkRoles.js'
+import { isLoggedIn } from '../../../middlewares/auth/isLoggedIn.js'
 
 const panelController = new PanelController()
 
@@ -12,7 +13,7 @@ export function panelRouter () {
   // router.get('/register', panelController.registerView)
   // router.post('/register', panelController.register)
 
-  router.get('/profesionales', panelController.profesionales)
+  router.get('/profesionales', [isLoggedIn], panelController.profesionales)
   router.get('/profesionales/register', checkRoles(1), panelController.createProfesional)
   router.get('/profesionales/edit/:id', checkRoles(1), panelController.editProfesional)
 
