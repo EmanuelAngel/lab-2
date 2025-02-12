@@ -21,7 +21,8 @@
   "main": "./src/.bin/www",
   "scripts": {
     "start": "node src/.bin/www",
-    "dev": "nodemon src/.bin/www --watch src --ext js,pug",
+    "dev": "nodemon src/.bin/www",
+    "watch": "node --watch src/.bin/www src/",
     "hash-password": "node src/apps/.utils/hashPassword.js",
     "lint": "standard",
     "security:audit": "npm audit --audit-level=critical"
